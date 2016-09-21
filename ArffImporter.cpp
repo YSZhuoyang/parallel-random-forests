@@ -6,7 +6,7 @@ using namespace std;
 
 ArffImporter::ArffImporter()
 {
-    //state = ReadingState::DOING_NOTHING;
+    
 }
 
 ArffImporter::~ArffImporter()
@@ -14,10 +14,14 @@ ArffImporter::~ArffImporter()
     for (char* classAttr : classVec) free( classAttr );
     classVec.clear();
 
-    for (char* attr : featureVec) free( attr );
+    for (NumericAttr& feature : featureVec) free( feature.name );
     featureVec.clear();
+
+    for (Item& item : itemVec) free( item.featureAttrArray );
+    itemVec.clear();
 }
 
+// Need to check string length boundary
 void ArffImporter::Read( const char* fileName )
 {
     FILE *fp;
@@ -31,71 +35,98 @@ void ArffImporter::Read( const char* fileName )
     // Assuming all data types of all features are integer
     // and ignoring feature types
     char firstToken[TOKEN_LENGTH_MAX];
-    char featureName[TOKEN_LENGTH_MAX];
-    char featureType[TOKEN_LENGTH_MAX];
     char buffer[READ_LINE_MAX];
-    unsigned int value;
-    unsigned int numFeatures = 0;
-    int readSize;
 
     while (fgets( buffer, READ_LINE_MAX, fp ) != nullptr)
     {
-        // Skip empty line
-        if (buffer[0] == '\n')
-        {
-            continue;
-        }
+        // Skip empty lines
+        if (buffer[0] == '\n') continue;
 
+        int readSize;
         sscanf( buffer, "%s%n", firstToken, &readSize );
 
         if (StrEqual( firstToken, KEYWORD_ATTRIBUTE ))
         {
-            //sscanf( buffer + readSize, "%s", featureName );
+            char* featureName = (char*) malloc( TOKEN_LENGTH_MAX );
+            char* featureType = (char*) malloc( TOKEN_LENGTH_MAX );
+            
             sscanf( buffer + readSize, "%s %s", featureName, featureType );
 
+            // Read feature names
             if (StrEqual( featureType, KEYWORD_NUMERIC ))
             {
-                printf( "Feature name: %s \n", featureName );
+                printf( "Feature name: %s, length: %d \n", featureName, GetStrLength( featureName ) );
 
-                numFeatures++;
+                NumericAttr feature;
+                feature.name = featureName;
+                feature.min = 0;
+                feature.max = 0;
+                feature.bucketSize = 0;
+                feature.numBuckets = 1;
+
+                featureVec.push_back( feature );
             }
+            // Read class names
             else
             {
-                printf( "Class: %s \n", featureType );
-
                 // Parse classes attributes
+                char* className = (char*) malloc( TOKEN_LENGTH_MAX );
+                featureType++;
+                
+                while (sscanf( featureType, "%[^,}]%n", className, &readSize ) > 0)
+                {
+                    printf( "Class name: %s \n", className );
 
+                    classVec.push_back( className );
+                    className = (char*) malloc( TOKEN_LENGTH_MAX );
 
+                    featureType += readSize + 1;
+                }
             }
 
             continue;
         }
+        // Read feature values
         else if (StrEqual( firstToken, KEYWORD_DATA))
         {
-            unsigned int index;
+            numFeatures = featureVec.size();
+            numClasses = classVec.size();
+            
+            size_t featureAttrArraySize = numFeatures * sizeof( unsigned int );
 
             while (fgets( buffer, READ_LINE_MAX, fp ) != nullptr)
             {
-                index = 0;
+                unsigned int index = 0;
                 unsigned int featureIndex = 0;
+                unsigned int value;
                 
-                Item* item = new Item;
-                item->featureArr = (unsigned int*) malloc( numFeatures * sizeof( unsigned int ) );
+                Item item;
+                item.featureAttrArray = (unsigned int*) malloc( featureAttrArraySize );
 
                 // Get feature attributes
                 while (sscanf( buffer + index, "%u%n", &value, &readSize ) > 0)
                 {
-                    index += readSize + 1;
-                    item->featureArr[featureIndex++] = value;
+                    if (featureVec[featureIndex].min > value) featureVec[featureIndex].min = value;
+                    if (featureVec[featureIndex].max < value) featureVec[featureIndex].max = value;
 
-                    //printf( "%u ", value );
+                    item.featureAttrArray[featureIndex++] = value;
+                    index += readSize + 1;
                 }
 
                 // Get class attributes
-                
-                //item->classIndex = ;
-                
-                //printf( "\n" );
+                char classValue[TOKEN_LENGTH_MAX];
+                sscanf( buffer + index, "%s%n", classValue, &readSize );
+
+                for (unsigned short i = 0; i < numClasses; i++)
+                {
+                    if (StrEqual( classVec[i], classValue ))
+                    {
+                        item.classIndex = i;
+                        break;
+                    }
+                }
+
+                itemVec.push_back( item );
             }
             
             break;
@@ -110,12 +141,12 @@ void ArffImporter::GetClassAttr( vector<char*>& cv )
     cv = classVec;
 }
 
-void ArffImporter::GetAttr( vector<char*>& fv )
+void ArffImporter::GetAttr( vector<NumericAttr>& fv )
 {
     fv = featureVec;
 }
 
-void ArffImporter::GetItems( vector<Item*>& iv )
+void ArffImporter::GetItems( vector<Item>& iv )
 {
     iv = itemVec;
 }
@@ -126,4 +157,13 @@ bool ArffImporter::StrEqual( const char str1[], const char str2[] )
     while (str1[i] != '\0' && str2[i] != '\0' && str1[i] == str2[i]) i++;
 
     return (str1[i] == '\0' && str2[i] == '\0') ? true : false;
+}
+
+unsigned int ArffImporter::GetStrLength( const char* str )
+{
+    unsigned int len = 0;
+
+    while (str[len++] != '\0');
+
+    return len;
 }

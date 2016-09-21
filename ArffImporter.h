@@ -21,16 +21,19 @@ public:
 
     void Read( const char* fileName );
     void GetClassAttr( vector<char*>& cv );
-    void GetAttr( vector<char*>& fv );
-    void GetItems( vector<Item*>& iv );
+    void GetAttr( vector<NumericAttr>& fv );
+    void GetItems( vector<Item>& iv );
 
 
 private:
     bool StrEqual( const char str1[], const char str2[] );
+    // Include string terminator
+    unsigned int GetStrLength( const char* str );
 
     vector<char*> classVec;
-    vector<char*> featureVec;
-    vector<Item*> itemVec;
+    vector<NumericAttr> featureVec;
+    vector<Item> itemVec;
 
-    //ReadingState state;
+    unsigned int numFeatures       = 0;
+    unsigned short numClasses      = 0;
 };
