@@ -62,7 +62,8 @@ void ArffImporter::Read( const char* fileName )
                 feature.min = 0;
                 feature.max = 0;
                 feature.bucketSize = 0;
-                feature.numBuckets = 1;
+                // Two buckets by default: 0, greater than 0
+                feature.numBuckets = 2;
 
                 featureVec.push_back( feature );
             }
@@ -136,19 +137,19 @@ void ArffImporter::Read( const char* fileName )
     fclose(fp);
 }
 
-void ArffImporter::GetClassAttr( vector<char*>& cv )
+vector<char*> ArffImporter::GetClassAttr()
 {
-    cv = classVec;
+    return classVec;
 }
 
-void ArffImporter::GetAttr( vector<NumericAttr>& fv )
+vector<NumericAttr> ArffImporter::GetFeatures()
 {
-    fv = featureVec;
+    return featureVec;
 }
 
-void ArffImporter::GetItems( vector<Item>& iv )
+vector<Item> ArffImporter::GetItems()
 {
-    iv = itemVec;
+    return itemVec;
 }
 
 bool ArffImporter::StrEqual( const char str1[], const char str2[] )

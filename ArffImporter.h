@@ -1,4 +1,8 @@
 
+#ifndef _ARFF_IMPORTER_H_
+#define _ARFF_IMPORTER_H_
+
+
 #include "BasicDataStructures.h"
 #include <stdlib.h>
 #include <cstdio>
@@ -20,9 +24,9 @@ public:
     ~ArffImporter();
 
     void Read( const char* fileName );
-    void GetClassAttr( vector<char*>& cv );
-    void GetAttr( vector<NumericAttr>& fv );
-    void GetItems( vector<Item>& iv );
+    vector<char*> GetClassAttr();
+    vector<NumericAttr> GetFeatures();
+    vector<Item> GetItems();
 
 
 private:
@@ -37,3 +41,5 @@ private:
     unsigned int numFeatures       = 0;
     unsigned short numClasses      = 0;
 };
+
+#endif

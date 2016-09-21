@@ -1,4 +1,7 @@
 
+#ifndef _BASICDATASTRUCTURES_H_
+#define _BASICDATASTRUCTURES_H_
+
 #include <vector>
 
 
@@ -29,3 +32,5 @@ namespace BasicDataStructures
         vector<TreeNode*> childrenVec;
     };
 }
+
+#endif
