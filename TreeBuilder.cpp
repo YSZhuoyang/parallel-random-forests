@@ -5,7 +5,7 @@
 
 TreeBuilder::TreeBuilder()
 {
-    giniSplitThreshold = 0.2f;
+    giniSplitThreshold = 0.002f;
 }
 
 TreeBuilder::~TreeBuilder()
@@ -37,7 +37,9 @@ void TreeBuilder::Split( TreeNode* node, const vector<Item>& iv, unsigned short*
     //size_t featureAttrArraySize = numFeatures * sizeof( unsigned short );
 
     printf( "Gini of parent: %f\n", giniParent );
-    printf( "num features: %d: \n", numFeatures );
+    printf( "num features: %d\n", numFeatures );
+
+    vector<vector<Item>> chosenGroups;
 
     for (unsigned int i = 0; i < numFeatures; i++)
     {
@@ -47,11 +49,12 @@ void TreeBuilder::Split( TreeNode* node, const vector<Item>& iv, unsigned short*
             continue;
         }
 
-        // Compute gini of children
+        vector<vector<Item>> groups( featureVec[i].numBuckets );
+
+        // If there are only 2 buckets, then classify them into:
+        // a group of 0, and a group of greater than 0.
         if (featureVec[i].numBuckets == 2)
         {
-            vector<Item> groups[2];
-            
             for (const Item& item : iv)
             {
                 if (item.featureAttrArray[i] <= 0)
@@ -63,31 +66,43 @@ void TreeBuilder::Split( TreeNode* node, const vector<Item>& iv, unsigned short*
                     groups[1].push_back( item );
                 }
             }
+        }
+        else
+        {
+            unsigned int sizeOfRange = featureVec[i].max - featureVec[i].min + 1;
+            float bucketSize = (float) sizeOfRange / (float) featureVec[i].numBuckets;
 
-            float giniSplit = giniParent;
-            
-            for (vector<Item>& group : groups)
+            for (const Item& item : iv)
             {
-                float giniChild = ComputeGini( group );
-                
-                printf( "Gini of child: %f\n", giniChild );
-
-                float numChildren = group.size();
-                float numTotal = iv.size();
-                giniSplit -= numChildren / numTotal * giniChild;
-
-                // Free memory used by pointers
-                group.clear();
+                unsigned int bucketIndex = (item.featureAttrArray[i] - featureVec[i].min) / bucketSize;
+                groups[bucketIndex].push_back( item );
             }
+        }
 
-            if (giniSplitMax < giniSplit) giniSplitMax = giniSplit;
+        float giniSplit = giniParent;
+        
+        // Compute gini of children
+        for (vector<Item>& group : groups)
+        {
+            float giniChild = ComputeGini( group );
+            
+            printf( "Child group size: %lu, Gini of child group: %f\n", group.size(), giniChild );
+
+            float numChildren = group.size();
+            float numTotal = iv.size();
+            giniSplit -= numChildren / numTotal * giniChild;
+        }
+
+        // Get max gini split and related children
+        if (giniSplitMax < giniSplit)
+        {
+            giniSplitMax = giniSplit;
+            chosenGroups = groups;
         }
     }
 
     printf( "Max Gini split get: %f\n", giniSplitMax );
-
-
-
+    
     // Split children
 
 
