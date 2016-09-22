@@ -1,2 +1,2 @@
 # ParallelizedRandomForests
-A parallelized version of random forests learning model training and predicting.
+A parallelized version of random forests learning algorithm.
