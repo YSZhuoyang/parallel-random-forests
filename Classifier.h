@@ -2,7 +2,7 @@
 #ifndef _CLASSIFIER_H_
 #define _CLASSIFIER_H_
 
-#include "BasicDataStructures.h"
+#include "TreeBuilder.h"
 
 class Classifier
 {

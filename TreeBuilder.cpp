@@ -5,7 +5,7 @@
 
 TreeBuilder::TreeBuilder()
 {
-    giniSplitThreshold = 0.00194f;
+    giniSplitThreshold = 0.002f;
 }
 
 TreeBuilder::~TreeBuilder()
@@ -167,10 +167,7 @@ float TreeBuilder::ComputeGini( const vector<Item>& iv )
 
 void TreeBuilder::DestroyNode( TreeNode* node )
 {
-    if (node == nullptr)
-    {
-        return;
-    }
+    if (node == nullptr) return;
 
     if (!node->childrenVec.empty())
     {
