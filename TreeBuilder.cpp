@@ -5,7 +5,7 @@
 
 TreeBuilder::TreeBuilder()
 {
-    giniSplitThreshold = 0.002f;
+    giniSplitThreshold = 0.00194f;
 }
 
 TreeBuilder::~TreeBuilder()
@@ -24,30 +24,24 @@ void TreeBuilder::BuildTree( const vector<Item>& iv, const vector<NumericAttr>& 
     // used in the parent nodes.
     unsigned short* featureIndexArray = (unsigned short*) malloc( numFeatures * sizeof( unsigned short ) );
     for (unsigned int i = 0; i < numFeatures; i++) featureIndexArray[i] = 1;
+    size_t featureIndexArraySize = numFeatures * sizeof( unsigned short );
 
-    Split( root, itemVec, featureIndexArray );
+    root = Split( itemVec, featureIndexArray, featureIndexArraySize, 0 );
 }
 
-void TreeBuilder::Split( TreeNode* node, const vector<Item>& iv, unsigned short* featureIndexArray )
+TreeNode* TreeBuilder::Split( const vector<Item>& iv, unsigned short* featureIndexArray, unsigned int featureIndexArraySize, int height )
 {
     unsigned int numFeatures = featureVec.size();
     float giniSplitMax = 0.0f;
     // Compute gini of parent
     float giniParent = ComputeGini( iv );
-    //size_t featureAttrArraySize = numFeatures * sizeof( unsigned short );
 
-    printf( "Gini of parent: %f\n", giniParent );
-    printf( "num features: %d\n", numFeatures );
-
-    vector<vector<Item>> chosenGroups;
+    vector<vector<Item>> selectedChildren;
+    unsigned int selectedFeatureIndex = numFeatures;
 
     for (unsigned int i = 0; i < numFeatures; i++)
     {
-        if (!featureIndexArray[i])
-        {
-            printf( "Skipping. \n");
-            continue;
-        }
+        if (!featureIndexArray[i]) continue;
 
         vector<vector<Item>> groups( featureVec[i].numBuckets );
 
@@ -86,26 +80,55 @@ void TreeBuilder::Split( TreeNode* node, const vector<Item>& iv, unsigned short*
         {
             float giniChild = ComputeGini( group );
             
-            printf( "Child group size: %lu, Gini of child group: %f\n", group.size(), giniChild );
+            //printf( "Child group size: %lu, Gini of child group: %f\n", group.size(), giniChild );
 
             float numChildren = group.size();
             float numTotal = iv.size();
             giniSplit -= numChildren / numTotal * giniChild;
         }
 
-        // Get max gini split and related children
+        // Get max gini split and related feature
         if (giniSplitMax < giniSplit)
         {
             giniSplitMax = giniSplit;
-            chosenGroups = groups;
+            selectedChildren = groups;
+            selectedFeatureIndex = i;
         }
     }
 
+    if (selectedFeatureIndex == numFeatures) return nullptr;
+
+    // Turn off the flag of selected feature
+    featureIndexArray[selectedFeatureIndex] = 0;
+
+    // Create parent node
+    TreeNode* node = new TreeNode;
+    node->featureIndex = selectedFeatureIndex;
+    node->gini         = giniParent;
+    node->giniSplit    = giniSplitMax;
+
+    printf( "Height: %d\n", height++ );
+    printf( "Feature selected: %s\n", featureVec[selectedFeatureIndex].name );
+    printf( "Gini of parent: %f\n", giniParent );
     printf( "Max Gini split get: %f\n", giniSplitMax );
     
-    // Split children
+    if (giniSplitMax > giniSplitThreshold)
+    {
+        // Split children
+        for (vector<Item> childGroup : selectedChildren)
+        {
+            unsigned short* featureIndexArrayCopy = (unsigned short*) malloc( featureIndexArraySize );
+            memcpy( featureIndexArrayCopy, featureIndexArray, featureIndexArraySize );
 
+            TreeNode* childNode = Split( childGroup, featureIndexArrayCopy, featureIndexArraySize, height );
+            if (childNode != nullptr) node->childrenVec.push_back( childNode );
+        }
+    }
 
+    free( featureIndexArray );
+    featureIndexArray = nullptr;
+
+    return node;
 }
 
 void TreeBuilder::SetGiniSplitThreshold( float gst )

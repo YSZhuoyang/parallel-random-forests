@@ -5,6 +5,7 @@
 #include "BasicDataStructures.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 
 using namespace BasicDataStructures;
@@ -20,9 +21,8 @@ public:
     TreeNode* GetRoot();
 
 private:
+    TreeNode* Split( const vector<Item>& iv, unsigned short* featureIndexArray, unsigned int featureIndexArraySize, int height );
     float ComputeGini( const vector<Item>& iv );
-    float ComputeGiniSplit();
-    void Split( TreeNode* node, const vector<Item>& iv, unsigned short* featureIndexArray );
     void DestroyNode( TreeNode* node );
 
     vector<char*> classVec;

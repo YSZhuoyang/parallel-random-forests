@@ -58,9 +58,9 @@ void ArffImporter::Read( const char* fileName )
                 printf( "Feature name: %s, length: %d \n", featureName, GetStrLength( featureName ) );
 
                 NumericAttr feature;
-                feature.name = featureName;
-                feature.min = 0;
-                feature.max = 0;
+                feature.name       = featureName;
+                feature.min        = 0;
+                feature.max        = 0;
                 feature.bucketSize = 0;
                 // Two buckets by default: 0, greater than 0
                 feature.numBuckets = 2;
