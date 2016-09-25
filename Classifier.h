@@ -19,7 +19,7 @@ public:
 
 private:
     // Return the index of the predicted class
-    unsigned short Classify( const Item& item );
+    int Classify( const Item& item );
 
     vector<char*> classVec;
     vector<NumericAttr> featureVec;

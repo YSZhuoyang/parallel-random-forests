@@ -3,12 +3,14 @@
 #define _TREE_BUILDER_H_
 
 #include "BasicDataStructures.h"
+#include "Helper.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
 
 using namespace BasicDataStructures;
+using namespace MyHelper;
 
 class TreeBuilder
 {

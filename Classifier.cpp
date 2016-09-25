@@ -53,12 +53,42 @@ void Classifier::Classify( const vector<Item>& iv )
     printf( "Incorrect rate: %f\n", incorrectRate );
 }
 
-unsigned short Classifier::Classify( const Item& item )
+int Classifier::Classify( const Item& item )
 {
     TreeNode* node = root;
 
     while (node != nullptr && !node->childrenVec.empty())
     {
-        
+        unsigned int i = node->featureIndex;
+
+        // If there are only 2 buckets, then classify them into:
+        // a group of 0, and a group of greater than 0.
+        if (featureVec[i].numBuckets == 2)
+        {
+            if (item.featureAttrArray[i] <= 0)
+            {
+                node = node->childrenVec[0];
+            }
+            else
+            {
+                node = node->childrenVec[1];
+            }
+        }
+        else
+        {
+            unsigned int sizeOfRange = 
+                featureVec[i].max - featureVec[i].min + 1;
+            float bucketSize = 
+                (float) sizeOfRange / (float) featureVec[i].numBuckets;
+
+            unsigned int bucketIndex = 
+                (item.featureAttrArray[i] - featureVec[i].min) / bucketSize;
+            node = node->childrenVec[bucketSize];
+        }
     }
+
+    if (node == nullptr)
+        return -1;
+    else
+        return node->classIndex;
 }

@@ -105,18 +105,6 @@ TreeNode* TreeBuilder::Split(
         }
     }
 
-    // There is no feature selected
-    if (selectedFeatureIndex == numFeatures)
-    {
-        free( featureIndexArray );
-        featureIndexArray = nullptr;
-        
-        return nullptr;
-    }
-
-    // Turn off the flag of selected feature
-    featureIndexArray[selectedFeatureIndex] = 0;
-
     // Create parent node
     TreeNode* node = new TreeNode;
     node->featureIndex = selectedFeatureIndex;
@@ -128,10 +116,24 @@ TreeNode* TreeBuilder::Split(
     printf( "Gini of parent: %f\n", giniParent );
     printf( "Max Gini split get: %f\n", giniSplitMax );
 
+    // No feature selected.
+    if (selectedFeatureIndex == numFeatures)
+    {
+        free( featureIndexArray );
+        featureIndexArray = nullptr;
+
+        return nullptr;
+    }
+
+    // Turn off the flag of selected feature
+    featureIndexArray[selectedFeatureIndex] = 0;
+
     height++;
     
     if (giniSplitMax > giniSplitThreshold)
     {
+        node->classIndex = -1;
+
         // Split children
         for (vector<Item> childGroup : selectedChildren)
         {
@@ -148,10 +150,22 @@ TreeNode* TreeBuilder::Split(
                 node->childrenVec.push_back( childNode );
         }
     }
+    // Reached leaf node.
+    else
+    {
+        unsigned int* classCounters = (unsigned int*) calloc( classVec.size(), sizeof( unsigned int ) );
+        for (const Item& item : iv) classCounters[item.classIndex]++;
+
+        // Select the class of the largest class group.
+        node->classIndex = getIndexOfMax( classCounters, classVec.size() );
+        free( classCounters );
+
+        printf( "Leaf node reached, class index: %u\n", node->classIndex );
+    }
 
     free( featureIndexArray );
     featureIndexArray = nullptr;
-
+    
     return node;
 }
 
