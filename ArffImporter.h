@@ -15,6 +15,7 @@ class ArffImporter
 {
 #define READ_LINE_MAX 4000
 #define TOKEN_LENGTH_MAX 20
+
 #define KEYWORD_ATTRIBUTE "@ATTRIBUTE"
 #define KEYWORD_DATA "@DATA"
 #define KEYWORD_NUMERIC "NUMERIC"

@@ -10,11 +10,25 @@ public:
     Classifier();
     ~Classifier();
 
-    void Train();
-    void Classify();
+    void Train(
+        const vector<Item>& iv, 
+        const vector<NumericAttr>& fv, 
+        const vector<char*>& cv );
+    void Classify( const vector<Item>& iv );
+
 
 private:
+    // Return the index of the predicted class
+    unsigned short Classify( const Item& item );
+
+    vector<char*> classVec;
+    vector<NumericAttr> featureVec;
+
+    //vector<TreeBuilder> treeBuilderVec;
+    //vector<TreeNode*> rootVec;
+    
     TreeBuilder treeBuilder;
+    TreeNode* root = nullptr;
 };
 
 #endif

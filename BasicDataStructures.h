@@ -1,6 +1,6 @@
 
-#ifndef _BASICDATASTRUCTURES_H_
-#define _BASICDATASTRUCTURES_H_
+#ifndef _BASIC_DATA_STRUCTURES_H_
+#define _BASIC_DATA_STRUCTURES_H_
 
 #include <vector>
 

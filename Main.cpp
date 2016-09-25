@@ -1,17 +1,25 @@
 
 
 #include "ArffImporter.h"
-#include "TreeBuilder.h"
+#include "Classifier.h"
 
 
 int main()
 {
-    ArffImporter importer;
-    importer.Read( "Dataset/train/train-first10.arff" );
+    ArffImporter trainSetImporter;
+    trainSetImporter.Read( "Dataset/train/train-first10.arff" );
 
-    TreeBuilder treeBuilder;
-    treeBuilder.BuildTree( importer.GetItems(), importer.GetFeatures(), importer.GetClassAttr() );
+    ArffImporter testSetImporter;
+    testSetImporter.Read( "Dataset/test/dev-first10.arff" );
+
+    Classifier classifier;
+    classifier.Train(
+        trainSetImporter.GetItems(), 
+        trainSetImporter.GetFeatures(), 
+        trainSetImporter.GetClassAttr() );
+
     
+
     return 0;
 }
 

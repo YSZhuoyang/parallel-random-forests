@@ -16,18 +16,24 @@ public:
     TreeBuilder();
     ~TreeBuilder();
 
-    void BuildTree( const vector<Item>& iv, const vector<NumericAttr>& fv, const vector<char*>& cv );
+    void BuildTree(
+        const vector<Item>& iv, 
+        const vector<NumericAttr>& fv, 
+        const vector<char*>& cv );
     void SetGiniSplitThreshold( float gst );
     TreeNode* GetRoot();
 
 private:
-    TreeNode* Split( const vector<Item>& iv, unsigned short* featureIndexArray, unsigned int featureIndexArraySize, int height );
+    TreeNode* Split(
+        const vector<Item>& iv, 
+        unsigned short* featureIndexArray, 
+        unsigned int featureIndexArraySize, 
+        unsigned int height );
     float ComputeGini( const vector<Item>& iv );
     void DestroyNode( TreeNode* node );
 
     vector<char*> classVec;
     vector<NumericAttr> featureVec;
-    vector<Item> itemVec;
 
     TreeNode* root = nullptr;
     

@@ -55,7 +55,8 @@ void ArffImporter::Read( const char* fileName )
             // Read feature names
             if (StrEqual( featureType, KEYWORD_NUMERIC ))
             {
-                printf( "Feature name: %s, length: %d \n", featureName, GetStrLength( featureName ) );
+                printf( "Feature name: %s, length: %d \n", 
+                    featureName, GetStrLength( featureName ) );
 
                 NumericAttr feature;
                 feature.name       = featureName;
@@ -93,7 +94,8 @@ void ArffImporter::Read( const char* fileName )
             numFeatures = featureVec.size();
             numClasses = classVec.size();
             
-            size_t featureAttrArraySize = numFeatures * sizeof( unsigned int );
+            size_t featureAttrArraySize = 
+                numFeatures * sizeof( unsigned int );
 
             while (fgets( buffer, READ_LINE_MAX, fp ) != nullptr)
             {
@@ -102,19 +104,23 @@ void ArffImporter::Read( const char* fileName )
                 unsigned int value;
                 
                 Item item;
-                item.featureAttrArray = (unsigned int*) malloc( featureAttrArraySize );
+                item.featureAttrArray = 
+                    (unsigned int*) malloc( featureAttrArraySize );
 
-                // Get feature attributes
+                // Get feature attribute value
                 while (sscanf( buffer + index, "%u%n", &value, &readSize ) > 0)
                 {
-                    if (featureVec[featureIndex].min > value) featureVec[featureIndex].min = value;
-                    if (featureVec[featureIndex].max < value) featureVec[featureIndex].max = value;
+                    if (featureVec[featureIndex].min > value)
+                        featureVec[featureIndex].min = value;
+                    
+                    if (featureVec[featureIndex].max < value)
+                        featureVec[featureIndex].max = value;
 
                     item.featureAttrArray[featureIndex++] = value;
                     index += readSize + 1;
                 }
 
-                // Get class attributes
+                // Get class attribute value
                 char classValue[TOKEN_LENGTH_MAX];
                 sscanf( buffer + index, "%s%n", classValue, &readSize );
 
