@@ -34,7 +34,7 @@ void Classifier::Classify( const vector<Item>& iv )
 {
     if (classVec.empty())
     {
-        printf( "Please train the model first" );
+        printf( "Please train the model first.\n" );
         return;
     }
 
@@ -47,7 +47,7 @@ void Classifier::Classify( const vector<Item>& iv )
     }
 
     float correctRate = (float) correctCounter / (float) totalNumber;
-    float incorrectRate = 1 - correctRate;
+    float incorrectRate = 1.0f - correctRate;
 
     printf( "Correct rate: %f\n", correctRate );
     printf( "Incorrect rate: %f\n", incorrectRate );
@@ -56,8 +56,9 @@ void Classifier::Classify( const vector<Item>& iv )
 int Classifier::Classify( const Item& item )
 {
     TreeNode* node = root;
+    if (node == nullptr) return -1;
 
-    while (node != nullptr && !node->childrenVec.empty())
+    while (!node->childrenVec.empty())
     {
         unsigned int i = node->featureIndex;
 
@@ -67,28 +68,34 @@ int Classifier::Classify( const Item& item )
         {
             if (item.featureAttrArray[i] <= 0)
             {
-                node = node->childrenVec[0];
+                if (node->childrenVec[0] == nullptr)
+                    break;
+                else
+                    node = node->childrenVec[0];
             }
             else
             {
-                node = node->childrenVec[1];
+                if (node->childrenVec[1] == nullptr)
+                    break;
+                else
+                    node = node->childrenVec[1];
             }
         }
         else
         {
-            unsigned int sizeOfRange = 
-                featureVec[i].max - featureVec[i].min + 1;
-            float bucketSize = 
-                (float) sizeOfRange / (float) featureVec[i].numBuckets;
-
             unsigned int bucketIndex = 
-                (item.featureAttrArray[i] - featureVec[i].min) / bucketSize;
-            node = node->childrenVec[bucketSize];
+                (item.featureAttrArray[i] - featureVec[i].min) / 
+                featureVec[i].bucketSize;
+            
+            if (bucketIndex >= featureVec[i].numBuckets)
+                    bucketIndex = featureVec[i].numBuckets - 1;
+
+            if (node->childrenVec[bucketIndex] == nullptr)
+                break;
+            else
+                node = node->childrenVec[bucketIndex];
         }
     }
 
-    if (node == nullptr)
-        return -1;
-    else
-        return node->classIndex;
+    return node->classIndex;
 }

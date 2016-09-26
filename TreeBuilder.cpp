@@ -4,7 +4,7 @@
 
 TreeBuilder::TreeBuilder()
 {
-    giniSplitThreshold = 0.002f;
+    giniSplitThreshold = 0.0018f;
 }
 
 TreeBuilder::~TreeBuilder()
@@ -39,6 +39,16 @@ TreeNode* TreeBuilder::Split(
 {
     unsigned int numFeatures = featureVec.size();
     float giniSplitMax = 0.0f;
+
+    // No item exists in this group, return empty pointer.
+    if (iv.empty())
+    {
+        free( featureIndexArray );
+        featureIndexArray = nullptr;
+
+        return nullptr;
+    }
+
     // Compute gini of parent
     float giniParent = ComputeGini( iv );
 
@@ -69,20 +79,21 @@ TreeNode* TreeBuilder::Split(
         }
         else
         {
-            unsigned int sizeOfRange = 
-                featureVec[i].max - featureVec[i].min + 1;
-            float bucketSize = 
-                (float) sizeOfRange / (float) featureVec[i].numBuckets;
-
             for (const Item& item : iv)
             {
                 unsigned int bucketIndex = 
-                    (item.featureAttrArray[i] - featureVec[i].min) / bucketSize;
+                    (float) (item.featureAttrArray[i] - featureVec[i].min) / 
+                    featureVec[i].bucketSize;
+                
+                if (bucketIndex >= featureVec[i].numBuckets)
+                    bucketIndex = featureVec[i].numBuckets - 1;
+
                 groups[bucketIndex].push_back( item );
             }
         }
 
         float giniSplit = giniParent;
+        float numTotal = iv.size();
         
         // Compute gini of children
         for (vector<Item>& group : groups)
@@ -92,7 +103,6 @@ TreeNode* TreeBuilder::Split(
             //printf( "Child group size: %lu, Gini of child group: %f\n", group.size(), giniChild );
 
             float numChildren = group.size();
-            float numTotal = iv.size();
             giniSplit -= numChildren / numTotal * giniChild;
         }
 
@@ -105,34 +115,36 @@ TreeNode* TreeBuilder::Split(
         }
     }
 
+    printf( "Height: %d\n", height );
+
     // Create parent node
     TreeNode* node = new TreeNode;
-    node->featureIndex = selectedFeatureIndex;
-    node->gini         = giniParent;
-    node->giniSplit    = giniSplitMax;
 
-    printf( "Height: %d\n", height );
-    printf( "Feature selected: %s\n", featureVec[selectedFeatureIndex].name );
-    printf( "Gini of parent: %f\n", giniParent );
-    printf( "Max Gini split get: %f\n", giniSplitMax );
-
-    // No feature selected.
-    if (selectedFeatureIndex == numFeatures)
+    // All features have been used, or gini split exceeds threshold,
+    // thus have reached leaf node.
+    if (giniSplitMax <= giniSplitThreshold)
     {
-        free( featureIndexArray );
-        featureIndexArray = nullptr;
+        LabelNode( node, iv );
 
-        return nullptr;
+        printf( "Leaf, class index: %u\n", node->classIndex );
     }
-
-    // Turn off the flag of selected feature
-    featureIndexArray[selectedFeatureIndex] = 0;
-
-    height++;
-    
-    if (giniSplitMax > giniSplitThreshold)
+    // Split node
+    else
     {
-        node->classIndex = -1;
+        printf( "Feature selected: %s\n", featureVec[selectedFeatureIndex].name );
+        printf( "Gini of parent: %f\n", giniParent );
+        printf( "Max Gini split get: %f\n", giniSplitMax );
+        
+        node->featureIndex = selectedFeatureIndex;
+        node->gini         = giniParent;
+        node->giniSplit    = giniSplitMax;
+        node->classIndex   = -1;
+
+        // Turn off the flag of selected feature
+        featureIndexArray[selectedFeatureIndex] = 0;
+        height++;
+
+        bool nodeLabeled = false;
 
         // Split children
         for (vector<Item> childGroup : selectedChildren)
@@ -145,22 +157,11 @@ TreeNode* TreeBuilder::Split(
 
             TreeNode* childNode = Split( childGroup, 
                 featureIndexArrayCopy, featureIndexArraySize, height );
-            
-            if (childNode != nullptr)
-                node->childrenVec.push_back( childNode );
+            if (childNode != nullptr) nodeLabeled = true;
+            node->childrenVec.push_back( childNode );
         }
-    }
-    // Reached leaf node.
-    else
-    {
-        unsigned int* classCounters = (unsigned int*) calloc( classVec.size(), sizeof( unsigned int ) );
-        for (const Item& item : iv) classCounters[item.classIndex]++;
 
-        // Select the class of the largest class group.
-        node->classIndex = getIndexOfMax( classCounters, classVec.size() );
-        free( classCounters );
-
-        printf( "Leaf node reached, class index: %u\n", node->classIndex );
+        if (nodeLabeled) LabelNode( node, iv );
     }
 
     free( featureIndexArray );
@@ -184,10 +185,10 @@ float TreeBuilder::ComputeGini( const vector<Item>& iv )
     unsigned short numClasses = classVec.size();
     float totalItemCount = iv.size();
 
+    if (totalItemCount == 0) return 0.0f;
+
     unsigned int* bucketArray = 
-        (unsigned int*) malloc( numClasses * sizeof( unsigned int ) );
-    
-    for (unsigned short i = 0; i < numClasses; i++) bucketArray[i] = 0;
+        (unsigned int*) calloc( numClasses, sizeof( unsigned int ) );
     for (const Item& item : iv) bucketArray[item.classIndex]++;
 
     float gini = 1.0f;
@@ -198,7 +199,23 @@ float TreeBuilder::ComputeGini( const vector<Item>& iv )
         gini -= temp * temp;
     }
 
+    free( bucketArray );
+    bucketArray = nullptr;
+
     return gini;
+}
+
+void TreeBuilder::LabelNode( TreeNode* node, const vector<Item>& iv )
+{
+    if (node == nullptr) return;
+
+    unsigned int* classCounters = (unsigned int*) calloc( classVec.size(), sizeof( unsigned int ) );
+    for (const Item& item : iv) classCounters[item.classIndex]++;
+
+    // Select the class of the largest class group.
+    node->classIndex = getIndexOfMax( classCounters, classVec.size() );
+    //node->featureIndex = selectedFeatureIndex;
+    free( classCounters );
 }
 
 void TreeBuilder::DestroyNode( TreeNode* node )

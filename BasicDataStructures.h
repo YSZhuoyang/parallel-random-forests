@@ -20,7 +20,7 @@ namespace BasicDataStructures
         char* name;
         int min;
         int max;
-        unsigned int bucketSize;
+        float bucketSize;
         unsigned int numBuckets;
     };
 

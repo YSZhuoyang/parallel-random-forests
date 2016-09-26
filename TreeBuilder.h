@@ -32,6 +32,7 @@ private:
         unsigned int featureIndexArraySize, 
         unsigned int height );
     float ComputeGini( const vector<Item>& iv );
+    void LabelNode( TreeNode* node, const vector<Item>& iv );
     void DestroyNode( TreeNode* node );
 
     vector<char*> classVec;

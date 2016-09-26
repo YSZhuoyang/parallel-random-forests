@@ -64,7 +64,7 @@ void ArffImporter::Read( const char* fileName )
                 feature.max        = 0;
                 feature.bucketSize = 0;
                 // Two buckets by default: 0, greater than 0
-                feature.numBuckets = 2;
+                feature.numBuckets = 10;
 
                 featureVec.push_back( feature );
             }
@@ -138,6 +138,13 @@ void ArffImporter::Read( const char* fileName )
             
             break;
         }
+    }
+
+    // Compute bucket size for each numerical attribute
+    for (NumericAttr& feature : featureVec)
+    {
+        float sizeOfRange = feature.max - feature.min + 1;
+        feature.bucketSize = sizeOfRange / (float) feature.numBuckets;
     }
 
     fclose(fp);
