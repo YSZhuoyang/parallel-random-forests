@@ -27,4 +27,4 @@ Classifier.o: Classifier.cpp Classifier.h TreeBuilder.h
 #---------------------------- Clean project ----------------------------#
 
 clean:
-	-rm -f *.o core *.core
+	-rm -f *.o *.h.gch exec
