@@ -112,8 +112,8 @@ TreeNode* TreeBuilder::Split(
         }
     }
 
-    printf( "\n|--------------------------------------|\n");
-    printf( "Height: %d\n", height );
+    //printf( "\n|--------------------------------------|\n");
+    //printf( "Height: %d\n", height );
 
     // Create parent node
     TreeNode* node = new TreeNode;
@@ -124,14 +124,14 @@ TreeNode* TreeBuilder::Split(
     {
         LabelNode( node, iv );
 
-        printf( "Leaf node labeled with class index: %u\n", node->classIndex );
+        //printf( "Leaf node labeled with class index: %u\n", node->classIndex );
     }
     // Split node
     else
     {
-        printf( "Feature selected: %s\n", featureVec[selectedFeatureIndex].name );
+        //printf( "Feature selected: %s\n", featureVec[selectedFeatureIndex].name );
         //printf( "Gini of parent: %f\n", giniParent );
-        printf( "Max Gini split get: %f\n", giniSplitMax );
+        //printf( "Max Gini split get: %f\n", giniSplitMax );
         
         node->featureIndex = selectedFeatureIndex;
         node->gini         = giniParent;

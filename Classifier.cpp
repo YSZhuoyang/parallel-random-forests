@@ -42,9 +42,7 @@ void Classifier::Classify( const vector<Item>& iv )
     unsigned int totalNumber = iv.size();
 
     for (const Item& item : iv)
-    {
         if (Classify( item ) == item.classIndex) correctCounter++;
-    }
 
     float correctRate = (float) correctCounter / (float) totalNumber;
     float incorrectRate = 1.0f - correctRate;
@@ -63,7 +61,7 @@ int Classifier::Classify( const Item& item )
         unsigned int i = node->featureIndex;
 
         // If there are only 2 buckets, then classify them into:
-        // a group of 0, and a group of greater than 0.
+        // one group of 0, and another group of greater than 0.
         if (featureVec[i].numBuckets == 2)
         {
             if (item.featureAttrArray[i] <= 0)
@@ -88,7 +86,7 @@ int Classifier::Classify( const Item& item )
                 featureVec[i].bucketSize;
             
             if (bucketIndex >= featureVec[i].numBuckets)
-                    bucketIndex = featureVec[i].numBuckets - 1;
+                bucketIndex = featureVec[i].numBuckets - 1;
 
             if (node->childrenVec[bucketIndex] == nullptr)
                 break;
