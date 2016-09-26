@@ -1,3 +1,4 @@
 .vscode/
 *.h.gch
+f*.o
 exec

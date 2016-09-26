@@ -101,7 +101,7 @@ void ArffImporter::Read( const char* fileName )
             {
                 unsigned int index = 0;
                 unsigned int featureIndex = 0;
-                unsigned int value;
+                int value;
                 
                 Item item;
                 item.featureAttrArray = 
