@@ -93,15 +93,12 @@ TreeNode* TreeBuilder::Split(
         }
 
         float giniSplit = giniParent;
-        float numTotal = iv.size();
         
         // Compute gini of children
         for (vector<Item>& group : groups)
         {
             float giniChild = ComputeGini( group );
-            
-            //printf( "Child group size: %lu, Gini of child group: %f\n", group.size(), giniChild );
-
+            float numTotal = iv.size();
             float numChildren = group.size();
             giniSplit -= numChildren / numTotal * giniChild;
         }
@@ -115,6 +112,7 @@ TreeNode* TreeBuilder::Split(
         }
     }
 
+    printf( "\n|--------------------------------------|\n");
     printf( "Height: %d\n", height );
 
     // Create parent node
@@ -126,13 +124,13 @@ TreeNode* TreeBuilder::Split(
     {
         LabelNode( node, iv );
 
-        printf( "Leaf, class index: %u\n", node->classIndex );
+        printf( "Leaf node labeled with class index: %u\n", node->classIndex );
     }
     // Split node
     else
     {
         printf( "Feature selected: %s\n", featureVec[selectedFeatureIndex].name );
-        printf( "Gini of parent: %f\n", giniParent );
+        //printf( "Gini of parent: %f\n", giniParent );
         printf( "Max Gini split get: %f\n", giniSplitMax );
         
         node->featureIndex = selectedFeatureIndex;
@@ -214,7 +212,6 @@ void TreeBuilder::LabelNode( TreeNode* node, const vector<Item>& iv )
 
     // Select the class of the largest class group.
     node->classIndex = getIndexOfMax( classCounters, classVec.size() );
-    //node->featureIndex = selectedFeatureIndex;
     free( classCounters );
 }
 

@@ -164,20 +164,3 @@ vector<Item> ArffImporter::GetItems()
 {
     return itemVec;
 }
-
-bool ArffImporter::StrEqual( const char str1[], const char str2[] )
-{
-    unsigned short i = 0;
-    while (str1[i] != '\0' && str2[i] != '\0' && str1[i] == str2[i]) i++;
-
-    return (str1[i] == '\0' && str2[i] == '\0') ? true : false;
-}
-
-unsigned int ArffImporter::GetStrLength( const char* str )
-{
-    unsigned int len = 0;
-
-    while (str[len++] != '\0');
-
-    return len;
-}

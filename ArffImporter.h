@@ -4,12 +4,13 @@
 
 
 #include "BasicDataStructures.h"
+#include "Helper.h"
 #include <stdlib.h>
 #include <cstdio>
 
 
 using namespace BasicDataStructures;
-using namespace std;
+using namespace MyHelper;
 
 class ArffImporter
 {
@@ -31,10 +32,6 @@ public:
 
 
 private:
-    bool StrEqual( const char str1[], const char str2[] );
-    // Include string terminator
-    unsigned int GetStrLength( const char* str );
-
     vector<char*> classVec;
     vector<NumericAttr> featureVec;
     vector<Item> itemVec;

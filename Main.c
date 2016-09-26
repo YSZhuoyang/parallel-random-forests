@@ -1,5 +1,4 @@
 
-
 #include "ArffImporter.h"
 #include "Classifier.h"
 
@@ -21,4 +20,3 @@ int main()
 
     return 0;
 }
-
