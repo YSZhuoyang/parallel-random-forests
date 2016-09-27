@@ -9,7 +9,9 @@ Classifier::Classifier()
 
 Classifier::~Classifier()
 {
-
+    // Destory trees
+    for (TreeNode* root : rootVec) treeBuilder.DestroyNode( root );
+    rootVec.clear();
 }
 
 
@@ -21,13 +23,39 @@ void Classifier::Train(
     classVec = cv;
     featureVec = fv;
 
-    // Randomly select features and build trees
+    // Randomly select features and build trees.
+    unsigned int numFeatures = fv.size();
+    
+    // Generate an ordered index container, and disorder it.
+    unsigned int* randomIndices = 
+        (unsigned int*) malloc( numFeatures * sizeof( unsigned int ) );
+    for (unsigned int i = 0; i < numFeatures; i++) randomIndices[i] = i;
+    randomizeArray( randomIndices, numFeatures, numFeatures / 2 );
 
+    // Build a number of trees each of which having 10 features.
+    // What if numFeatures is 51 ?
+    unsigned int numTrees = numFeatures / NUM_FEATURES_PER_TREE;
+    rootVec.reserve( numTrees );
+    treeBuilder.Init( fv, cv, NUM_FEATURES_PER_TREE );
 
+    for (unsigned int treeIndex = 0; treeIndex < numTrees; treeIndex++)
+    {
+        unsigned int* featureIndexArr = (unsigned int*) 
+            malloc( NUM_FEATURES_PER_TREE * sizeof( unsigned int ) );
+        memcpy( featureIndexArr, 
+            randomIndices + treeIndex * NUM_FEATURES_PER_TREE, 
+            NUM_FEATURES_PER_TREE * sizeof( unsigned int ) );
 
+        // Build one tree
+        treeBuilder.BuildTree( iv, featureIndexArr );
+        rootVec.push_back( treeBuilder.GetRoot() );
+    }
 
-    treeBuilder.BuildTree( iv, fv, cv );
-    root = treeBuilder.GetRoot();
+    free( randomIndices );
+    randomIndices = nullptr;
+
+    //treeBuilder.BuildTree( iv, fv, cv );
+    //root = treeBuilder.GetRoot();
 }
 
 void Classifier::Classify( const vector<Item>& iv )

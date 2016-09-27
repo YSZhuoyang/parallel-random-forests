@@ -6,6 +6,8 @@
 
 class Classifier
 {
+#define NUM_FEATURES_PER_TREE 10
+
 public:
     Classifier();
     ~Classifier();
@@ -25,7 +27,7 @@ private:
     vector<NumericAttr> featureVec;
 
     //vector<TreeBuilder> treeBuilderVec;
-    //vector<TreeNode*> rootVec;
+    vector<TreeNode*> rootVec;
     
     TreeBuilder treeBuilder;
     TreeNode* root = nullptr;

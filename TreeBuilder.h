@@ -4,7 +4,7 @@
 
 #include "BasicDataStructures.h"
 #include "Helper.h"
-#include <stdlib.h>
+
 #include <stdio.h>
 #include <string.h>
 
@@ -18,26 +18,32 @@ public:
     TreeBuilder();
     ~TreeBuilder();
 
+    void Init(
+        const vector<NumericAttr>& fv, 
+        const vector<char*>& cv, 
+        const unsigned int nf );
     void BuildTree(
         const vector<Item>& iv, 
-        const vector<NumericAttr>& fv, 
-        const vector<char*>& cv );
+        unsigned int* featureIndexArr );
+    void DestroyNode( TreeNode* node );
     void SetGiniSplitThreshold( float gst );
     TreeNode* GetRoot();
 
 private:
     TreeNode* Split(
         const vector<Item>& iv, 
-        unsigned short* featureIndexArray, 
+        unsigned int* featureIndexArray, 
         unsigned int featureIndexArraySize, 
         unsigned int height );
     float ComputeGini( const vector<Item>& iv );
     void LabelNode( TreeNode* node, const vector<Item>& iv );
-    void DestroyNode( TreeNode* node );
 
     vector<char*> classVec;
     vector<NumericAttr> featureVec;
 
+    unsigned int numFeatures;
+    unsigned short numClasses;
+    
     TreeNode* root = nullptr;
     
     // Settings

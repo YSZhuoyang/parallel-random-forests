@@ -19,7 +19,7 @@ unsigned int MyHelper::GetStrLength( const char* str )
     return len;
 }
 
-unsigned int MyHelper::getIndexOfMax( const unsigned int* uintArray, unsigned int length )
+unsigned int MyHelper::getIndexOfMax( const unsigned int* uintArray, const unsigned int length )
 {
     if (uintArray == nullptr || length <= 0) return 0;
 
@@ -36,4 +36,18 @@ unsigned int MyHelper::getIndexOfMax( const unsigned int* uintArray, unsigned in
     }
 
     return indexOfMax;
+}
+
+void MyHelper::randomizeArray( unsigned int* arr, const unsigned int length, const unsigned numSwap )
+{
+    for (unsigned int i = 0; i < numSwap; i++)
+    {
+        unsigned int randomA = rand() % length;
+        unsigned int randomB = rand() % length;
+
+        // Swap
+        unsigned int temp = arr[randomA];
+        arr[randomA] = arr[randomB];
+        arr[randomB] = temp;
+    }
 }

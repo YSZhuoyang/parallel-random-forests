@@ -16,7 +16,7 @@ int main()
         trainSetImporter.GetItems(), 
         trainSetImporter.GetFeatures(), 
         trainSetImporter.GetClassAttr() );
-    classifier.Classify( testSetImporter.GetItems() );
+    //classifier.Classify( testSetImporter.GetItems() );
 
     return 0;
 }
