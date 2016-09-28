@@ -24,9 +24,6 @@ private:
     vector<char*> classVec;
     vector<NumericAttr> featureVec;
 
-    //vector<TreeBuilder> treeBuilderVec;
-    //vector<TreeNode*> rootVec;
-    
     TreeBuilder treeBuilder;
     TreeNode* root = nullptr;
 };

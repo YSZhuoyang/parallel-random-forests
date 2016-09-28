@@ -21,11 +21,6 @@ void Classifier::Train(
     classVec = cv;
     featureVec = fv;
 
-    // Randomly select features and build trees
-
-
-
-
     treeBuilder.BuildTree( iv, fv, cv );
     root = treeBuilder.GetRoot();
 }

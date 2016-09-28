@@ -9,7 +9,7 @@ OBJECTS = Helper.o ArffImporter.o TreeBuilder.o Classifier.o
 
 #--------------------------- Compile project ---------------------------#
 
-exec: ${OBJECTS}
+exec: ${OBJECTS} Main.c
 	$(CC) ${CFLAGS} -o $@ ${OBJECTS} Main.c
 
 Helper.o: Helper.c Helper.h
