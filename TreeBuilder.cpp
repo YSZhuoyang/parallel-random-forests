@@ -22,7 +22,7 @@ void TreeBuilder::Init(
     numFeatures = nf;
     numClasses = classVec.size();
 
-    giniSplitThreshold = 0.0018f;
+    giniSplitThreshold = 0.002f;
 }
 
 void TreeBuilder::BuildTree(
@@ -55,6 +55,28 @@ TreeNode* TreeBuilder::Split(
     // Compute gini of parent
     float giniParent = ComputeGini( iv );
 
+    int* featureMeanArr = (int*) calloc( numFeatures, 
+        sizeof( int ) );
+    unsigned int itemSize = iv.size();
+
+    // Compute mean value for each numerical attribute
+    for (unsigned int itemIndex = 0; itemIndex < itemSize; itemIndex++)
+    {
+        for (unsigned int i = 0; i < numFeatures; i++)
+        {
+            unsigned int featureIndex = featureIndexArray[i];
+            if (featureIndex == numFeatures) continue;
+            featureMeanArr[i] += iv[itemIndex].featureAttrArray[featureIndex];
+        }
+    }
+
+    for (unsigned int i = 0; i < numFeatures; i++)
+    {
+        featureMeanArr[i] /= itemSize;
+    }
+
+    //printf( "feature %u, mean: %d\n", i, featureVec[i].mean );
+    
     vector<vector<Item>> selectedChildren;
     unsigned int selectedIndex = numFeatures;
 
@@ -73,7 +95,7 @@ TreeNode* TreeBuilder::Split(
         {
             for (const Item& item : iv)
             {
-                if (item.featureAttrArray[i] <= featureVec[i].mean)
+                if (item.featureAttrArray[i] <= featureMeanArr[i])//featureVec[i].mean
                     groups[0].push_back( item );
                 else
                     groups[1].push_back( item );
@@ -138,6 +160,7 @@ TreeNode* TreeBuilder::Split(
         //printf( "Max Gini split get: %f\n", giniSplitMax );
         
         node->featureIndex = selectedFeatureIndex;
+        node->mean         = featureMeanArr[selectedIndex];
         node->gini         = giniParent;
         node->giniSplit    = giniSplitMax;
         node->classIndex   = -1;
@@ -164,6 +187,9 @@ TreeNode* TreeBuilder::Split(
 
         if (nodeLabeled) LabelNode( node, iv );
     }
+
+    free( featureMeanArr );
+    featureMeanArr = nullptr;
 
     free( featureIndexArray );
     featureIndexArray = nullptr;

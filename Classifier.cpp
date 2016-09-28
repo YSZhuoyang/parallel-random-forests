@@ -104,7 +104,7 @@ int Classifier::Classify( const Item& item )
             // another group having feature value greater than mean.
             if (featureVec[i].numBuckets == 2)
             {
-                if (item.featureAttrArray[i] <= featureVec[i].mean)
+                if (item.featureAttrArray[i] <= node->mean)//featureVec[i].mean
                 {
                     if (node->childrenVec[0] == nullptr)
                         break;

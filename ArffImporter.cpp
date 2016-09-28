@@ -142,7 +142,7 @@ void ArffImporter::Read( const char* fileName )
 
             unsigned int itemSize = itemVec.size();
 
-            // Compute bucket size for each numerical attribute
+            // Compute bucket size and mean value for each numerical attribute
             for (unsigned int i = 0; i < numFeatures; i++)
             {
                 float sizeOfRange = featureVec[i].max - featureVec[i].min + 1;
