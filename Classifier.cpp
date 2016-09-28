@@ -25,12 +25,14 @@ void Classifier::Train(
 
     // Randomly select features and build trees.
     unsigned int numFeatures = fv.size();
+
+    printf( "Num features: %d\n", numFeatures );
     
     // Generate an ordered index container, and disorder it.
     unsigned int* randomIndices = 
         (unsigned int*) malloc( numFeatures * sizeof( unsigned int ) );
     for (unsigned int i = 0; i < numFeatures; i++) randomIndices[i] = i;
-    randomizeArray( randomIndices, numFeatures, numFeatures / 2 );
+    randomizeArray( randomIndices, numFeatures, numFeatures );
 
     // Build a number of trees each of which having 10 features.
     // What if numFeatures is 51 ?
@@ -49,13 +51,17 @@ void Classifier::Train(
         // Build one tree
         treeBuilder.BuildTree( iv, featureIndexArr );
         rootVec.push_back( treeBuilder.GetRoot() );
+
+        /*if (treeIndex < 2)
+        {
+            printf( "\nTree %d\n", treeIndex );
+            treeBuilder.PrintTree( rootVec[treeIndex] );
+            printf( "done\n" );
+        }*/
     }
 
     free( randomIndices );
     randomIndices = nullptr;
-
-    //treeBuilder.BuildTree( iv, fv, cv );
-    //root = treeBuilder.GetRoot();
 }
 
 void Classifier::Classify( const vector<Item>& iv )
@@ -81,47 +87,61 @@ void Classifier::Classify( const vector<Item>& iv )
 
 int Classifier::Classify( const Item& item )
 {
-    TreeNode* node = root;
-    if (node == nullptr) return -1;
+    unsigned short numClasses = classVec.size();
+    unsigned int* votes = (unsigned int*) 
+        calloc( numClasses, sizeof( unsigned int ) );
 
-    while (!node->childrenVec.empty())
+    for (TreeNode* node : rootVec)
     {
-        unsigned int i = node->featureIndex;
+        if (node == nullptr) continue;
 
-        // If there are only 2 buckets, then classify them into:
-        // one group of 0, and another group of greater than 0.
-        if (featureVec[i].numBuckets == 2)
+        while (!node->childrenVec.empty())
         {
-            if (item.featureAttrArray[i] <= 0)
+            unsigned int i = node->featureIndex;
+
+            // If there are only 2 buckets, then classify them into 2 groups:
+            // one group having feature value smaller than mean, 
+            // another group having feature value greater than mean.
+            if (featureVec[i].numBuckets == 2)
             {
-                if (node->childrenVec[0] == nullptr)
-                    break;
+                if (item.featureAttrArray[i] <= featureVec[i].mean)
+                {
+                    if (node->childrenVec[0] == nullptr)
+                        break;
+                    else
+                        node = node->childrenVec[0];
+                }
                 else
-                    node = node->childrenVec[0];
+                {
+                    if (node->childrenVec[1] == nullptr)
+                        break;
+                    else
+                        node = node->childrenVec[1];
+                }
             }
             else
             {
-                if (node->childrenVec[1] == nullptr)
+                unsigned int bucketIndex = 
+                    (item.featureAttrArray[i] - featureVec[i].min) / 
+                    featureVec[i].bucketSize;
+                
+                if (bucketIndex >= featureVec[i].numBuckets)
+                    bucketIndex = featureVec[i].numBuckets - 1;
+
+                if (node->childrenVec[bucketIndex] == nullptr)
                     break;
                 else
-                    node = node->childrenVec[1];
+                    node = node->childrenVec[bucketIndex];
             }
         }
-        else
-        {
-            unsigned int bucketIndex = 
-                (item.featureAttrArray[i] - featureVec[i].min) / 
-                featureVec[i].bucketSize;
-            
-            if (bucketIndex >= featureVec[i].numBuckets)
-                bucketIndex = featureVec[i].numBuckets - 1;
 
-            if (node->childrenVec[bucketIndex] == nullptr)
-                break;
-            else
-                node = node->childrenVec[bucketIndex];
-        }
+        votes[node->classIndex]++;
     }
 
-    return node->classIndex;
+    unsigned short classIndex = getIndexOfMax( votes, numClasses );
+
+    free( votes );
+    votes = nullptr;
+
+    return classIndex;
 }

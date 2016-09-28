@@ -11,7 +11,7 @@ namespace BasicDataStructures
 {
     struct Item
     {
-        unsigned int* featureAttrArray;
+        int* featureAttrArray;
         unsigned short classIndex;
     };
 
@@ -20,6 +20,7 @@ namespace BasicDataStructures
         char* name;
         int min;
         int max;
+        int mean;
         float bucketSize;
         unsigned int numBuckets;
     };

@@ -25,6 +25,7 @@ public:
     void BuildTree(
         const vector<Item>& iv, 
         unsigned int* featureIndexArr );
+    void PrintTree( const TreeNode* iter );
     void DestroyNode( TreeNode* node );
     void SetGiniSplitThreshold( float gst );
     TreeNode* GetRoot();

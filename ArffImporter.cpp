@@ -62,9 +62,10 @@ void ArffImporter::Read( const char* fileName )
                 feature.name       = featureName;
                 feature.min        = 0;
                 feature.max        = 0;
+                feature.mean       = 0;
                 feature.bucketSize = 0;
-                // Two buckets by default: 0, greater than 0
-                feature.numBuckets = 10;
+                // Two buckets by default: <= mean, and > mean
+                feature.numBuckets = 2;
 
                 featureVec.push_back( feature );
             }
@@ -94,8 +95,11 @@ void ArffImporter::Read( const char* fileName )
             numFeatures = featureVec.size();
             numClasses = classVec.size();
             
-            size_t featureAttrArraySize = 
+            unsigned int featureAttrArraySize = 
                 numFeatures * sizeof( unsigned int );
+
+            int* featureValueSumArr = (int*) calloc( numFeatures, 
+                sizeof( int ) );
 
             while (fgets( buffer, READ_LINE_MAX, fp ) != nullptr)
             {
@@ -104,8 +108,7 @@ void ArffImporter::Read( const char* fileName )
                 int value;
                 
                 Item item;
-                item.featureAttrArray = 
-                    (unsigned int*) malloc( featureAttrArraySize );
+                item.featureAttrArray = (int*) malloc( featureAttrArraySize );
 
                 // Get feature attribute value
                 while (sscanf( buffer + index, "%u%n", &value, &readSize ) > 0)
@@ -116,6 +119,7 @@ void ArffImporter::Read( const char* fileName )
                     if (featureVec[featureIndex].max < value)
                         featureVec[featureIndex].max = value;
 
+                    featureValueSumArr[featureIndex] += value;
                     item.featureAttrArray[featureIndex++] = value;
                     index += readSize + 1;
                 }
@@ -135,16 +139,24 @@ void ArffImporter::Read( const char* fileName )
 
                 itemVec.push_back( item );
             }
+
+            unsigned int itemSize = itemVec.size();
+
+            // Compute bucket size for each numerical attribute
+            for (unsigned int i = 0; i < numFeatures; i++)
+            {
+                float sizeOfRange = featureVec[i].max - featureVec[i].min + 1;
+                featureVec[i].bucketSize = sizeOfRange / (float) featureVec[i].numBuckets;
+                featureVec[i].mean = featureValueSumArr[i] / itemSize;
+
+                //printf( "feature %u, bs: %f, mean: %d\n", i, featureVec[i].bucketSize, featureVec[i].mean );
+            }
             
+            free( featureValueSumArr );
+            featureValueSumArr = nullptr;
+
             break;
         }
-    }
-
-    // Compute bucket size for each numerical attribute
-    for (NumericAttr& feature : featureVec)
-    {
-        float sizeOfRange = feature.max - feature.min + 1;
-        feature.bucketSize = sizeOfRange / (float) feature.numBuckets;
     }
 
     fclose(fp);

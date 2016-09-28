@@ -66,13 +66,14 @@ TreeNode* TreeBuilder::Split(
 
         vector<vector<Item>> groups( featureVec[i].numBuckets );
 
-        // If there are only 2 buckets, then classify them into:
-        // a group of 0, and a group of greater than 0.
+        // If there are only 2 buckets, then classify them into 2 groups:
+        // one group having feature value smaller than mean, 
+        // another group having feature value greater than mean.
         if (featureVec[i].numBuckets == 2)
         {
             for (const Item& item : iv)
             {
-                if (item.featureAttrArray[i] <= 0)
+                if (item.featureAttrArray[i] <= featureVec[i].mean)
                     groups[0].push_back( item );
                 else
                     groups[1].push_back( item );
@@ -157,7 +158,7 @@ TreeNode* TreeBuilder::Split(
 
             TreeNode* childNode = Split( childGroup, 
                 featureIndexArrayCopy, featureIndexArraySize, height );
-            if (childNode != nullptr) nodeLabeled = true;
+            if (childNode == nullptr) nodeLabeled = true;
             node->childrenVec.push_back( childNode );
         }
 
@@ -168,6 +169,19 @@ TreeNode* TreeBuilder::Split(
     featureIndexArray = nullptr;
     
     return node;
+}
+
+void TreeBuilder::PrintTree( const TreeNode* iter )
+{
+    if (iter != nullptr)
+    {
+        if (iter->classIndex == -1) return;
+
+        printf( "Feature: %s\n", featureVec[iter->featureIndex].name );
+
+        for (const TreeNode* child : iter->childrenVec)
+            PrintTree( child );
+    }
 }
 
 void TreeBuilder::SetGiniSplitThreshold( float gst )
