@@ -22,7 +22,7 @@ void TreeBuilder::Init(
     numFeatures = nf;
     numClasses = classVec.size();
 
-    giniSplitThreshold = 0.002f;
+    giniSplitThreshold = 0.0001f;
 }
 
 void TreeBuilder::BuildTree(
@@ -52,10 +52,18 @@ TreeNode* TreeBuilder::Split(
         return nullptr;
     }
 
+    if (iv.size() < MIN_NUM_ITEMS_PER_NODE)
+    {
+        TreeNode* leaf = new TreeNode;
+        LabelNode( leaf, iv );
+        
+        return leaf;
+    }
+
     // Compute gini of this node
     float giniParent = ComputeGini( iv );
 
-    if (iv.size() < MIN_NUM_ITEMS_PER_NODE || giniParent < 0.001f)
+    if (giniParent == 0.0f)
     {
         TreeNode* leaf = new TreeNode;
         LabelNode( leaf, iv );
