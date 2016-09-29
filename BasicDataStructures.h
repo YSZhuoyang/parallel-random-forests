@@ -20,9 +20,9 @@ namespace BasicDataStructures
         char* name;
         int min;
         int max;
-        int mean;
-        float bucketSize;
-        unsigned int numBuckets;
+        int mean;                // Not used.
+        float bucketSize;        // Not used.
+        unsigned int numBuckets; // Not used.
     };
 
     struct TreeNode
@@ -30,7 +30,7 @@ namespace BasicDataStructures
         float gini;
         float giniSplit;
         unsigned int featureIndex;
-        int mean;
+        int threshold;
         int classIndex;
         vector<TreeNode*> childrenVec;
     };

@@ -14,6 +14,8 @@ using namespace MyHelper;
 
 class TreeBuilder
 {
+#define MIN_NUM_ITEMS_PER_NODE 1000
+
 public:
     TreeBuilder();
     ~TreeBuilder();

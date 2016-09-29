@@ -64,7 +64,7 @@ void ArffImporter::Read( const char* fileName )
                 feature.max        = 0;
                 feature.mean       = 0;
                 feature.bucketSize = 0;
-                // Two buckets by default: <= mean, and > mean
+                // Two buckets by default: <= threshold, and > threshold
                 feature.numBuckets = 2;
 
                 featureVec.push_back( feature );
@@ -90,7 +90,7 @@ void ArffImporter::Read( const char* fileName )
             continue;
         }
         // Read feature values
-        else if (StrEqual( firstToken, KEYWORD_DATA))
+        else if (StrEqual( firstToken, KEYWORD_DATA ))
         {
             numFeatures = featureVec.size();
             numClasses = classVec.size();

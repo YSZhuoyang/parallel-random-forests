@@ -2,6 +2,17 @@
 #include "Helper.h"
 
 
+int MyHelper::Compare( const void* ele1, const void* ele2 )
+{
+    int f = *((int*)ele1);
+    int s = *((int*)ele2);
+
+    if (f > s) return 1;
+    if (f < s) return -1;
+
+    return 0;
+}
+
 bool MyHelper::StrEqual( const char* str1, const char* str2 )
 {
     unsigned short i = 0;

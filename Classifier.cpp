@@ -99,39 +99,22 @@ int Classifier::Classify( const Item& item )
         {
             unsigned int i = node->featureIndex;
 
-            // If there are only 2 buckets, then classify them into 2 groups:
-            // one group having feature value smaller than mean, 
-            // another group having feature value greater than mean.
-            if (featureVec[i].numBuckets == 2)
+            // 2 buckets by default:
+            // one group having feature value smaller than threshold, 
+            // another group having feature value greater than threshold.
+            if (item.featureAttrArray[i] <= node->threshold)
             {
-                if (item.featureAttrArray[i] <= node->mean)//featureVec[i].mean
-                {
-                    if (node->childrenVec[0] == nullptr)
-                        break;
-                    else
-                        node = node->childrenVec[0];
-                }
+                if (node->childrenVec[0] == nullptr)
+                    break;
                 else
-                {
-                    if (node->childrenVec[1] == nullptr)
-                        break;
-                    else
-                        node = node->childrenVec[1];
-                }
+                    node = node->childrenVec[0];
             }
             else
             {
-                unsigned int bucketIndex = 
-                    (item.featureAttrArray[i] - featureVec[i].min) / 
-                    featureVec[i].bucketSize;
-                
-                if (bucketIndex >= featureVec[i].numBuckets)
-                    bucketIndex = featureVec[i].numBuckets - 1;
-
-                if (node->childrenVec[bucketIndex] == nullptr)
+                if (node->childrenVec[1] == nullptr)
                     break;
                 else
-                    node = node->childrenVec[bucketIndex];
+                    node = node->childrenVec[1];
             }
         }
 

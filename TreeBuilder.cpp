@@ -52,88 +52,68 @@ TreeNode* TreeBuilder::Split(
         return nullptr;
     }
 
-    // Compute gini of parent
+    // Compute gini of this node
     float giniParent = ComputeGini( iv );
 
-    int* featureMeanArr = (int*) calloc( numFeatures, 
-        sizeof( int ) );
+    if (iv.size() < MIN_NUM_ITEMS_PER_NODE || giniParent < 0.001f)
+    {
+        TreeNode* leaf = new TreeNode;
+        LabelNode( leaf, iv );
+        
+        return leaf;
+    }
+
     unsigned int itemSize = iv.size();
-
-    // Compute mean value for each numerical attribute
-    for (unsigned int itemIndex = 0; itemIndex < itemSize; itemIndex++)
-    {
-        for (unsigned int i = 0; i < numFeatures; i++)
-        {
-            unsigned int featureIndex = featureIndexArray[i];
-            if (featureIndex == numFeatures) continue;
-            featureMeanArr[i] += iv[itemIndex].featureAttrArray[featureIndex];
-        }
-    }
-
-    for (unsigned int i = 0; i < numFeatures; i++)
-    {
-        featureMeanArr[i] /= itemSize;
-    }
-
-    //printf( "feature %u, mean: %d\n", i, featureVec[i].mean );
-    
-    vector<vector<Item>> selectedChildren;
     unsigned int selectedIndex = numFeatures;
+    int selectedThreshold;
+    vector<vector<Item>> selectedChildren;
 
+    // Find split feature and threshold
     for (unsigned int index = 0; index < numFeatures; index++)
     {
         unsigned int i = featureIndexArray[index];
 
         if (i == numFeatures) continue;
 
-        vector<vector<Item>> groups( featureVec[i].numBuckets );
+        // Get all values of that feature and sort them.
+        int* valueArr = (int*) malloc( itemSize * sizeof( int ) );
+        for (unsigned int itemIndex = 0; itemIndex < itemSize; itemIndex++)
+            valueArr[itemIndex] = iv[itemIndex].featureAttrArray[i];
+        qsort( valueArr, itemSize, sizeof( int ), Compare );
 
-        // If there are only 2 buckets, then classify them into 2 groups:
-        // one group having feature value smaller than mean, 
-        // another group having feature value greater than mean.
-        if (featureVec[i].numBuckets == 2)
+        // Find split threshold
+        for (unsigned int itemIndex = 0; itemIndex < itemSize; itemIndex++)
         {
+            if (itemIndex > 0 && valueArr[itemIndex] == valueArr[itemIndex - 1])
+                continue;
+            
+            vector<vector<Item>> groups( 2 );
+
             for (const Item& item : iv)
+                groups[item.featureAttrArray[i] > valueArr[itemIndex]].push_back( item );
+
+            float giniSplit = giniParent;
+            
+            // Compute gini of children
+            for (vector<Item>& group : groups)
             {
-                if (item.featureAttrArray[i] <= featureMeanArr[i])//featureVec[i].mean
-                    groups[0].push_back( item );
-                else
-                    groups[1].push_back( item );
+                float giniChild = ComputeGini( group );
+                float numChildren = group.size();
+                giniSplit -= numChildren / itemSize * giniChild;
+            }
+
+            // Get max gini split and related feature
+            if (giniSplitMax < giniSplit)
+            {
+                giniSplitMax = giniSplit;
+                selectedChildren = groups;
+                selectedThreshold = valueArr[itemIndex];
+                selectedIndex = index;
             }
         }
-        else
-        {
-            for (const Item& item : iv)
-            {
-                unsigned int bucketIndex = 
-                    (float) (item.featureAttrArray[i] - featureVec[i].min) / 
-                    featureVec[i].bucketSize;
-                
-                if (bucketIndex >= featureVec[i].numBuckets)
-                    bucketIndex = featureVec[i].numBuckets - 1;
 
-                groups[bucketIndex].push_back( item );
-            }
-        }
-
-        float giniSplit = giniParent;
-        
-        // Compute gini of children
-        for (vector<Item>& group : groups)
-        {
-            float giniChild = ComputeGini( group );
-            float numTotal = iv.size();
-            float numChildren = group.size();
-            giniSplit -= numChildren / numTotal * giniChild;
-        }
-
-        // Get max gini split and related feature
-        if (giniSplitMax < giniSplit)
-        {
-            giniSplitMax = giniSplit;
-            selectedChildren = groups;
-            selectedIndex = index;
-        }
+        free( valueArr );
+        valueArr = nullptr;
     }
 
     //printf( "\n----------------------------------------\n");
@@ -160,7 +140,7 @@ TreeNode* TreeBuilder::Split(
         //printf( "Max Gini split get: %f\n", giniSplitMax );
         
         node->featureIndex = selectedFeatureIndex;
-        node->mean         = featureMeanArr[selectedIndex];
+        node->threshold    = selectedThreshold;
         node->gini         = giniParent;
         node->giniSplit    = giniSplitMax;
         node->classIndex   = -1;
@@ -188,9 +168,6 @@ TreeNode* TreeBuilder::Split(
         if (nodeLabeled) LabelNode( node, iv );
     }
 
-    free( featureMeanArr );
-    featureMeanArr = nullptr;
-
     free( featureIndexArray );
     featureIndexArray = nullptr;
     
@@ -199,15 +176,12 @@ TreeNode* TreeBuilder::Split(
 
 void TreeBuilder::PrintTree( const TreeNode* iter )
 {
-    if (iter != nullptr)
-    {
-        if (iter->classIndex == -1) return;
+    if (iter == nullptr || iter->classIndex == -1) return;
 
-        printf( "Feature: %s\n", featureVec[iter->featureIndex].name );
+    printf( "Feature: %s\n", featureVec[iter->featureIndex].name );
 
-        for (const TreeNode* child : iter->childrenVec)
-            PrintTree( child );
-    }
+    for (const TreeNode* child : iter->childrenVec)
+        PrintTree( child );
 }
 
 void TreeBuilder::SetGiniSplitThreshold( float gst )
