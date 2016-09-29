@@ -155,7 +155,7 @@ TreeNode* TreeBuilder::Split(
 
             TreeNode* childNode = Split( childGroup, 
                 featureIndexArrayCopy, featureIndexArraySize, height );
-            if (childNode != nullptr) nodeLabeled = true;
+            if (childNode == nullptr) nodeLabeled = true;
             node->childrenVec.push_back( childNode );
         }
 
