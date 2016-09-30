@@ -21,8 +21,6 @@ void TreeBuilder::Init(
     classVec = cv;
     numFeatures = nf;
     numClasses = classVec.size();
-
-    giniSplitThreshold = 0.0001f;
 }
 
 void TreeBuilder::BuildTree(
@@ -52,6 +50,7 @@ TreeNode* TreeBuilder::Split(
         return nullptr;
     }
 
+    // The node is too small, make it a leaf node.
     if (iv.size() < MIN_NUM_ITEMS_PER_NODE)
     {
         TreeNode* leaf = new TreeNode;
@@ -60,9 +59,10 @@ TreeNode* TreeBuilder::Split(
         return leaf;
     }
 
-    // Compute gini of this node
+    // Compute gini of this node.
     float giniParent = ComputeGini( iv );
 
+    // All items are in the same classes.
     if (giniParent == 0.0f)
     {
         TreeNode* leaf = new TreeNode;
@@ -76,7 +76,7 @@ TreeNode* TreeBuilder::Split(
     int selectedThreshold;
     vector<vector<Item>> selectedChildren;
 
-    // Find split feature and threshold
+    // Find the best split feature and threshold
     for (unsigned int index = 0; index < numFeatures; index++)
     {
         unsigned int i = featureIndexArray[index];
@@ -127,12 +127,11 @@ TreeNode* TreeBuilder::Split(
     //printf( "\n----------------------------------------\n");
     //printf( "Height: %d\n", height );
 
-    // Create parent node
     TreeNode* node = new TreeNode;
 
     // All features have been used, or gini split exceeds threshold,
     // thus have reached leaf node.
-    if (giniSplitMax <= giniSplitThreshold)
+    if (selectedIndex == numFeatures)
     {
         LabelNode( node, iv );
 
@@ -184,17 +183,12 @@ TreeNode* TreeBuilder::Split(
 
 void TreeBuilder::PrintTree( const TreeNode* iter )
 {
-    if (iter == nullptr || iter->classIndex == -1) return;
+    if (iter == nullptr || iter->classIndex != -1) return;
 
     printf( "Feature: %s\n", featureVec[iter->featureIndex].name );
 
     for (const TreeNode* child : iter->childrenVec)
         PrintTree( child );
-}
-
-void TreeBuilder::SetGiniSplitThreshold( float gst )
-{
-    giniSplitThreshold = gst;
 }
 
 TreeNode* TreeBuilder::GetRoot()

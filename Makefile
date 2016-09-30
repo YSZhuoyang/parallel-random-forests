@@ -1,13 +1,13 @@
 
 
-#------------------------------- Macros --------------------------------#
+################################ Macros #################################
 
 SHELL = /bin/sh
 CFLAGS = -g -std=c++11 -Wall
 CC = g++
 OBJECTS = Helper.o ArffImporter.o TreeBuilder.o Classifier.o
 
-#--------------------------- Compile project ---------------------------#
+################################ Compile ################################
 
 exec: ${OBJECTS} Main.c
 	$(CC) ${CFLAGS} -o $@ ${OBJECTS} Main.c
@@ -24,7 +24,7 @@ TreeBuilder.o: TreeBuilder.cpp TreeBuilder.h BasicDataStructures.h Helper.h
 Classifier.o: Classifier.cpp Classifier.h TreeBuilder.h
 	$(CC) ${CFLAGS} -c Classifier.cpp
 
-#---------------------------- Clean project ----------------------------#
+################################# Clean #################################
 
 clean:
 	-rm -f *.o *.h.gch exec

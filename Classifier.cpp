@@ -51,13 +51,6 @@ void Classifier::Train(
         // Build one tree
         treeBuilder.BuildTree( iv, featureIndexArr );
         rootVec.push_back( treeBuilder.GetRoot() );
-
-        /*if (treeIndex < 2)
-        {
-            printf( "\nTree %d\n", treeIndex );
-            treeBuilder.PrintTree( rootVec[treeIndex] );
-            printf( "done\n" );
-        }*/
     }
 
     free( randomIndices );
@@ -91,7 +84,7 @@ int Classifier::Classify( const Item& item )
     unsigned int* votes = (unsigned int*) 
         calloc( numClasses, sizeof( unsigned int ) );
 
-    for (TreeNode* node : rootVec)
+    for (const TreeNode* node : rootVec)
     {
         if (node == nullptr) continue;
 

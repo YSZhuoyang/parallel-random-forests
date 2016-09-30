@@ -29,7 +29,6 @@ public:
         unsigned int* featureIndexArr );
     void PrintTree( const TreeNode* iter );
     void DestroyNode( TreeNode* node );
-    void SetGiniSplitThreshold( float gst );
     TreeNode* GetRoot();
 
 private:
@@ -48,9 +47,6 @@ private:
     unsigned short numClasses;
     
     TreeNode* root = nullptr;
-    
-    // Settings
-    float giniSplitThreshold;
 };
 
 #endif
