@@ -4,7 +4,16 @@
 
 Classifier::Classifier()
 {
+    MPI_Init( nullptr, nullptr );
 
+    int numMpiNodes;
+    int mpiNodeId;
+
+    MPI_Comm_size( MPI_COMM_WORLD, &numMpiNodes );
+    MPI_Comm_rank( MPI_COMM_WORLD, &mpiNodeId );
+
+    printf( "There are %d nodes doing computation.\n", numMpiNodes );
+    printf( "Id of this node is: %d.\n", mpiNodeId );
 }
 
 Classifier::~Classifier()
@@ -12,6 +21,8 @@ Classifier::~Classifier()
     // Destory trees
     for (TreeNode* root : rootVec) treeBuilder.DestroyNode( root );
     rootVec.clear();
+
+    MPI_Finalize();
 }
 
 
