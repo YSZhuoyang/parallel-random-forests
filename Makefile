@@ -4,7 +4,7 @@
 
 SHELL = /bin/sh
 CFLAGS = -g -std=c++11 -Wall
-CC = g++
+CC = mpic++
 OBJECTS = Helper.o ArffImporter.o TreeBuilder.o Classifier.o
 
 ################################ Compile ################################

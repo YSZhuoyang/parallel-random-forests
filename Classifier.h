@@ -4,6 +4,9 @@
 
 #include "TreeBuilder.h"
 
+#include <mpi.h>
+
+
 class Classifier
 {
 #define NUM_FEATURES_PER_TREE 100
