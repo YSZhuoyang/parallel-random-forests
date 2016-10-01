@@ -25,7 +25,9 @@ public:
 
 private:
     // Return the index of the predicted class
-    int Classify( const Item& item );
+    int Classify(
+        const Item& item, 
+        const unsigned int numClasses );
 
     vector<char*> classVec;
     vector<NumericAttr> featureVec;

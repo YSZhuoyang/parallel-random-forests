@@ -197,21 +197,24 @@ void Classifier::Classify( const vector<Item>& iv )
     }
 
     unsigned int correctCounter = 0;
-    unsigned int totalNumber = iv.size();
+    unsigned int numItems = iv.size();
+    unsigned int numClasses = classVec.size();
 
     for (const Item& item : iv)
-        if (Classify( item ) == item.classIndex) correctCounter++;
+        if (Classify( item, numClasses ) == item.classIndex)
+            correctCounter++;
 
-    float correctRate = (float) correctCounter / (float) totalNumber;
+    float correctRate = (float) correctCounter / (float) numItems;
     float incorrectRate = 1.0f - correctRate;
 
     printf( "Correct rate: %f\n", correctRate );
     printf( "Incorrect rate: %f\n", incorrectRate );
 }
 
-int Classifier::Classify( const Item& item )
+int Classifier::Classify(
+    const Item& item, 
+    const unsigned int numClasses )
 {
-    unsigned short numClasses = classVec.size();
     unsigned int* votes = (unsigned int*) 
         calloc( numClasses, sizeof( unsigned int ) );
 
