@@ -37,18 +37,18 @@ TreeNode* TreeBuilder::Split(
     unsigned int height )
 {
     float giniSplitMax = 0.0f;
+    unsigned int numItems = iv.size();
 
-    // No item exists in this group, return empty pointer.
-    if (iv.empty())
+    // The node is too small thus it is ignored.
+    if (numItems < MIN_NODE_SIZE)
     {
         free( featureIndexArray );
         featureIndexArray = nullptr;
 
         return nullptr;
     }
-
-    // The node is too small, make it a leaf node.
-    if (iv.size() < MIN_NUM_ITEMS_PER_NODE)
+    // The node is small, make it a leaf node.
+    else if (numItems < MIN_NODE_SIZE_TO_SPLIT)
     {
         TreeNode* leaf = new TreeNode;
         LabelNode( leaf, iv );
@@ -68,7 +68,6 @@ TreeNode* TreeBuilder::Split(
         return leaf;
     }
 
-    unsigned int numItems = iv.size();
     unsigned int selectedIndex = numFeatures;
     int selectedThreshold;
     vector<vector<Item>> selectedChildren;
