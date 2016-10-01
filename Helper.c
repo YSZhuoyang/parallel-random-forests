@@ -30,7 +30,9 @@ unsigned int MyHelper::GetStrLength( const char* str )
     return len;
 }
 
-unsigned int MyHelper::getIndexOfMax( const unsigned int* uintArray, const unsigned int length )
+unsigned int MyHelper::getIndexOfMax(
+    const unsigned int* uintArray, 
+    const unsigned int length )
 {
     if (uintArray == nullptr || length <= 0) return 0;
 
@@ -49,7 +51,32 @@ unsigned int MyHelper::getIndexOfMax( const unsigned int* uintArray, const unsig
     return indexOfMax;
 }
 
-void MyHelper::randomizeArray( unsigned int* arr, const unsigned int length, const unsigned numSwap )
+unsigned int* MyHelper::ranSampleWithoutRep(
+    vector<unsigned int>& container, 
+    unsigned int numSamples )
+{
+    unsigned int numRest = container.size();
+    if (numRest < numSamples) numSamples = numRest;
+    unsigned int* sampleArr = 
+        (unsigned int*) malloc( numSamples * sizeof( unsigned int ) );
+    
+    for (unsigned int i = 0; i < numSamples; i++)
+    {
+        unsigned int pos = rand() % numRest;
+        sampleArr[i] = container[pos];
+        container[pos] = container.back();
+        container.pop_back();
+        //container.erase( container.begin() + pos );
+        numRest--;
+    }
+
+    return sampleArr;
+}
+
+void MyHelper::randomizeArray(
+    unsigned int* arr, 
+    const unsigned int length, 
+    const unsigned numSwap )
 {
     for (unsigned int i = 0; i < numSwap; i++)
     {

@@ -28,33 +28,41 @@ void Classifier::Train(
 
     printf( "Num features: %d\n", numFeatures );
     
+    vector<unsigned int> randomIndices;
+    for (unsigned int i = 0; i < numFeatures; i++)
+        randomIndices.push_back( i );
+    
     // Generate an ordered index container, and disorder it.
-    unsigned int* randomIndices = 
+    /*unsigned int* randomIndices = 
         (unsigned int*) malloc( numFeatures * sizeof( unsigned int ) );
     for (unsigned int i = 0; i < numFeatures; i++) randomIndices[i] = i;
-    randomizeArray( randomIndices, numFeatures, numFeatures );
+    randomizeArray( randomIndices, numFeatures, numFeatures );*/
 
     // Build a number of trees each of which having 10 features.
     // What if numFeatures is 51 ?
     unsigned int numTrees = numFeatures / NUM_FEATURES_PER_TREE;
     rootVec.reserve( numTrees );
     treeBuilder.Init( fv, cv, NUM_FEATURES_PER_TREE );
-
+    
     for (unsigned int treeIndex = 0; treeIndex < numTrees; treeIndex++)
     {
-        unsigned int* featureIndexArr = (unsigned int*) 
+        /*unsigned int* featureIndexArr = (unsigned int*) 
             malloc( NUM_FEATURES_PER_TREE * sizeof( unsigned int ) );
         memcpy( featureIndexArr, 
             randomIndices + treeIndex * NUM_FEATURES_PER_TREE, 
-            NUM_FEATURES_PER_TREE * sizeof( unsigned int ) );
+            NUM_FEATURES_PER_TREE * sizeof( unsigned int ) );*/
+        
+        unsigned int* featureIndexArr = 
+            ranSampleWithoutRep( randomIndices, NUM_FEATURES_PER_TREE );
 
         // Build one tree
         treeBuilder.BuildTree( iv, featureIndexArr );
         rootVec.push_back( treeBuilder.GetRoot() );
     }
 
-    free( randomIndices );
-    randomIndices = nullptr;
+    //free( randomIndices );
+    //randomIndices = nullptr;
+    randomIndices.clear();
 }
 
 void Classifier::Classify( const vector<Item>& iv )
