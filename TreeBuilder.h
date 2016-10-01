@@ -21,13 +21,16 @@ public:
     ~TreeBuilder();
 
     void Init(
-        const vector<NumericAttr>& fv, 
-        const vector<char*>& cv, 
+        //const vector<NumericAttr>& fv, 
+        //const vector<char*>& cv, 
+        const unsigned int nc, 
         const unsigned int nf );
     void BuildTree(
         const vector<Item>& iv, 
         unsigned int* featureIndexArr );
-    void PrintTree( const TreeNode* iter );
+    void PrintTree(
+        const TreeNode* iter, 
+        const vector<NumericAttr>& fv );
     void DestroyNode( TreeNode* node );
     TreeNode* GetRoot();
 

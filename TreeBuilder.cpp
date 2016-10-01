@@ -13,14 +13,11 @@ TreeBuilder::~TreeBuilder()
 }
 
 void TreeBuilder::Init(
-    const vector<NumericAttr>& fv, 
-    const vector<char*>& cv, 
+    const unsigned int nc, 
     const unsigned int nf )
 {
-    featureVec = fv;
-    classVec = cv;
     numFeatures = nf;
-    numClasses = classVec.size();
+    numClasses = nc;
 }
 
 void TreeBuilder::BuildTree(
@@ -71,7 +68,7 @@ TreeNode* TreeBuilder::Split(
         return leaf;
     }
 
-    unsigned int itemSize = iv.size();
+    unsigned int numItems = iv.size();
     unsigned int selectedIndex = numFeatures;
     int selectedThreshold;
     vector<vector<Item>> selectedChildren;
@@ -84,13 +81,13 @@ TreeNode* TreeBuilder::Split(
         if (i == numFeatures) continue;
 
         // Get all values of that feature and sort them.
-        int* valueArr = (int*) malloc( itemSize * sizeof( int ) );
-        for (unsigned int itemIndex = 0; itemIndex < itemSize; itemIndex++)
+        int* valueArr = (int*) malloc( numItems * sizeof( int ) );
+        for (unsigned int itemIndex = 0; itemIndex < numItems; itemIndex++)
             valueArr[itemIndex] = iv[itemIndex].featureAttrArray[i];
-        qsort( valueArr, itemSize, sizeof( int ), Compare );
+        qsort( valueArr, numItems, sizeof( int ), Compare );
 
         // Find split threshold
-        for (unsigned int itemIndex = 0; itemIndex < itemSize; itemIndex++)
+        for (unsigned int itemIndex = 0; itemIndex < numItems; itemIndex++)
         {
             if (itemIndex > 0 && valueArr[itemIndex] == valueArr[itemIndex - 1])
                 continue;
@@ -107,7 +104,7 @@ TreeNode* TreeBuilder::Split(
             {
                 float giniChild = ComputeGini( group );
                 float numChildren = group.size();
-                giniSplit -= numChildren / itemSize * giniChild;
+                giniSplit -= numChildren / numItems * giniChild;
             }
 
             // Get max gini split and related feature
@@ -140,7 +137,8 @@ TreeNode* TreeBuilder::Split(
     // Split node
     else
     {
-        unsigned int selectedFeatureIndex = featureIndexArray[selectedIndex];
+        unsigned int selectedFeatureIndex = 
+            featureIndexArray[selectedIndex];
 
         //printf( "Feature selected: %s\n", featureVec[selectedFeatureIndex].name );
         //printf( "Gini of parent: %f\n", giniParent );
@@ -181,14 +179,16 @@ TreeNode* TreeBuilder::Split(
     return node;
 }
 
-void TreeBuilder::PrintTree( const TreeNode* iter )
+void TreeBuilder::PrintTree(
+    const TreeNode* iter, 
+    const vector<NumericAttr>& fv )
 {
     if (iter == nullptr || iter->classIndex != -1) return;
 
-    printf( "Feature: %s\n", featureVec[iter->featureIndex].name );
+    printf( "Feature: %s\n", fv[iter->featureIndex].name );
 
     for (const TreeNode* child : iter->childrenVec)
-        PrintTree( child );
+        PrintTree( child, fv );
 }
 
 TreeNode* TreeBuilder::GetRoot()

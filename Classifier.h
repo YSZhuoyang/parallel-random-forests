@@ -9,7 +9,8 @@
 
 class Classifier
 {
-#define NUM_FEATURES_PER_TREE 100
+#define MPI_ROOT_ID 0
+#define NUM_FEATURES_PER_TREE 10
 
 public:
     Classifier();
@@ -31,6 +32,9 @@ private:
     
     TreeBuilder treeBuilder;
     vector<TreeNode*> rootVec;
+
+    // MPI status
+    int mpiInitialized;
 };
 
 #endif
