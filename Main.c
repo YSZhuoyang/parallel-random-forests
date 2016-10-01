@@ -11,11 +11,10 @@ int main()
     ArffImporter testSetImporter;
     testSetImporter.Read( "Dataset/test/dev-first200.arff" );
 
-    Classifier classifier;
-    classifier.Train(
-        trainSetImporter.GetItems(), 
+    Classifier classifier(
         trainSetImporter.GetFeatures(), 
         trainSetImporter.GetClassAttr() );
+    classifier.Train( trainSetImporter.GetItems() );
     classifier.Classify( testSetImporter.GetItems() );
 
     return 0;

@@ -152,6 +152,8 @@ void ArffImporter::Read( const char* fileName )
                 //printf( "feature %u, bs: %f, mean: %d\n", i, featureVec[i].bucketSize, featureVec[i].mean );
             }
             
+            printf( "Num features: %d\n", numFeatures );
+
             free( featureValueSumArr );
             featureValueSumArr = nullptr;
 
