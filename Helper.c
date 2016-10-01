@@ -75,17 +75,15 @@ unsigned int* MyHelper::ranSampleWithoutRep(
 
 void MyHelper::randomizeArray(
     unsigned int* arr, 
-    const unsigned int length, 
-    const unsigned numSwap )
+    const unsigned int length )
 {
-    for (unsigned int i = 0; i < numSwap; i++)
+    for (unsigned int i = length; i > 0; i--)
     {
-        unsigned int randomA = rand() % length;
-        unsigned int randomB = rand() % length;
+        unsigned int randPos = rand() % i;
 
         // Swap
-        unsigned int temp = arr[randomA];
-        arr[randomA] = arr[randomB];
-        arr[randomB] = temp;
+        unsigned int temp = arr[randPos];
+        arr[randPos] = arr[i];
+        arr[i] = temp;
     }
 }

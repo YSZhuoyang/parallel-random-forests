@@ -23,8 +23,7 @@ namespace MyHelper
         const unsigned int numSamples );
     void randomizeArray(
         unsigned int* arr, 
-        const unsigned int length, 
-        const unsigned numSwap );
+        const unsigned int length );
 }
 
 #endif

@@ -29,16 +29,16 @@ void Classifier::Train(
     printf( "Num features: %d\n", numFeatures );
     
     /********************** Use random sampler *********************/
-    vector<unsigned int> randomIndices;
+    /*vector<unsigned int> randomIndices;
     for (unsigned int i = 0; i < numFeatures; i++)
-        randomIndices.push_back( i );
+        randomIndices.push_back( i );*/
     
     /**** Generate an ordered index container, and disorder it. ****/
 
-    /*unsigned int* randomIndices = 
+    unsigned int* randomIndices = 
         (unsigned int*) malloc( numFeatures * sizeof( unsigned int ) );
     for (unsigned int i = 0; i < numFeatures; i++) randomIndices[i] = i;
-    randomizeArray( randomIndices, numFeatures, numFeatures );*/
+    randomizeArray( randomIndices, numFeatures );
 
     /******************** Init tree constructer ********************/
 
@@ -52,26 +52,26 @@ void Classifier::Train(
     {
         /************** Use randomly disordered array **************/
 
-        /*unsigned int* featureIndexArr = (unsigned int*) 
+        unsigned int* featureIndexArr = (unsigned int*) 
             malloc( NUM_FEATURES_PER_TREE * sizeof( unsigned int ) );
         memcpy( featureIndexArr, 
             randomIndices + treeIndex * NUM_FEATURES_PER_TREE, 
-            NUM_FEATURES_PER_TREE * sizeof( unsigned int ) );*/
+            NUM_FEATURES_PER_TREE * sizeof( unsigned int ) );
         
         /******************** Use random sampler *******************/
-        unsigned int* featureIndexArr = 
-            ranSampleWithoutRep( randomIndices, NUM_FEATURES_PER_TREE );
+        //unsigned int* featureIndexArr = 
+        //    ranSampleWithoutRep( randomIndices, NUM_FEATURES_PER_TREE );
 
         treeBuilder.BuildTree( iv, featureIndexArr );
         rootVec.push_back( treeBuilder.GetRoot() );
     }
 
     /************** Free randomly disordered array **************/
-    //free( randomIndices );
-    //randomIndices = nullptr;
+    free( randomIndices );
+    randomIndices = nullptr;
 
     /******************** Free random sampler *******************/
-    randomIndices.clear();
+    //randomIndices.clear();
 }
 
 void Classifier::Classify( const vector<Item>& iv )
