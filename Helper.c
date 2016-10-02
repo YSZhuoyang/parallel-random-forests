@@ -51,7 +51,7 @@ unsigned int MyHelper::getIndexOfMax(
     return indexOfMax;
 }
 
-unsigned int* MyHelper::sampleWithRep(
+unsigned int* MyHelper::sampleWithoutRep(
     unsigned int* container, 
     const unsigned int numSamples, 
     unsigned int& numRest )
