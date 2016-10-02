@@ -116,14 +116,12 @@ void Classifier::Classify( const vector<Item>& iv )
     
     /************************** Do reduction *************************/
     if (mpiNodeId == MPI_ROOT_ID)
-        CheckMPIErr( MPI_Reduce( MPI_IN_PLACE, votes, numClasses, MPI_UNSIGNED, MPI_SUM, 
+        CheckMPIErr( MPI_Reduce( MPI_IN_PLACE, votes, numClasses * numItems, MPI_UNSIGNED, MPI_SUM, 
             0, MPI_COMM_WORLD ), mpiNodeId );
     else
-        CheckMPIErr( MPI_Reduce( votes, nullptr, numClasses, MPI_UNSIGNED, MPI_SUM, 
+        CheckMPIErr( MPI_Reduce( votes, nullptr, numClasses * numItems, MPI_UNSIGNED, MPI_SUM, 
             0, MPI_COMM_WORLD ), mpiNodeId );
     
-    CheckMPIErr( MPI_Barrier( MPI_COMM_WORLD ), mpiNodeId );
-
     /************************ Compute accuracy ************************/
     if (mpiNodeId == MPI_ROOT_ID)
     {
