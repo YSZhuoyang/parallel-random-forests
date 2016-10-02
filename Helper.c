@@ -51,24 +51,40 @@ unsigned int MyHelper::getIndexOfMax(
     return indexOfMax;
 }
 
-unsigned int* MyHelper::ranSampleWithoutRep(
-    vector<unsigned int>& container, 
-    unsigned int numSamples )
+unsigned int* MyHelper::sampleWithRep(
+    unsigned int* container, 
+    const unsigned int numSamples, 
+    unsigned int& numRest )
 {
-    unsigned int numRest = container.size();
-    if (numRest < numSamples) numSamples = numRest;
-    unsigned int* sampleArr = 
-        (unsigned int*) malloc( numSamples * sizeof( unsigned int ) );
-    
-    for (unsigned int i = 0; i < numSamples; i++)
+    if (numSamples <= 0 || numRest <= 0)
     {
-        unsigned int pos = rand() % numRest;
-        sampleArr[i] = container[pos];
-        container[pos] = container.back();
-        container.pop_back();
-        //container.erase( container.begin() + pos );
-        numRest--;
+        printf( "Number of samples and number of the rest elements must be greater than 0\n" );
+
+        return nullptr;
     }
+    else if (numSamples > numRest)
+    {
+        numRest = numSamples;
+    }
+
+    unsigned int* sampleArr = (unsigned int*)
+        malloc( numSamples * sizeof( unsigned int ) );
+    unsigned int sampleIndex = 0;
+    unsigned int newNumRest = numRest - numSamples;
+
+    for (unsigned int i = numRest - 1; i > newNumRest; i--)
+    {
+        unsigned int randPos = rand() % (i + 1);
+
+        // Swap
+        unsigned int temp = container[randPos];
+        container[randPos] = container[i];
+        container[i] = temp;
+
+        sampleArr[sampleIndex++] = container[i];
+    }
+
+    numRest = newNumRest;
 
     return sampleArr;
 }
@@ -77,9 +93,9 @@ void MyHelper::randomizeArray(
     unsigned int* arr, 
     const unsigned int length )
 {
-    for (unsigned int i = length; i > 0; i--)
+    for (unsigned int i = length - 1; i > 0; i--)
     {
-        unsigned int randPos = rand() % i;
+        unsigned int randPos = rand() % (i + 1);
 
         // Swap
         unsigned int temp = arr[randPos];

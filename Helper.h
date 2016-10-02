@@ -18,9 +18,10 @@ namespace MyHelper
     unsigned int getIndexOfMax(
         const unsigned int* uintArray, 
         const unsigned int length );
-    unsigned int* ranSampleWithoutRep(
-        vector<unsigned int>& container, 
-        const unsigned int numSamples );
+    unsigned int* sampleWithRep(
+        unsigned int* container, 
+        const unsigned int numSamples, 
+        unsigned int& numRest );
     void randomizeArray(
         unsigned int* arr, 
         const unsigned int length );
