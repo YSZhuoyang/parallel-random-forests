@@ -116,10 +116,10 @@ void Classifier::Classify( const vector<Item>& iv )
     
     /************************** Do reduction *************************/
     if (mpiNodeId == MPI_ROOT_ID)
-        MPI_Reduce( MPI_IN_PLACE, votes, numClasses, MPI_UNSIGNED, MPI_SUM, 
+        MPI_Reduce( MPI_IN_PLACE, votes, numClasses * numItems, MPI_UNSIGNED, MPI_SUM, 
             0, MPI_COMM_WORLD );
     else
-        MPI_Reduce( votes, nullptr, numClasses, MPI_UNSIGNED, MPI_SUM, 
+        MPI_Reduce( votes, nullptr, numClasses * numItems, MPI_UNSIGNED, MPI_SUM, 
             0, MPI_COMM_WORLD );
     
     /************************ Compute accuracy ************************/
