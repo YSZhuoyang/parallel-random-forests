@@ -57,7 +57,7 @@ void Classifier::Train( const vector<Item>& iv )
         randomIndices = 
             (unsigned int*) malloc( numFeatures * sizeof( unsigned int ) );
         for (unsigned int i = 0; i < numFeatures; i++) randomIndices[i] = i;
-        randomizeArray( randomIndices, numFeatures, numFeatures );
+        randomizeArray( randomIndices, numFeatures );
 
         // Convert data to the form can be transfered by MPI
         featureArrSize = numFeatures * sizeof( int );
@@ -83,7 +83,7 @@ void Classifier::Train( const vector<Item>& iv )
         MPI_ROOT_ID, MPI_COMM_WORLD );
     MPI_Bcast( &numItems, 1, MPI_UNSIGNED, 
         MPI_ROOT_ID, MPI_COMM_WORLD );
-    MPI_Barrier(MPI_COMM_WORLD);
+    MPI_Barrier( MPI_COMM_WORLD );
 
     if (mpiNodeId != MPI_ROOT_ID)
     {
@@ -100,7 +100,7 @@ void Classifier::Train( const vector<Item>& iv )
         MPI_INT, MPI_ROOT_ID, MPI_COMM_WORLD );
     MPI_Bcast( classIndexBuff, numItems, 
         MPI_INT, MPI_ROOT_ID, MPI_COMM_WORLD );
-    MPI_Barrier(MPI_COMM_WORLD);
+    MPI_Barrier( MPI_COMM_WORLD );
 
     /**************** Convert back data format ****************/
     vector<Item> itemVecCopy;
@@ -222,13 +222,15 @@ void Classifier::Classify( const vector<Item>& iv )
     }
 
     // Need to check error code.
+    MPI_Bcast( &featureArrSize, 1, MPI_UNSIGNED, 
+        MPI_ROOT_ID, MPI_COMM_WORLD );
     MPI_Bcast( &numClasses, 1, MPI_UNSIGNED, 
         MPI_ROOT_ID, MPI_COMM_WORLD );
     MPI_Bcast( &numFeatures, 1, MPI_UNSIGNED, 
         MPI_ROOT_ID, MPI_COMM_WORLD );
     MPI_Bcast( &numItems, 1, MPI_UNSIGNED, 
         MPI_ROOT_ID, MPI_COMM_WORLD );
-    MPI_Barrier(MPI_COMM_WORLD);
+    MPI_Barrier( MPI_COMM_WORLD );
 
     if (mpiNodeId != MPI_ROOT_ID)
     {
@@ -241,7 +243,7 @@ void Classifier::Classify( const vector<Item>& iv )
         MPI_INT, MPI_ROOT_ID, MPI_COMM_WORLD );
     MPI_Bcast( classIndexBuff, numItems, 
         MPI_INT, MPI_ROOT_ID, MPI_COMM_WORLD );
-    MPI_Barrier(MPI_COMM_WORLD);
+    MPI_Barrier( MPI_COMM_WORLD );
 
     /**************** Convert back data format ****************/
     vector<Item> itemVecCopy;
