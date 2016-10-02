@@ -4,8 +4,6 @@
 
 #include "TreeBuilder.h"
 
-#include <mpi.h>
-
 
 class Classifier
 {
@@ -33,6 +31,9 @@ private:
     
     TreeBuilder treeBuilder;
     vector<TreeNode*> rootVec;
+
+    unsigned int numFeatures = 0;
+    unsigned int numClasses = 0;
 
     // MPI status
     int mpiNodeId;

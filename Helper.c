@@ -51,7 +51,7 @@ unsigned int MyHelper::getIndexOfMax(
     return indexOfMax;
 }
 
-void MyHelper::randomizeArray(
+void MyHelper::RandomizeArray(
     unsigned int* arr, 
     const unsigned int length )
 {
@@ -71,3 +71,16 @@ void MyHelper::randomizeArray(
         arr[i] = temp;
     }
 }
+
+void MyHelper::CheckMPIErr( int errorCode, int mpiNodeId )
+{
+    if (errorCode != MPI_SUCCESS)
+    {
+        char errorString[MPI_ERROR_MESSAGE_BUFF_SIZE];
+        int strLen;
+
+        MPI_Error_string( errorCode, errorString, &strLen );
+        fprintf( stderr, "%3d: %s\n", mpiNodeId, errorString );
+    }
+}
+

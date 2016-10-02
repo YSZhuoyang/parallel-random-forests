@@ -20,6 +20,12 @@ Classifier::Classifier(
         printf( "There are %d nodes doing computation.\n", numMpiNodes );
     
     printf( "Id of this node is: %d.\n", mpiNodeId );
+
+    if (mpiNodeId == MPI_ROOT_ID)
+    {
+        numFeatures = featureVec.size();
+        numClasses = classVec.size();
+    }
 }
 
 Classifier::~Classifier()
@@ -36,20 +42,16 @@ Classifier::~Classifier()
 void Classifier::Train( const vector<Item>& iv )
 {
     /******************* Prepare buffer *******************/
-    unsigned int numFeatures;
-    unsigned int numClasses;
     unsigned int numItems;
+    unsigned int featureArrSize;
 
     unsigned int* randomIndices;
-    unsigned int featureArrSize;
     int* attrValueBuff;
     unsigned short* classIndexBuff;
 
     /************ Broadcast data to other nodes ***********/
     if (mpiNodeId == MPI_ROOT_ID)
     {
-        numFeatures = featureVec.size();
-        numClasses = classVec.size();
         numItems = iv.size();
 
         // Randomly select features and build trees.
@@ -57,7 +59,7 @@ void Classifier::Train( const vector<Item>& iv )
         randomIndices = 
             (unsigned int*) malloc( numFeatures * sizeof( unsigned int ) );
         for (unsigned int i = 0; i < numFeatures; i++) randomIndices[i] = i;
-        randomizeArray( randomIndices, numFeatures );
+        RandomizeArray( randomIndices, numFeatures );
 
         // Convert data to the form can be transfered by MPI
         featureArrSize = numFeatures * sizeof( int );
@@ -75,15 +77,15 @@ void Classifier::Train( const vector<Item>& iv )
     }
 
     // Need to check error code.
-    MPI_Bcast( &featureArrSize, 1, MPI_UNSIGNED, 
-        MPI_ROOT_ID, MPI_COMM_WORLD );
-    MPI_Bcast( &numClasses, 1, MPI_UNSIGNED, 
-        MPI_ROOT_ID, MPI_COMM_WORLD );
-    MPI_Bcast( &numFeatures, 1, MPI_UNSIGNED, 
-        MPI_ROOT_ID, MPI_COMM_WORLD );
-    MPI_Bcast( &numItems, 1, MPI_UNSIGNED, 
-        MPI_ROOT_ID, MPI_COMM_WORLD );
-    MPI_Barrier( MPI_COMM_WORLD );
+    CheckMPIErr( MPI_Bcast( &featureArrSize, 1, MPI_UNSIGNED, 
+        MPI_ROOT_ID, MPI_COMM_WORLD ), mpiNodeId );
+    CheckMPIErr( MPI_Bcast( &numClasses, 1, MPI_UNSIGNED, 
+        MPI_ROOT_ID, MPI_COMM_WORLD ), mpiNodeId );
+    CheckMPIErr( MPI_Bcast( &numFeatures, 1, MPI_UNSIGNED, 
+        MPI_ROOT_ID, MPI_COMM_WORLD ), mpiNodeId );
+    CheckMPIErr( MPI_Bcast( &numItems, 1, MPI_UNSIGNED, 
+        MPI_ROOT_ID, MPI_COMM_WORLD ), mpiNodeId );
+    CheckMPIErr( MPI_Barrier( MPI_COMM_WORLD ), mpiNodeId );
 
     if (mpiNodeId != MPI_ROOT_ID)
     {
@@ -94,13 +96,13 @@ void Classifier::Train( const vector<Item>& iv )
             (unsigned short*) malloc( numItems * sizeof( unsigned short ) );
     }
 
-    MPI_Bcast( randomIndices, numFeatures, 
-        MPI_UNSIGNED, MPI_ROOT_ID, MPI_COMM_WORLD );
-    MPI_Bcast( attrValueBuff, numItems * numFeatures, 
-        MPI_INT, MPI_ROOT_ID, MPI_COMM_WORLD );
-    MPI_Bcast( classIndexBuff, numItems, 
-        MPI_INT, MPI_ROOT_ID, MPI_COMM_WORLD );
-    MPI_Barrier( MPI_COMM_WORLD );
+    CheckMPIErr( MPI_Bcast( randomIndices, numFeatures, 
+        MPI_UNSIGNED, MPI_ROOT_ID, MPI_COMM_WORLD ), mpiNodeId );
+    CheckMPIErr( MPI_Bcast( attrValueBuff, numItems * numFeatures, 
+        MPI_INT, MPI_ROOT_ID, MPI_COMM_WORLD ), mpiNodeId );
+    CheckMPIErr( MPI_Bcast( classIndexBuff, numItems, 
+        MPI_INT, MPI_ROOT_ID, MPI_COMM_WORLD ), mpiNodeId );
+    CheckMPIErr( MPI_Barrier( MPI_COMM_WORLD ), mpiNodeId );
 
     /**************** Convert back data format ****************/
     vector<Item> itemVecCopy;
@@ -178,7 +180,7 @@ void Classifier::Train( const vector<Item>& iv )
 
 void Classifier::Classify( const vector<Item>& iv )
 {
-    if (mpiNodeId == MPI_ROOT_ID && classVec.empty())
+    if (numClasses == 0)
     {
         printf( "Please train the model first.\n" );
 
@@ -193,8 +195,6 @@ void Classifier::Classify( const vector<Item>& iv )
     }
 
     /******************* Prepare buffer *******************/
-    unsigned int numFeatures;
-    unsigned int numClasses;
     unsigned int numItems;
     unsigned int featureArrSize;
     int* attrValueBuff;
@@ -203,8 +203,6 @@ void Classifier::Classify( const vector<Item>& iv )
     /************ Broadcast data to other nodes ***********/
     if (mpiNodeId == MPI_ROOT_ID)
     {
-        numFeatures = featureVec.size();
-        numClasses = classVec.size();
         numItems = iv.size();
         featureArrSize = numFeatures * sizeof( int );
 
@@ -221,16 +219,11 @@ void Classifier::Classify( const vector<Item>& iv )
         }
     }
 
-    // Need to check error code.
-    MPI_Bcast( &featureArrSize, 1, MPI_UNSIGNED, 
-        MPI_ROOT_ID, MPI_COMM_WORLD );
-    MPI_Bcast( &numClasses, 1, MPI_UNSIGNED, 
-        MPI_ROOT_ID, MPI_COMM_WORLD );
-    MPI_Bcast( &numFeatures, 1, MPI_UNSIGNED, 
-        MPI_ROOT_ID, MPI_COMM_WORLD );
-    MPI_Bcast( &numItems, 1, MPI_UNSIGNED, 
-        MPI_ROOT_ID, MPI_COMM_WORLD );
-    MPI_Barrier( MPI_COMM_WORLD );
+    CheckMPIErr( MPI_Bcast( &featureArrSize, 1, MPI_UNSIGNED, 
+        MPI_ROOT_ID, MPI_COMM_WORLD ), mpiNodeId );
+    CheckMPIErr( MPI_Bcast( &numItems, 1, MPI_UNSIGNED, 
+        MPI_ROOT_ID, MPI_COMM_WORLD ), mpiNodeId );
+    CheckMPIErr( MPI_Barrier( MPI_COMM_WORLD ), mpiNodeId );
 
     if (mpiNodeId != MPI_ROOT_ID)
     {
@@ -239,11 +232,11 @@ void Classifier::Classify( const vector<Item>& iv )
             (unsigned short*) malloc( numItems * sizeof( unsigned short ) );
     }
 
-    MPI_Bcast( attrValueBuff, numItems * numFeatures, 
-        MPI_INT, MPI_ROOT_ID, MPI_COMM_WORLD );
-    MPI_Bcast( classIndexBuff, numItems, 
-        MPI_INT, MPI_ROOT_ID, MPI_COMM_WORLD );
-    MPI_Barrier( MPI_COMM_WORLD );
+    CheckMPIErr( MPI_Bcast( attrValueBuff, numItems * numFeatures, 
+        MPI_INT, MPI_ROOT_ID, MPI_COMM_WORLD ), mpiNodeId );
+    CheckMPIErr( MPI_Bcast( classIndexBuff, numItems, 
+        MPI_INT, MPI_ROOT_ID, MPI_COMM_WORLD ), mpiNodeId );
+    CheckMPIErr( MPI_Barrier( MPI_COMM_WORLD ), mpiNodeId );
 
     /**************** Convert back data format ****************/
     vector<Item> itemVecCopy;
@@ -269,11 +262,6 @@ void Classifier::Classify( const vector<Item>& iv )
     free( attrValueBuff );
     free( classIndexBuff );
 
-    /***************** Do reduction here ******************/
-
-
-
-    
     unsigned int correctCounter = 0;
     
     if (mpiNodeId == MPI_ROOT_ID)
@@ -337,6 +325,17 @@ int Classifier::Classify(
         votes[node->classIndex]++;
     }
 
+    /***************** Do reduction ******************/
+    //unsigned int* gatheredVotes = (unsigned int*) 
+    //    calloc( numClasses, sizeof( unsigned int ) );
+    
+    if (mpiNodeId == MPI_ROOT_ID)
+        MPI_Reduce( MPI_IN_PLACE, votes, numClasses, MPI_UNSIGNED, MPI_SUM, 
+            0, MPI_COMM_WORLD );
+    else
+        MPI_Reduce( votes, nullptr, numClasses, MPI_UNSIGNED, MPI_SUM, 
+            0, MPI_COMM_WORLD );
+    
     unsigned short classIndex = getIndexOfMax( votes, numClasses );
 
     free( votes );
