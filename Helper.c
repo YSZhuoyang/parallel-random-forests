@@ -4,8 +4,8 @@
 
 int MyHelper::Compare( const void* ele1, const void* ele2 )
 {
-    int f = *((int*)ele1);
-    int s = *((int*)ele2);
+    int f = *((int*) ele1);
+    int s = *((int*) ele2);
 
     if (f > s) return 1;
     if (f < s) return -1;
@@ -34,7 +34,11 @@ unsigned int MyHelper::getIndexOfMax(
     const unsigned int* uintArray, 
     const unsigned int length )
 {
-    if (uintArray == nullptr || length <= 0) return 0;
+    if (uintArray == nullptr || length <= 0)
+    {
+        printf( "Array must not be empty.\n" );
+        return 0;
+    }
 
     unsigned int indexOfMax = 0;
     unsigned int max = 0;
