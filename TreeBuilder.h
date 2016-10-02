@@ -6,6 +6,7 @@
 #include "Helper.h"
 
 #include <string.h>
+#include <omp.h>
 
 
 using namespace BasicDataStructures;

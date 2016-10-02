@@ -68,6 +68,7 @@ void Classifier::Train( const vector<Item>& iv )
             (unsigned short*) malloc( numItems * sizeof( unsigned short ) );
 
         // To be parallelized by openmp
+        #pragma omp parallel for schedule(static)
         for (unsigned int i = 0; i < numItems; i++)
         {
             unsigned int offset = numFeatures;
@@ -76,7 +77,6 @@ void Classifier::Train( const vector<Item>& iv )
         }
     }
 
-    // Need to check error code.
     CheckMPIErr( MPI_Bcast( &featureArrSize, 1, MPI_UNSIGNED, 
         MPI_ROOT_ID, MPI_COMM_WORLD ), mpiNodeId );
     CheckMPIErr( MPI_Bcast( &numClasses, 1, MPI_UNSIGNED, 
@@ -111,6 +111,7 @@ void Classifier::Train( const vector<Item>& iv )
     {
         itemVecCopy.reserve( numItems );
 
+        #pragma omp parallel for schedule(static)
         for (unsigned int i = 0; i < numItems; i++)
         {
             Item item;
@@ -141,6 +142,7 @@ void Classifier::Train( const vector<Item>& iv )
 
     if (mpiNodeId == MPI_ROOT_ID)
     {
+        #pragma omp parallel for schedule(dynamic)
         for (unsigned int i = 0; i < chunkSize; i++)
         {
             unsigned int treeIndex = startIndex + i;
@@ -156,6 +158,7 @@ void Classifier::Train( const vector<Item>& iv )
     }
     else
     {
+        #pragma omp parallel for schedule(dynamic)
         for (unsigned int i = 0; i < chunkSize; i++)
         {
             unsigned int treeIndex = startIndex + i;
@@ -211,6 +214,7 @@ void Classifier::Classify( const vector<Item>& iv )
             (unsigned short*) malloc( numItems * sizeof( unsigned short ) );
 
         // To be parallelized with openmp
+        #pragma omp parallel for schedule(static)
         for (unsigned int i = 0; i < numItems; i++)
         {
             unsigned int offset = numFeatures;
@@ -245,6 +249,7 @@ void Classifier::Classify( const vector<Item>& iv )
     {
         itemVecCopy.reserve( numItems );
 
+        #pragma omp parallel for schedule(static)
         for (unsigned int i = 0; i < numItems; i++)
         {
             Item item;
@@ -268,15 +273,18 @@ void Classifier::Classify( const vector<Item>& iv )
     
     if (mpiNodeId == MPI_ROOT_ID)
     {
+        #pragma omp parallel for schedule(dynamic)
         for (unsigned int i = 0; i < numItems; i++)
             Classify( iv[i], votes, i );
     }
     else
     {
+        #pragma omp parallel for schedule(dynamic)
         for (unsigned int i = 0; i < numItems; i++)
             Classify( itemVecCopy[i], votes, i );
         
         // Free data copy
+        //#pragma omp parallel for schedule(dynamic)
         for (Item& item : itemVecCopy) free( item.featureAttrArray );
         itemVecCopy.clear();
     }
@@ -293,6 +301,7 @@ void Classifier::Classify( const vector<Item>& iv )
     if (mpiNodeId == MPI_ROOT_ID)
     {
         // To be parallelized by mpi
+        #pragma omp parallel for reduction(+: correctCounter) schedule(static)
         for (unsigned int i = 0; i < numItems; i++)
         {
             unsigned short predictedClassIndex = 

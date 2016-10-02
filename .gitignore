@@ -2,3 +2,4 @@
 *.h.gch
 *.o
 exec
+submit.sh

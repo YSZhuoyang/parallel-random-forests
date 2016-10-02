@@ -73,6 +73,8 @@ TreeNode* TreeBuilder::Split(
     vector<vector<Item>> selectedChildren;
 
     // Find the best split feature and threshold
+    // To be parallelized with openmp
+    #pragma omp parallel for schedule(dynamic)
     for (unsigned int index = 0; index < numFeatures; index++)
     {
         unsigned int i = featureIndexArray[index];
@@ -107,6 +109,7 @@ TreeNode* TreeBuilder::Split(
             }
 
             // Get max gini split and related feature
+            #pragma omp critical
             if (giniSplitMax < giniSplit)
             {
                 giniSplitMax = giniSplit;
