@@ -22,9 +22,10 @@ public:
 
 private:
     // Return the index of the predicted class
-    int Classify(
+    void Classify(
         const Item& item, 
-        const unsigned int numClasses );
+        unsigned int* votes, 
+        unsigned int index );
 
     vector<char*> classVec;
     vector<NumericAttr> featureVec;

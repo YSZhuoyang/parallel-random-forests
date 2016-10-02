@@ -263,23 +263,47 @@ void Classifier::Classify( const vector<Item>& iv )
     free( classIndexBuff );
 
     unsigned int correctCounter = 0;
+    unsigned int* votes = (unsigned int*) 
+        calloc( numClasses * numItems, sizeof( unsigned int ) );
     
     if (mpiNodeId == MPI_ROOT_ID)
     {
-        for (const Item& item : iv)
-            if (Classify( item, numClasses ) == item.classIndex)
-                correctCounter++;
+        for (unsigned int i = 0; i < numItems; i++)
+            Classify( iv[i], votes, i );
     }
     else
     {
-        for (const Item& item : itemVecCopy)
-            if (Classify( item, numClasses ) == item.classIndex)
-                correctCounter++;
-
+        for (unsigned int i = 0; i < numItems; i++)
+            Classify( itemVecCopy[i], votes, i );
+        
         // Free data copy
         for (Item& item : itemVecCopy) free( item.featureAttrArray );
         itemVecCopy.clear();
     }
+
+    /************************** Do reduction *************************/
+    if (mpiNodeId == MPI_ROOT_ID)
+        MPI_Reduce( MPI_IN_PLACE, votes, numClasses, MPI_UNSIGNED, MPI_SUM, 
+            0, MPI_COMM_WORLD );
+    else
+        MPI_Reduce( votes, nullptr, numClasses, MPI_UNSIGNED, MPI_SUM, 
+            0, MPI_COMM_WORLD );
+    
+    /************************ Compute accuracy ************************/
+    if (mpiNodeId == MPI_ROOT_ID)
+    {
+        // To be parallelized by mpi
+        for (unsigned int i = 0; i < numItems; i++)
+        {
+            unsigned short predictedClassIndex = 
+                getIndexOfMax( votes + i * numClasses, numClasses );
+            if (predictedClassIndex == iv[i].classIndex)
+                correctCounter++;
+        }
+    }
+
+    free( votes );
+    votes = nullptr;
 
     float correctRate = (float) correctCounter / (float) numItems;
     float incorrectRate = 1.0f - correctRate;
@@ -288,13 +312,11 @@ void Classifier::Classify( const vector<Item>& iv )
     printf( "Incorrect rate: %f\n", incorrectRate );
 }
 
-int Classifier::Classify(
+void Classifier::Classify(
     const Item& item, 
-    const unsigned int numClasses )
+    unsigned int* votes, 
+    unsigned int index )
 {
-    unsigned int* votes = (unsigned int*) 
-        calloc( numClasses, sizeof( unsigned int ) );
-
     for (const TreeNode* node : rootVec)
     {
         if (node == nullptr) continue;
@@ -322,24 +344,6 @@ int Classifier::Classify(
             }
         }
 
-        votes[node->classIndex]++;
+        votes[index * numClasses + node->classIndex]++;
     }
-
-    /***************** Do reduction ******************/
-    //unsigned int* gatheredVotes = (unsigned int*) 
-    //    calloc( numClasses, sizeof( unsigned int ) );
-    
-    if (mpiNodeId == MPI_ROOT_ID)
-        MPI_Reduce( MPI_IN_PLACE, votes, numClasses, MPI_UNSIGNED, MPI_SUM, 
-            0, MPI_COMM_WORLD );
-    else
-        MPI_Reduce( votes, nullptr, numClasses, MPI_UNSIGNED, MPI_SUM, 
-            0, MPI_COMM_WORLD );
-    
-    unsigned short classIndex = getIndexOfMax( votes, numClasses );
-
-    free( votes );
-    votes = nullptr;
-
-    return classIndex;
 }
