@@ -3,6 +3,7 @@
 #define _HELPER_H_
 
 #include <stdlib.h>
+#include <stdio.h>
 
 
 namespace MyHelper

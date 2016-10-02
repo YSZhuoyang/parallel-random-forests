@@ -6,8 +6,6 @@
 #include "BasicDataStructures.h"
 #include "Helper.h"
 
-#include <stdio.h>
-
 
 using namespace BasicDataStructures;
 using namespace MyHelper;

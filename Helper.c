@@ -55,6 +55,12 @@ void MyHelper::randomizeArray(
     unsigned int* arr, 
     const unsigned int length )
 {
+    if (arr == nullptr || length < 1)
+    {
+        printf( "Empty array to randomize or incorrect length.\n" );
+        return;
+    }
+
     for (unsigned int i = length - 1; i > 0; i--)
     {
         unsigned int randPos = rand() % (i + 1);
