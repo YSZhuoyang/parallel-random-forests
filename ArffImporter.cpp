@@ -55,8 +55,8 @@ void ArffImporter::Read( const char* fileName )
             // Read feature names
             if (StrEqual( featureType, KEYWORD_NUMERIC ))
             {
-                printf( "Feature name: %s, length: %d \n", 
-                    featureName, GetStrLength( featureName ) );
+                //printf( "Feature name: %s, length: %d \n", 
+                //    featureName, GetStrLength( featureName ) );
 
                 NumericAttr feature;
                 feature.name       = featureName;
@@ -78,7 +78,7 @@ void ArffImporter::Read( const char* fileName )
                 
                 while (sscanf( featureType, "%[^,}]%n", className, &readSize ) > 0)
                 {
-                    printf( "Class name: %s \n", className );
+                    //printf( "Class name: %s \n", className );
 
                     classVec.push_back( className );
                     className = (char*) malloc( TOKEN_LENGTH_MAX );
