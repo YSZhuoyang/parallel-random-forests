@@ -8,7 +8,7 @@
 class Classifier
 {
 #define MPI_ROOT_ID 0
-#define NUM_FEATURES_PER_TREE 10
+#define NUM_FEATURES_PER_TREE 100
 
 public:
     Classifier(
@@ -29,8 +29,6 @@ private:
 
     vector<char*> classVec;
     vector<NumericAttr> featureVec;
-    
-    TreeBuilder treeBuilder;
     vector<TreeNode*> rootVec;
 
     unsigned int numFeatures = 0;
