@@ -22,8 +22,6 @@ public:
     ~TreeBuilder();
 
     void Init(
-        //const vector<NumericAttr>& fv, 
-        //const vector<char*>& cv, 
         const unsigned int nc, 
         const unsigned int nf );
     void BuildTree(
@@ -43,9 +41,6 @@ private:
         unsigned int height );
     float ComputeGini( const vector<Item>& iv );
     void LabelNode( TreeNode* node, const vector<Item>& iv );
-
-    vector<char*> classVec;
-    vector<NumericAttr> featureVec;
 
     unsigned int numFeatures;
     unsigned short numClasses;
