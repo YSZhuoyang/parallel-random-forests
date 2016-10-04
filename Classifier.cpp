@@ -27,6 +27,8 @@ Classifier::Classifier(
 
 Classifier::~Classifier()
 {
+    TreeBuilder treeBuilder;
+
     // Destory trees
     for (TreeNode* root : rootVec) treeBuilder.DestroyNode( root );
     rootVec.clear();
@@ -39,22 +41,17 @@ Classifier::~Classifier()
 void Classifier::Train( const vector<Item>& iv )
 {
     /******************* Prepare buffer *******************/
-    unsigned int* randomIndices;
+    unsigned int* randomIndices = 
+            (unsigned int*) malloc( numFeatures * sizeof( unsigned int ) );
     
     /************ Broadcast data to other nodes ***********/
     if (mpiNodeId == MPI_ROOT_ID)
     {
         // Randomly select features and build trees.
         // Generate an ordered index container, and disorder it.
-        randomIndices = 
-            (unsigned int*) malloc( numFeatures * sizeof( unsigned int ) );
         for (unsigned int i = 0; i < numFeatures; i++) randomIndices[i] = i;
         RandomizeArray( randomIndices, numFeatures );
     }
-
-    if (mpiNodeId != MPI_ROOT_ID)
-        randomIndices = 
-            (unsigned int*) malloc( numFeatures * sizeof( unsigned int ) );
 
     CheckMPIErr( MPI_Bcast( randomIndices, numFeatures, 
         MPI_UNSIGNED, MPI_ROOT_ID, MPI_COMM_WORLD ), mpiNodeId );
@@ -68,8 +65,7 @@ void Classifier::Train( const vector<Item>& iv )
     printf( "Node %d constructed %u trees.\n", mpiNodeId, chunkSize );
 
     rootVec.reserve( chunkSize );
-    treeBuilder.Init( numClasses, NUM_FEATURES_PER_TREE );
-
+    
     #pragma omp parallel for schedule(dynamic)
     for (unsigned int i = 0; i < chunkSize; i++)
     {
@@ -80,7 +76,11 @@ void Classifier::Train( const vector<Item>& iv )
             randomIndices + treeIndex * NUM_FEATURES_PER_TREE, 
             NUM_FEATURES_PER_TREE * sizeof( unsigned int ) );
 
+        TreeBuilder treeBuilder;
+        treeBuilder.Init( numClasses, NUM_FEATURES_PER_TREE );
         treeBuilder.BuildTree( iv, featureIndexArr );
+
+        #pragma omp critical
         rootVec.push_back( treeBuilder.GetRoot() );
     }
 
