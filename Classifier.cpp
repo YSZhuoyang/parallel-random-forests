@@ -50,6 +50,7 @@ void Classifier::Train(
     rootVec.reserve( numTrees );
     treeBuilder.Init( fv, cv, NUM_FEATURES_PER_TREE );
     
+    #pragma omp parallel for schedule(dynamic)
     for (unsigned int treeIndex = 0; treeIndex < numTrees; treeIndex++)
     {
         /************** Use randomly disordered array **************/
@@ -65,6 +66,8 @@ void Classifier::Train(
             sampleWithoutRep( randomIndices, NUM_FEATURES_PER_TREE, numRest );
 
         treeBuilder.BuildTree( iv, featureIndexArr );
+
+        #pragma omp critical
         rootVec.push_back( treeBuilder.GetRoot() );
     }
 
@@ -83,8 +86,9 @@ void Classifier::Classify( const vector<Item>& iv )
     unsigned int correctCounter = 0;
     unsigned int totalNumber = iv.size();
 
-    for (const Item& item : iv)
-        if (Classify( item ) == item.classIndex) correctCounter++;
+    #pragma omp parallel for reduction(+: correctCounter) schedule(dynamic)
+    for (unsigned int i = 0; i < totalNumber; i++)
+        if (Classify( iv[i] ) == iv[i].classIndex) correctCounter++;
 
     float correctRate = (float) correctCounter / (float) totalNumber;
     float incorrectRate = 1.0f - correctRate;
