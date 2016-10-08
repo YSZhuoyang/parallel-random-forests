@@ -29,9 +29,9 @@ namespace BasicDataStructures
     {
         float gini;
         float giniSplit;
+        int classIndex;
         int threshold;
         unsigned int featureIndex;
-        int classIndex;
         vector<TreeNode*> childrenVec;
     };
 }
