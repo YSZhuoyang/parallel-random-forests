@@ -62,7 +62,7 @@ void Classifier::Train(
         
         /******************** Use random sampler *******************/
         unsigned int* featureIndexArr = 
-            sampleWithoutRep( randomIndices, NUM_FEATURES_PER_TREE, numRest );
+            sampleWithRep( randomIndices, NUM_FEATURES_PER_TREE, numRest );
 
         treeBuilder.BuildTree( iv, featureIndexArr );
         rootVec.push_back( treeBuilder.GetRoot() );
