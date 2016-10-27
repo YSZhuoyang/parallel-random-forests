@@ -33,7 +33,6 @@ void Classifier::Train(
     unsigned int* randomIndices = 
         (unsigned int*) malloc( numFeatures * sizeof( unsigned int ) );
     for (unsigned int i = 0; i < numFeatures; i++) randomIndices[i] = i;
-    unsigned int numRest = numFeatures;
     
     /**** Generate an ordered index container, and disorder it. ****/
 
@@ -62,7 +61,7 @@ void Classifier::Train(
         
         /******************** Use random sampler *******************/
         unsigned int* featureIndexArr = 
-            sampleWithRep( randomIndices, NUM_FEATURES_PER_TREE, numRest );
+            sampleWithRep( randomIndices, NUM_FEATURES_PER_TREE, numFeatures );
 
         treeBuilder.BuildTree( iv, featureIndexArr );
         rootVec.push_back( treeBuilder.GetRoot() );

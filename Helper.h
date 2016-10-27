@@ -21,7 +21,7 @@ namespace MyHelper
     unsigned int* sampleWithRep(
         unsigned int* container, 
         const unsigned int numSamples, 
-        unsigned int& numRest );
+        const unsigned int numTotal );
     void randomizeArray(
         unsigned int* arr, 
         const unsigned int length );

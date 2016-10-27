@@ -54,25 +54,21 @@ unsigned int MyHelper::getIndexOfMax(
 unsigned int* MyHelper::sampleWithRep(
     unsigned int* container, 
     const unsigned int numSamples, 
-    unsigned int& numRest )
+    const unsigned int numTotal )
 {
-    if (numSamples <= 0 || numRest <= 0)
+    if (numSamples <= 0 || numTotal < numSamples)
     {
         printf( "Number of samples and number of the rest elements must be greater than 0\n" );
 
         return nullptr;
     }
-    else if (numSamples > numRest)
-    {
-        numRest = numSamples;
-    }
 
     unsigned int* sampleArr = (unsigned int*)
         malloc( numSamples * sizeof( unsigned int ) );
     unsigned int sampleIndex = 0;
-    unsigned int newNumRest = numRest - numSamples;
+    unsigned int numRest = numTotal - numSamples;
 
-    for (unsigned int i = numRest - 1; i > newNumRest; i--)
+    for (unsigned int i = numTotal - 1; i >= numRest; i--)
     {
         unsigned int randPos = rand() % (i + 1);
 
@@ -83,8 +79,6 @@ unsigned int* MyHelper::sampleWithRep(
 
         sampleArr[sampleIndex++] = container[i];
     }
-
-    numRest = newNumRest;
 
     return sampleArr;
 }
