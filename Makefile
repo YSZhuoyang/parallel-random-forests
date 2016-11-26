@@ -3,14 +3,14 @@
 ################################ Macros #################################
 
 SHELL = /bin/sh
-CFLAGS = -g -std=c++11 -Wall
+CFLAGS = -g -std=c++11 -Wall -fPIC
 CC = g++
 OBJECTS = Helper.o ArffImporter.o TreeBuilder.o Classifier.o
 
 ################################ Compile ################################
 
-exec: ${OBJECTS} Main.c
-	$(CC) ${CFLAGS} -o $@ ${OBJECTS} Main.c
+libRF.so: ${OBJECTS} Main.c
+	$(CC) ${CFLAGS} -shared -o $@ ${OBJECTS} Main.c
 
 Helper.o: Helper.c Helper.h
 	$(CC) ${CFLAGS} -c Helper.c
