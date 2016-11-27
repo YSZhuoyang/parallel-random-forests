@@ -2,3 +2,5 @@
 *.h.gch
 *.o
 *.so
+*.pyc
+/flask

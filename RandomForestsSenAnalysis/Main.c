@@ -5,7 +5,7 @@
 
 extern "C"
 {
-    void invoke( int numTrees )
+    void trainAndTest( int numTrees )
     {
         ArffImporter trainSetImporter;
         trainSetImporter.Read( "Dataset/train/train-first1000.arff" );
