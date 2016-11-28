@@ -1,5 +1,5 @@
 #!flask/bin/python
-"""Wrap and expose API interfaces of learning algorithms."""
+"""Wrap and expose API interfaces for sentiment analysis."""
 
 from flask import Flask
 from RandomForestsSenAnalysis import invoke_rf_test, invoke_rf_train
