@@ -2,15 +2,23 @@
 """Wrap and expose API interfaces of learning algorithms."""
 
 from flask import Flask
-from RandomForestsSenAnalysis import invoke_rf
+from RandomForestsSenAnalysis import invoke_rf_test, invoke_rf_train
 
 APP = Flask(__name__)
 
-@APP.route('/rf')
+@APP.route('/rf_train')
 
-def rf():
-    invoke_rf(1)
-    return 'rf finished'
+def rf_train():
+    """Random forest training api."""
+    invoke_rf_train(5)
+    return 'rf training finished'
+
+@APP.route('/rf_test')
+
+def rf_test():
+    """Random forest test api."""
+    invoke_rf_test()
+    return 'rf test finished'
 
 if __name__ == '__main__':
     APP.run(debug=True)
