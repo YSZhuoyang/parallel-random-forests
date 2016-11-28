@@ -1,10 +1,7 @@
 .vscode/
 *.h.gch
 *.o
-*.so
 *.pyc
-model.serial
-/flask
 
 # Elastic Beanstalk Files
 .elasticbeanstalk/*
