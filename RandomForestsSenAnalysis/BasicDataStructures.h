@@ -3,7 +3,8 @@
 #define _BASIC_DATA_STRUCTURES_H_
 
 #include <vector>
-
+#include <boost/serialization/vector.hpp>
+#include <boost/serialization/access.hpp>
 
 using namespace std;
 
@@ -33,6 +34,21 @@ namespace BasicDataStructures
         int threshold;
         int classIndex;
         vector<TreeNode*> childrenVec;
+
+        // Serialization
+        friend class boost::serialization::access;
+        template<class Archive>
+        void serialize(
+            Archive &ar,
+            const unsigned int version )
+        {
+            ar & gini;
+            ar & giniSplit;
+            ar & featureIndex;
+            ar & threshold;
+            ar & classIndex;
+            ar & childrenVec;
+        }
     };
 }
 

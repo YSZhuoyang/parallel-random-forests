@@ -30,16 +30,16 @@ void Classifier::Train(
     
     /********************** Use random sampler *********************/
     
-    unsigned int* randomIndices = 
+    /*unsigned int* randomIndices = 
         (unsigned int*) malloc( numFeatures * sizeof( unsigned int ) );
-    for (unsigned int i = 0; i < numFeatures; i++) randomIndices[i] = i;
+    for (unsigned int i = 0; i < numFeatures; i++) randomIndices[i] = i;*/
     
     /**** Generate an ordered index container, and disorder it. ****/
 
-    /*unsigned int* randomIndices = 
+    unsigned int* randomIndices = 
         (unsigned int*) malloc( numFeatures * sizeof( unsigned int ) );
     for (unsigned int i = 0; i < numFeatures; i++) randomIndices[i] = i;
-    randomizeArray( randomIndices, numFeatures );*/
+    randomizeArray( randomIndices, numFeatures );
 
     /******************** Init tree constructer ********************/
 
@@ -53,15 +53,15 @@ void Classifier::Train(
     {
         /************** Use randomly disordered array **************/
 
-        /*unsigned int* featureIndexArr = (unsigned int*) 
+        unsigned int* featureIndexArr = (unsigned int*) 
             malloc( NUM_FEATURES_PER_TREE * sizeof( unsigned int ) );
         memcpy( featureIndexArr, 
             randomIndices + treeIndex * NUM_FEATURES_PER_TREE, 
-            NUM_FEATURES_PER_TREE * sizeof( unsigned int ) );*/
+            NUM_FEATURES_PER_TREE * sizeof( unsigned int ) );
         
         /******************** Use random sampler *******************/
-        unsigned int* featureIndexArr = 
-            sampleWithRep( randomIndices, NUM_FEATURES_PER_TREE, numFeatures );
+        /*unsigned int* featureIndexArr = 
+            sampleWithRep( randomIndices, NUM_FEATURES_PER_TREE, numFeatures );*/
 
         treeBuilder.BuildTree( iv, featureIndexArr );
         rootVec.push_back( treeBuilder.GetRoot() );
@@ -69,18 +69,27 @@ void Classifier::Train(
 
     free( randomIndices );
     randomIndices = nullptr;
+
+    SaveModel();
 }
 
-void Classifier::Classify( const vector<Item>& iv )
+void Classifier::Classify(
+    const vector<Item>& iv, 
+    const vector<char*>& cv )
 {
-    if (classVec.empty())
+    if (rootVec.empty())
     {
-        printf( "Please train the model first.\n" );
-        return;
+        LoadModel();
+        //printf( "Please train the model first.\n" );
+        //return;
     }
 
     unsigned int correctCounter = 0;
     unsigned int totalNumber = iv.size();
+
+    printf( "Test set size: %u\n", totalNumber );
+
+    classVec = cv;
 
     for (const Item& item : iv)
         if (Classify( item ) == item.classIndex) correctCounter++;
@@ -134,4 +143,45 @@ int Classifier::Classify( const Item& item )
     votes = nullptr;
 
     return classIndex;
+}
+
+void Classifier::SaveModel()
+{
+    std::ofstream ofs( MODEL_FILE_PATH );
+    
+    if (ofs.good())
+    {
+        boost::archive::text_oarchive oa{ ofs };
+        oa << rootVec;
+    }
+    else
+    {
+        printf( "Output stream is in an error state, saving model failed\n" );
+    }
+
+    ofs.flush();
+    ofs.close();
+}
+
+void Classifier::LoadModel()
+{
+    if (!rootVec.empty())
+    {
+        printf( "Model loaded already!" );
+        return;
+    }
+
+    std::ifstream ifs( MODEL_FILE_PATH );
+
+    if (ifs.good())
+    {
+        boost::archive::text_iarchive ia{ ifs };
+        ia >> rootVec;
+    }
+    else
+    {
+        printf( "Input stream is in an error state, loading model failed\n" );
+    }
+
+    ifs.close();
 }

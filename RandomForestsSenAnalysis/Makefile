@@ -10,7 +10,7 @@ OBJECTS = Helper.o ArffImporter.o TreeBuilder.o Classifier.o
 ################################ Compile ################################
 
 libRF.so: ${OBJECTS} Main.c
-	$(CC) ${CFLAGS} -shared -o $@ ${OBJECTS} Main.c
+	$(CC) ${CFLAGS} -shared -o $@ ${OBJECTS} Main.c -lboost_serialization
 
 Helper.o: Helper.c Helper.h
 	$(CC) ${CFLAGS} -c Helper.c
@@ -27,4 +27,4 @@ Classifier.o: Classifier.cpp Classifier.h TreeBuilder.h
 ################################# Clean #################################
 
 clean:
-	-rm -f *.o *.h.gch *.so
+	-rm -f *.o *.h.gch *.so model.serial

@@ -5,20 +5,27 @@
 
 extern "C"
 {
-    void trainAndTest( int numTrees )
+    void Train( int numTrees )
     {
         ArffImporter trainSetImporter;
-        trainSetImporter.Read( "Dataset/train/train-first1000.arff" );
-
-        ArffImporter testSetImporter;
-        testSetImporter.Read( "Dataset/test/dev-first1000.arff" );
+        trainSetImporter.Read( "RandomForestsSenAnalysis/Dataset/train/train-first50.arff" );
 
         Classifier classifier;
         classifier.Train(
             trainSetImporter.GetItems(), 
             trainSetImporter.GetFeatures(), 
             trainSetImporter.GetClassAttr() );
-        classifier.Classify( testSetImporter.GetItems() );
+    }
+
+    void Test()
+    {
+        ArffImporter testSetImporter;
+        testSetImporter.Read( "RandomForestsSenAnalysis/Dataset/test/dev-first50.arff" );
+
+        Classifier classifier;
+        classifier.Classify(
+            testSetImporter.GetItems(), 
+            testSetImporter.GetClassAttr() );
     }
 }
 

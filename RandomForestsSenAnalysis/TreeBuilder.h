@@ -28,6 +28,7 @@ public:
     void BuildTree(
         const vector<Item>& iv, 
         unsigned int* featureIndexArr );
+    //void Serialize( const TreeNode* iter );
     void PrintTree( const TreeNode* iter );
     void DestroyNode( TreeNode* node );
     TreeNode* GetRoot();

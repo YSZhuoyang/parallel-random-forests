@@ -8,10 +8,11 @@ import ctypes
 # controller file which is under its parent dir.
 PATH = os.path.abspath("RandomForestsSenAnalysis/libRF.so")
 RANDOM_FORESTS = ctypes.CDLL(PATH)
-RANDOM_FORESTS.trainAndTest.argtypes = [ctypes.c_int]
+RANDOM_FORESTS.Train.argtypes = [ctypes.c_int]
+RANDOM_FORESTS.Test.argtypes = []
 
 def invoke_rf(num_trees):
     """Call random forest component interface."""
-    print PATH
-    #RANDOM_FORESTS.trainAndTest(ctypes.c_int(num_trees))
+    RANDOM_FORESTS.Train(ctypes.c_int(num_trees))
+    RANDOM_FORESTS.Test()
 
