@@ -1,11 +1,18 @@
 # Parallelized Random Forests
 A parallelized version of random forests learning algorithm.
-* Boost is used for saving trained model by object serialization
+* Boost serialization is used for saving trained model by object serializing.
 
-## Build
+## Install flask with virtualenv
+* Run:
+        sudo apt install python3-pip
+        sudo pip3 install virtualenv
+        virtualenv -p python3 venv
+        source venv/bin/activate
+        pip3 install flask
+
+## Build components
 * Install boost on Ubuntu: run 'sudo apt install libboost-serialization-dev'
-* Under root dir run 'python3 -m venv flask'
-* Under each module directories, run 'make' to compile C lib files
+* Under each module directories, run 'make' to compile C shared lib files
 
 ## Author
 * Oscar Yu
