@@ -4,14 +4,26 @@ A parallelized version of random forests learning algorithm.
 
 ## Install flask with virtualenv
 * Run:
+
         sudo apt install python3-pip
         sudo pip3 install virtualenv
         virtualenv -p python3 venv
         source venv/bin/activate
         pip3 install flask
 
-## Build components
+## Deploy locally
 * Install boost on Ubuntu: run 'sudo apt install libboost-serialization-dev'
+
+## Deploy on aws elastic beanstalk
+* Create a folder named '.ebextensions' under root dir
+* Cd to '.ebextensions', create a config file named '.config'
+* Add following to '.config' file:
+
+        packages:
+          apt:
+            libboost-serialization-dev: []'
+
+## Build components
 * Under each module directories, run 'make' to compile C shared lib files
 
 ## Author
