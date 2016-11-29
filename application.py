@@ -2,7 +2,7 @@
 """Wrap and expose API interfaces for sentiment analysis."""
 
 from flask import Flask
-#from RandomForestsSenAnalysis import invoke_rf_test, invoke_rf_train
+from RandomForestsSenAnalysis import invoke_rf_test, invoke_rf_train
 
 application = Flask(__name__)
 
@@ -10,14 +10,14 @@ application = Flask(__name__)
 
 def index():
     """Random forest test api."""
-    #invoke_rf_test()
+    invoke_rf_test()
     return 'rf test finished'
 
 @application.route('/rf_train')
 
 def rf_train():
     """Random forest training api."""
-    #invoke_rf_train(5)
+    invoke_rf_train(5)
     return 'rf training finished'
 
 if __name__ == '__main__':
