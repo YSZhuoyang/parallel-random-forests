@@ -27,4 +27,4 @@ Classifier.o: Classifier.cpp Classifier.h TreeBuilder.h
 ################################# Clean #################################
 
 clean:
-	-rm -f *.o *.h.gch *.so
+	-rm -f *.o *.h.gch *.so model.serial *.pyc

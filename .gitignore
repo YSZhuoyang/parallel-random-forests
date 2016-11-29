@@ -3,6 +3,7 @@
 *.o
 *.pyc
 *.so
+model.serial
 
 # Elastic Beanstalk Files
 .elasticbeanstalk/*

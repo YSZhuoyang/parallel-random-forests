@@ -19,9 +19,15 @@ A parallelized version of random forests learning algorithm.
 * Cd to '.ebextensions', create a config file named '.config'
 * Add following to '.config' file:
 
+
+        container_commands:
+          01-command:
+            command: "cd $(find . -name RandomForestsSenAnalysis) && sudo make"
+
         packages:
           yum:
-            boost-devel: []'
+            gcc-c++: []
+            boost-devel: []
 
 ## Build components
 * Under each module directories, run 'make' to compile C shared lib files
