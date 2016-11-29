@@ -20,8 +20,8 @@ A parallelized version of random forests learning algorithm.
 * Add following to '.config' file:
 
         packages:
-          apt:
-            libboost-serialization-dev: []'
+          yum:
+            boost-devel: []'
 
 ## Build components
 * Under each module directories, run 'make' to compile C shared lib files
