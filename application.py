@@ -4,16 +4,16 @@
 from flask import Flask
 #from RandomForestsSenAnalysis import invoke_rf_test, invoke_rf_train
 
-APP = Flask(__name__)
+application = Flask(__name__)
 
-@APP.route('/')
+@application.route('/')
 
 def index():
     """Random forest test api."""
     #invoke_rf_test()
     return 'rf test finished'
 
-@APP.route('/rf_train')
+@application.route('/rf_train')
 
 def rf_train():
     """Random forest training api."""
@@ -21,5 +21,5 @@ def rf_train():
     return 'rf training finished'
 
 if __name__ == '__main__':
-    APP.run(debug=True)
+    application.run(debug=True)
 
