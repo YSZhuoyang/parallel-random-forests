@@ -2,6 +2,7 @@
 *.h.gch
 *.o
 *.pyc
+*.so
 
 # Elastic Beanstalk Files
 .elasticbeanstalk/*
