@@ -13,6 +13,58 @@ int MyHelper::Compare( const void* ele1, const void* ele2 )
     return 0;
 }
 
+Item MyHelper::Tokenize(
+    const char* str, 
+    const vector<NumericAttr>& featureVec )
+{
+    unsigned int numFeatures = featureVec.size();
+    Item item;
+    item.featureAttrArray = 
+        (int*) malloc( numFeatures * sizeof( unsigned int ) );
+
+    unsigned int iter = 0;
+
+    while (str[iter] != '\0')
+    {
+        unsigned int startIndex = iter;
+
+        while (!IsDelimiter( str[iter] ))
+            iter++;
+
+        // Found a token
+        if (iter > startIndex)
+        {
+            unsigned int tokenLen = iter - startIndex;
+
+            // Compare the token with every feature name
+            // Might use a hashmap (with key: name, value: index) 
+            // to speed up
+            for (unsigned int feaIndex = 0;
+                feaIndex < numFeatures; feaIndex++)
+            {
+                const char* feaName = featureVec[feaIndex].name;
+
+                unsigned index = 0;
+                while (index < tokenLen && feaName[index] != '\0'
+                    && feaName[index] == str[startIndex + index])
+                    index++;
+                
+                if (index == tokenLen && feaName[index] == '\0')
+                    item.featureAttrArray[feaIndex]++;
+            }
+        }
+
+        iter++;
+    }
+
+    return item;
+}
+
+bool MyHelper::IsDelimiter( const char c )
+{
+    return (c == ' ' || c == '\r' || c == '\n' || c == '\t');
+}
+
 bool MyHelper::StrEqual( const char* str1, const char* str2 )
 {
     unsigned short i = 0;
