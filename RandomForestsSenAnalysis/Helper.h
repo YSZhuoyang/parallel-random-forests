@@ -18,6 +18,9 @@ namespace MyHelper
     unsigned int getIndexOfMax(
         const unsigned int* uintArray, 
         const unsigned int length );
+    // Consume a sorted array, remove duplicates in place, 
+    // and return the number of unique elements.
+    int removeDuplicates( int* sortedArr, unsigned int length );
     unsigned int* sampleWithRep(
         unsigned int* container, 
         const unsigned int numSamples, 

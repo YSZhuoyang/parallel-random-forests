@@ -51,6 +51,26 @@ unsigned int MyHelper::getIndexOfMax(
     return indexOfMax;
 }
 
+int MyHelper::removeDuplicates(
+    int* sortedArr, 
+    unsigned int length )
+{
+    if (sortedArr == nullptr) return 0;
+
+    unsigned int uniqueId = 1;
+    unsigned int iter = 1;
+
+    while (iter < length)
+    {
+        if (sortedArr[iter - 1] != sortedArr[iter])
+            sortedArr[uniqueId++] = sortedArr[iter];
+
+        iter++;
+    }
+
+    return uniqueId;
+}
+
 unsigned int* MyHelper::sampleWithRep(
     unsigned int* container, 
     const unsigned int numSamples, 
@@ -58,7 +78,7 @@ unsigned int* MyHelper::sampleWithRep(
 {
     if (numSamples <= 0 || numTotal < numSamples)
     {
-        printf( "Number of samples and number of the rest elements must be greater than 0\n" );
+        printf( "Number of samples must be greater than 0 and total number\n" );
 
         return nullptr;
     }
