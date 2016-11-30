@@ -51,28 +51,44 @@ unsigned int MyHelper::getIndexOfMax(
     return indexOfMax;
 }
 
-unsigned int* MyHelper::sampleWithoutRep(
+int MyHelper::removeDuplicates(
+    int* sortedArr, 
+    unsigned int length )
+{
+    if (sortedArr == nullptr) return 0;
+
+    unsigned int uniqueId = 1;
+    unsigned int iter = 1;
+
+    while (iter < length)
+    {
+        if (sortedArr[iter - 1] != sortedArr[iter])
+            sortedArr[uniqueId++] = sortedArr[iter];
+
+        iter++;
+    }
+
+    return uniqueId;
+}
+
+unsigned int* MyHelper::sampleWithRep(
     unsigned int* container, 
     const unsigned int numSamples, 
-    unsigned int& numRest )
+    const unsigned int numTotal )
 {
-    if (numSamples <= 0 || numRest <= 0)
+    if (numSamples <= 0 || numTotal < numSamples)
     {
-        printf( "Number of samples and number of the rest elements must be greater than 0\n" );
+        printf( "Number of samples must be greater than 0 and total number\n" );
 
         return nullptr;
-    }
-    else if (numSamples > numRest)
-    {
-        numRest = numSamples;
     }
 
     unsigned int* sampleArr = (unsigned int*)
         malloc( numSamples * sizeof( unsigned int ) );
     unsigned int sampleIndex = 0;
-    unsigned int newNumRest = numRest - numSamples;
+    unsigned int numRest = numTotal - numSamples;
 
-    for (unsigned int i = numRest - 1; i > newNumRest; i--)
+    for (unsigned int i = numTotal - 1; i >= numRest; i--)
     {
         unsigned int randPos = rand() % (i + 1);
 
@@ -83,8 +99,6 @@ unsigned int* MyHelper::sampleWithoutRep(
 
         sampleArr[sampleIndex++] = container[i];
     }
-
-    numRest = newNumRest;
 
     return sampleArr;
 }

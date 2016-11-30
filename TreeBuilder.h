@@ -7,6 +7,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 
 
 using namespace BasicDataStructures;
@@ -39,6 +40,9 @@ private:
         unsigned int featureIndexArraySize, 
         unsigned int height );
     float ComputeGini( const vector<Item>& iv );
+    float ComputeEntropy( const vector<Item>& iv );
+    // Count items of each class
+    unsigned int* GetDistribution( const vector<Item>& iv );
     void LabelNode( TreeNode* node, const vector<Item>& iv );
 
     vector<char*> classVec;

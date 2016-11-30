@@ -18,10 +18,13 @@ namespace MyHelper
     unsigned int getIndexOfMax(
         const unsigned int* uintArray, 
         const unsigned int length );
-    unsigned int* sampleWithoutRep(
+    // Consume a sorted array, remove duplicates in place, 
+    // and return the number of unique elements.
+    int removeDuplicates( int* sortedArr, unsigned int length );
+    unsigned int* sampleWithRep(
         unsigned int* container, 
         const unsigned int numSamples, 
-        unsigned int& numRest );
+        const unsigned int numTotal );
     void randomizeArray(
         unsigned int* arr, 
         const unsigned int length );
