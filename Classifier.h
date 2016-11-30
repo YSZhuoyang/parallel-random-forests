@@ -6,8 +6,8 @@
 
 class Classifier
 {
-#define NUM_FEATURES_PER_TREE 10
-#define NUM_TREES             5
+#define NUM_FEATURES_PER_TREE 20
+#define NUM_TREES             100
 
 public:
     Classifier();

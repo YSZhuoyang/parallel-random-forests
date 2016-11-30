@@ -82,6 +82,7 @@ TreeNode* TreeBuilder::Split(
     {
         unsigned int i = featureIndexArray[index];
 
+        // This feature has been used
         if (i == numFeatures) continue;
 
         // Get all values of that feature and sort them.
