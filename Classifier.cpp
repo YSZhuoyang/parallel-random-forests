@@ -46,6 +46,7 @@ void Classifier::Train(
     // Build a number of trees each having the same number of features.
     rootVec.reserve( NUM_TREES );
     treeBuilder.Init( fv, cv, NUM_FEATURES_PER_TREE );
+    unsigned int numRest = numFeatures;
     
     for (unsigned int treeIndex = 0; treeIndex < NUM_TREES; treeIndex++)
     {
@@ -58,15 +59,40 @@ void Classifier::Train(
             NUM_FEATURES_PER_TREE * sizeof( unsigned int ) );*/
         
         /******************** Use random sampler *******************/
+        /*unsigned int* featureIndexArr = 
+            sampleWithRep( randomIndices, NUM_FEATURES_PER_TREE, numFeatures );*/
+        
+        if (numRest < NUM_FEATURES_PER_TREE) numRest = numFeatures;
         unsigned int* featureIndexArr = 
-            sampleWithRep( randomIndices, NUM_FEATURES_PER_TREE, numFeatures );
+            sampleWithoutRep( randomIndices, NUM_FEATURES_PER_TREE, numRest );
 
         treeBuilder.BuildTree( iv, featureIndexArr );
         rootVec.push_back( treeBuilder.GetRoot() );
+
+        //treeBuilder.PrintTree( treeBuilder.GetRoot(), 0 );
+        
+        free( featureIndexArr );
+        featureIndexArr = nullptr;
     }
 
     free( randomIndices );
     randomIndices = nullptr;
+}
+
+char* Classifier::Analyze(
+    const char* str,
+    const vector<NumericAttr>& featureVec,
+    const vector<char*>& cv )
+{
+    Item item = Tokenize( str, featureVec );
+    int classIndex = Classify( item );
+
+    free( item.featureAttrArray );
+    item.featureAttrArray = nullptr;
+
+    printf( "Labeled with: %s\n", cv[classIndex] );
+
+    return cv[classIndex];
 }
 
 void Classifier::Classify( const vector<Item>& iv )

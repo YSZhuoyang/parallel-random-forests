@@ -16,7 +16,7 @@ namespace MyHelper
     bool StrEqual( const char* str1, const char* str2 );
     // Include string terminator
     unsigned int GetStrLength( const char* str );
-    bool IsDelimiter( const char c );
+    bool IsLetter( const char c );
     Item Tokenize(
         const char* str, 
         const vector<NumericAttr>& featureVec );
@@ -28,9 +28,13 @@ namespace MyHelper
     // and return the number of unique elements.
     int removeDuplicates( int* sortedArr, unsigned int length );
     unsigned int* sampleWithRep(
-        unsigned int* container, 
-        const unsigned int numSamples, 
+        unsigned int* container,
+        const unsigned int numSamples,
         const unsigned int numTotal );
+    unsigned int* sampleWithoutRep(
+        unsigned int* container,
+        const unsigned int numSamples,
+        unsigned int& numRest );
     void randomizeArray(
         unsigned int* arr, 
         const unsigned int length );

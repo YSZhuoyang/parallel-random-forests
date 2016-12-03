@@ -6,7 +6,7 @@
 
 class Classifier
 {
-#define NUM_FEATURES_PER_TREE 30
+#define NUM_FEATURES_PER_TREE 10
 #define NUM_TREES             100
 
 public:
@@ -18,6 +18,10 @@ public:
         const vector<NumericAttr>& fv, 
         const vector<char*>& cv );
     void Classify( const vector<Item>& iv );
+    char* Analyze(
+        const char* str,
+        const vector<NumericAttr>& featureVec,
+        const vector<char*>& cv );
 
 
 private:

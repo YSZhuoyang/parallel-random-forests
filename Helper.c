@@ -20,7 +20,7 @@ Item MyHelper::Tokenize(
     unsigned int numFeatures = featureVec.size();
     Item item;
     item.featureAttrArray = 
-        (int*) malloc( numFeatures * sizeof( unsigned int ) );
+        (int*) calloc( numFeatures, sizeof( int ) );
 
     unsigned int iter = 0;
 
@@ -28,7 +28,7 @@ Item MyHelper::Tokenize(
     {
         unsigned int startIndex = iter;
 
-        while (!IsDelimiter( str[iter] ))
+        while (IsLetter( str[iter] ))
             iter++;
 
         // Found a token
@@ -46,7 +46,8 @@ Item MyHelper::Tokenize(
 
                 unsigned index = 0;
                 while (index < tokenLen && feaName[index] != '\0'
-                    && feaName[index] == str[startIndex + index])
+                    && (feaName[index] == str[startIndex + index] ||
+                    feaName[index] == str[startIndex + index] + 32))
                     index++;
                 
                 if (index == tokenLen && feaName[index] == '\0')
@@ -54,15 +55,16 @@ Item MyHelper::Tokenize(
             }
         }
 
-        iter++;
+        if (str[iter] != '\0') iter++;
     }
 
     return item;
 }
 
-bool MyHelper::IsDelimiter( const char c )
+bool MyHelper::IsLetter( const char c )
 {
-    return (c == ' ' || c == '\r' || c == '\n' || c == '\t');
+    return ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || 
+        c == '\?' || c == '_');
 }
 
 bool MyHelper::StrEqual( const char* str1, const char* str2 )
@@ -151,6 +153,43 @@ unsigned int* MyHelper::sampleWithRep(
 
         sampleArr[sampleIndex++] = container[i];
     }
+
+    return sampleArr;
+}
+
+unsigned int* MyHelper::sampleWithoutRep(
+    unsigned int* container,
+    const unsigned int numSamples,
+    unsigned int& numRest )
+{
+    if (numSamples <= 0 || numRest < numSamples)
+    {
+        printf( "Number of samples must be greater than 0 and bucket size\n" );
+
+        return nullptr;
+    }
+
+    unsigned int* sampleArr = (unsigned int*)
+        malloc( numSamples * sizeof( unsigned int ) );
+    unsigned int sampleIndex = 0;
+    unsigned int newNumRest = numRest - numSamples;
+
+    // Note here 'i--' means i can be smaller than 0,
+    // but i has type of unsigned int!
+    for (unsigned int i = numRest; i > newNumRest; i--)
+    {
+        unsigned int randPos = rand() % i;
+        unsigned int boundary = i - 1;
+
+        // Swap
+        unsigned int temp = container[randPos];
+        container[randPos] = container[boundary];
+        container[boundary] = temp;
+
+        sampleArr[sampleIndex++] = container[boundary];
+    }
+
+    numRest = newNumRest;
 
     return sampleArr;
 }

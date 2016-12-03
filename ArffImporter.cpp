@@ -159,7 +159,7 @@ void ArffImporter::Read( const char* fileName )
         }
     }
 
-    fclose(fp);
+    fclose( fp );
 }
 
 vector<char*> ArffImporter::GetClassAttr()

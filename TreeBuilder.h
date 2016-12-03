@@ -16,7 +16,7 @@ using namespace MyHelper;
 class TreeBuilder
 {
 #define MIN_NODE_SIZE 1
-#define MIN_NODE_SIZE_TO_SPLIT 1000
+#define MIN_NODE_SIZE_TO_SPLIT 1
 
 public:
     TreeBuilder();
@@ -29,15 +29,14 @@ public:
     void BuildTree(
         const vector<Item>& iv, 
         unsigned int* featureIndexArr );
-    void PrintTree( const TreeNode* iter );
+    void PrintTree( const TreeNode* iter, unsigned int h );
     void DestroyNode( TreeNode* node );
     TreeNode* GetRoot();
 
 private:
     TreeNode* Split(
-        const vector<Item>& iv, 
-        unsigned int* featureIndexArray, 
-        unsigned int featureIndexArraySize, 
+        const vector<Item>& iv,
+        unsigned int* featureIndexArray,
         unsigned int height );
     float ComputeGini( const vector<Item>& iv );
     float ComputeEntropy( const vector<Item>& iv );
