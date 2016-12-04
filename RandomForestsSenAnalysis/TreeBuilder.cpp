@@ -139,7 +139,18 @@ TreeNode* TreeBuilder::Split(
     // thus have reached leaf node.
     if (selectedIndex == numFeatures)
     {
-        LabelNode( node, iv );
+        if (entropyParent <= 0.4f)
+        {
+            printf( "Entropy: %f\n", entropyParent );
+            
+            TreeNode* leaf = new TreeNode;
+            LabelNode( leaf, iv );
+            
+            return leaf;
+        }
+
+        return nullptr;
+        //LabelNode( node, iv );
 
         //printf( "Leaf node labeled with class index: %u\n", node->classIndex );
     }
