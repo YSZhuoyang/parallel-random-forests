@@ -132,9 +132,8 @@ TreeNode* TreeBuilder::Split(
     // thus have reached leaf node.
     if (selectedIndex == numFeatures)
     {
-        //if (entropyParent <= 0.2f)
-            //printf( "Entropy: %f\n", entropyParent );
-        LabelNode( node, iv );
+        if (entropyParent < 1.0f) LabelNode( node, iv );
+        else return nullptr;
 
         //printf( "Leaf node labeled with class index: %u\n", node->classIndex );
     }
@@ -199,7 +198,7 @@ float TreeBuilder::ComputeEntropy( const vector<Item>& iv )
 
     for (unsigned short i = 0; i < numClasses; i++)
     {
-        if (bucketArray[i] > 0)
+        if (bucketArray[i] > 0 && bucketArray[i] < totalItemCount)
         {
             double temp = (double) bucketArray[i] / totalItemCount;
             entropy -= temp * log2f( temp );

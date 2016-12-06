@@ -18,7 +18,7 @@ int main()
         trainSetImporter.GetClassAttr() );
     classifier.Classify( testSetImporter.GetItems() );
     classifier.Analyze(
-        "bad bad bad bad bad bad bad bad bad bad bad bad bad bad bad bad",
+        "This is bad",
         trainSetImporter.GetFeatures(),
         trainSetImporter.GetClassAttr() );
 
