@@ -19,15 +19,21 @@ void TreeBuilder::Init(
 {
     featureVec = fv;
     classVec = cv;
-    numFeatures = nf;
+    numFeaturesToSelect = nf;
+    numFeaturesTotal = fv.size();
     numClasses = classVec.size();
 }
 
-void TreeBuilder::BuildTree(
-    const vector<Item>& iv, 
-    unsigned int* featureIndexArr )
+void TreeBuilder::BuildTree( const vector<Item>& iv )
 {
-    root = Split( iv, featureIndexArr, 0 );
+    unsigned int* featureIndexArray = 
+        (unsigned int*) malloc( numFeaturesTotal * sizeof( unsigned int ) );
+    for (unsigned int i = 0; i < numFeaturesTotal; i++) featureIndexArray[i] = i;
+    
+    root = Split( iv, featureIndexArray, 0 );
+
+    free( featureIndexArray );
+    featureIndexArray = nullptr;
 }
 
 TreeNode* TreeBuilder::Split(
@@ -66,22 +72,34 @@ TreeNode* TreeBuilder::Split(
         return leaf;
     }
 
-    unsigned int selectedIndex = numFeatures;
+    unsigned int* feaIndexArrCopy =
+        (unsigned int*) malloc( numFeaturesTotal * sizeof( unsigned int ) );
+    memcpy(
+        feaIndexArrCopy,
+        featureIndexArray, 
+        numFeaturesTotal * sizeof( unsigned int ) );
+
+    unsigned int selectedIndex;
     int selectedThreshold;
     vector<vector<Item>> selectedChildren;
 
+    unsigned int index = 0;
+    unsigned int numRestFea = numFeaturesTotal;
+    bool gainFound = false;
     // Find the best split feature and threshold
-    for (unsigned int index = 0; index < numFeatures; index++)
+    while ((index < numFeaturesToSelect || !gainFound) && numRestFea > 0)
     {
-        unsigned int i = featureIndexArray[index];
-
-        // This feature has been used
-        if (i == numFeatures) continue;
+        // Sample (note max of rand() is around 24000)
+        unsigned int randPos = rand() % numRestFea;
+        unsigned int randFeaIndex = feaIndexArrCopy[randPos];
+        // Swap
+        feaIndexArrCopy[randPos] = feaIndexArrCopy[--numRestFea];
+        feaIndexArrCopy[numRestFea] = randFeaIndex;
 
         // Get all values of that feature and sort them.
         int* valueArr = (int*) malloc( numItems * sizeof( int ) );
         for (unsigned int itemIndex = 0; itemIndex < numItems; itemIndex++)
-            valueArr[itemIndex] = iv[itemIndex].featureAttrArray[i];
+            valueArr[itemIndex] = iv[itemIndex].featureAttrArray[randFeaIndex];
         qsort( valueArr, numItems, sizeof( int ), Compare );
         unsigned int numUniqueEle = removeDuplicates( valueArr, numItems );
 
@@ -91,7 +109,8 @@ TreeNode* TreeBuilder::Split(
             vector<vector<Item>> groups( 2 );
 
             for (const Item& item : iv)
-                groups[item.featureAttrArray[i] > valueArr[valueIndex]].push_back( item );
+                (item.featureAttrArray[randFeaIndex] > valueArr[valueIndex]) ?
+                    groups[1].push_back( item ) : groups[0].push_back( item );
 
             //float giniSplit = giniParent;
             float infoGain = entropyParent;
@@ -114,13 +133,19 @@ TreeNode* TreeBuilder::Split(
                 infoGainMax = infoGain;
                 selectedChildren = groups;
                 selectedThreshold = valueArr[valueIndex];
-                selectedIndex = index;
+                selectedIndex = randFeaIndex;
+                gainFound = true;
             }
         }
 
         free( valueArr );
         valueArr = nullptr;
+
+        index++;
     }
+
+    free( feaIndexArrCopy );
+    feaIndexArrCopy = nullptr;
 
     //printf( "\n----------------------------------------\n");
     //printf( "Height: %d\n", height );
@@ -130,7 +155,7 @@ TreeNode* TreeBuilder::Split(
     // Split threshold not found, 
     // or gini split / info gain exceeds threshold,
     // thus have reached leaf node.
-    if (selectedIndex == numFeatures)
+    if (!gainFound)
     {
         if (entropyParent < 1.0f) LabelNode( node, iv );
         else return nullptr;
@@ -140,13 +165,11 @@ TreeNode* TreeBuilder::Split(
     // Split node
     else
     {
-        unsigned int selectedFeatureIndex = featureIndexArray[selectedIndex];
-
-        //printf( "Feature selected: %s\n", featureVec[selectedFeatureIndex].name );
+        //printf( "Feature selected: %s\n", featureVec[selectedIndex].name );
         //printf( "Gini of parent: %f\n", giniParent );
         //printf( "Max Gini split get: %f\n", giniSplitMax );
         
-        node->featureIndex = selectedFeatureIndex;
+        node->featureIndex = selectedIndex;
         node->threshold    = selectedThreshold;
         //node->gini         = giniParent;
         //node->giniSplit    = giniSplitMax;
@@ -154,18 +177,18 @@ TreeNode* TreeBuilder::Split(
 
         height++;
 
-        bool nodeLabeled = false;
+        bool emptyChildFound = false;
 
         // Split children
         for (vector<Item> childGroup : selectedChildren)
         {
             TreeNode* childNode = Split( childGroup, 
                 featureIndexArray, height );
-            if (childNode == nullptr) nodeLabeled = true;
+            if (childNode == nullptr) emptyChildFound = true;
             node->childrenVec.push_back( childNode );
         }
 
-        if (nodeLabeled) LabelNode( node, iv );
+        if (emptyChildFound) LabelNode( node, iv );
     }
 
     return node;

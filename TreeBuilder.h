@@ -26,9 +26,7 @@ public:
         const vector<NumericAttr>& fv, 
         const vector<char*>& cv, 
         const unsigned int nf );
-    void BuildTree(
-        const vector<Item>& iv, 
-        unsigned int* featureIndexArr );
+    void BuildTree( const vector<Item>& iv );
     void PrintTree( const TreeNode* iter, unsigned int h );
     void DestroyNode( TreeNode* node );
     TreeNode* GetRoot();
@@ -47,7 +45,8 @@ private:
     vector<char*> classVec;
     vector<NumericAttr> featureVec;
 
-    unsigned int numFeatures;
+    unsigned int numFeaturesToSelect;
+    unsigned int numFeaturesTotal;
     unsigned short numClasses;
     
     TreeNode* root = nullptr;
