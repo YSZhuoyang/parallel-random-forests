@@ -15,43 +15,43 @@ TreeBuilder::~TreeBuilder()
 void TreeBuilder::Init(
     const vector<NumericAttr>& fv, 
     const vector<char*>& cv, 
-    const unsigned int nf )
+    const unsigned int nfToSelect )
 {
     featureVec = fv;
     classVec = cv;
-    numFeatures = nf;
+    numFeaturesToSelect = nfToSelect;
+    numFeaturesTotal = fv.size();
     numClasses = classVec.size();
 }
 
-void TreeBuilder::BuildTree(
-    const vector<Item>& iv, 
-    unsigned int* featureIndexArr )
+void TreeBuilder::BuildTree( const vector<Item>& iv )
 {
-    unsigned int featureIndexArraySize = 
-        numFeatures * sizeof( unsigned int );
+    unsigned int* featureIndexArray = 
+        (unsigned int*) malloc( numFeaturesTotal * sizeof( unsigned int ) );
+    for (unsigned int i = 0; i < numFeaturesTotal; i++) featureIndexArray[i] = i;
+    
+    root = Split( iv, featureIndexArray, 0 );
 
-    root = Split( iv, featureIndexArr, featureIndexArraySize, 0 );
+    free( featureIndexArray );
+    featureIndexArray = nullptr;
 }
 
 TreeNode* TreeBuilder::Split(
-    const vector<Item>& iv, 
-    unsigned int* featureIndexArray, 
-    const unsigned int featureIndexArraySize, 
+    const vector<Item>& iv,
+    unsigned int* featureIndexArray,
     unsigned int height )
 {
-    float giniSplitMax = 0.0f;
+    //float giniSplitMax = 0.0f;
+    float infoGainMax = 0.0f;
     unsigned int numItems = iv.size();
 
     // The node is too small thus it is ignored.
     if (numItems < MIN_NODE_SIZE)
     {
-        free( featureIndexArray );
-        featureIndexArray = nullptr;
-
         return nullptr;
     }
     // The node is small, make it a leaf node.
-    else if (numItems < MIN_NODE_SIZE_TO_SPLIT)
+    else if (numItems <= MIN_NODE_SIZE_TO_SPLIT)
     {
         TreeNode* leaf = new TreeNode;
         LabelNode( leaf, iv );
@@ -59,65 +59,94 @@ TreeNode* TreeBuilder::Split(
         return leaf;
     }
 
-    // Compute gini of this node.
-    float giniParent = ComputeGini( iv );
+    //float giniParent = ComputeGini( iv );
+    // Compute entropy of this node.
+    float entropyParent = ComputeEntropy( iv );
 
-    // All items are in the same classes.
-    if (giniParent == 0.0f)
+    // All node is pure.
+    //if (giniParent <= 0.0f)
+    if (entropyParent <= 0.0f)
     {
         TreeNode* leaf = new TreeNode;
         LabelNode( leaf, iv );
-        
+
         return leaf;
     }
 
-    unsigned int selectedIndex = numFeatures;
+    unsigned int selectedIndex;
     int selectedThreshold;
     vector<vector<Item>> selectedChildren;
 
-    // Find the best split feature and threshold
-    #pragma omp parallel for schedule(dynamic)
-    for (unsigned int index = 0; index < numFeatures; index++)
-    {
-        unsigned int i = featureIndexArray[index];
+    unsigned int numRestFeaToSelect = numFeaturesToSelect;
+    unsigned int numRestFea = numFeaturesTotal;
+    bool gainFound = false;
 
-        if (i == numFeatures) continue;
+    // Find the best split feature and threshold
+    while ((numRestFeaToSelect-- > 0 || !gainFound) && numRestFea > 0)
+    {
+        // Sample (note max of rand() is around 24000)
+        unsigned int randPos = rand() % numRestFea;
+        unsigned int randFeaIndex = featureIndexArray[randPos];
+        // Swap
+        featureIndexArray[randPos] = featureIndexArray[--numRestFea];
+        featureIndexArray[numRestFea] = randFeaIndex;
 
         // Get all values of that feature and sort them.
         int* valueArr = (int*) malloc( numItems * sizeof( int ) );
         for (unsigned int itemIndex = 0; itemIndex < numItems; itemIndex++)
-            valueArr[itemIndex] = iv[itemIndex].featureAttrArray[i];
+            valueArr[itemIndex] = iv[itemIndex].featureAttrArray[randFeaIndex];
         qsort( valueArr, numItems, sizeof( int ), Compare );
+        //QSortInstances( iv, valueArr, 0, numItems - 1 );
+        unsigned int numUniqueEle = removeDuplicates( valueArr, numItems );
+
+        /*unsigned int preSplitPoint = 0;*/
+        vector<vector<Item>> groups;
+        groups.resize( NUM_CHILDREN );
+        groups[1] = iv;
 
         // Find split threshold
-        for (unsigned int itemIndex = 0; itemIndex < numItems; itemIndex++)
+        for (unsigned int valueIndex = 0; valueIndex < numUniqueEle; valueIndex++)
         {
-            if (itemIndex > 0 && valueArr[itemIndex] == valueArr[itemIndex - 1])
-                continue;
-            
-            vector<vector<Item>> groups( 2 );
+            unsigned int groupSize = groups[1].size();
+            unsigned int i = 0;
 
-            for (const Item& item : iv)
-                groups[item.featureAttrArray[i] > valueArr[itemIndex]].push_back( item );
-
-            float giniSplit = giniParent;
-            
-            // Compute gini of children
-            for (vector<Item>& group : groups)
+            while (groupSize > i)
             {
-                float giniChild = ComputeGini( group );
-                float numChildren = group.size();
-                giniSplit -= numChildren / numItems * giniChild;
+                if (groups[1][i].featureAttrArray[randFeaIndex] <=
+                    valueArr[valueIndex])
+                {
+                    groups[0].push_back( groups[1][i] );
+                    swap( groups[1][i], groups[1].back() );
+                    groups[1].pop_back();
+
+                    groupSize--;
+                }
+                else i++;
             }
 
-            #pragma omp critical
-            // Get max gini split and related feature
-            if (giniSplitMax < giniSplit)
+            //float giniSplit = giniParent;
+            float infoGain = entropyParent;
+            
+            // Compute entropy of children
+            for (vector<Item>& group : groups)
             {
-                giniSplitMax = giniSplit;
+                //float giniChild = ComputeGini( group );
+                float entropyChild = ComputeEntropy( group );
+                unsigned int numChildren = group.size();
+                //giniSplit -= numChildren / numItems * giniChild;
+                infoGain -= numChildren / numItems * entropyChild;
+            }
+
+            // Get max info gain and related feature
+            //if (giniSplitMax < giniSplit)
+            if (infoGainMax < infoGain)
+            {
+                //giniSplitMax = giniSplit;
+                infoGainMax = infoGain;
                 selectedChildren = groups;
-                selectedThreshold = valueArr[itemIndex];
-                selectedIndex = index;
+                selectedThreshold = valueArr[valueIndex];
+                selectedIndex = randFeaIndex;
+                gainFound = true;
             }
         }
 
@@ -130,66 +159,52 @@ TreeNode* TreeBuilder::Split(
 
     TreeNode* node = new TreeNode;
 
-    // All features have been used, or gini split exceeds threshold,
+    // Split threshold not found, 
+    // or gini split / info gain exceeds threshold,
     // thus have reached leaf node.
-    if (selectedIndex == numFeatures)
-    {
-        LabelNode( node, iv );
-
-        //printf( "Leaf node labeled with class index: %u\n", node->classIndex );
-    }
+    if (!gainFound) return nullptr;
     // Split node
     else
     {
-        unsigned int selectedFeatureIndex = featureIndexArray[selectedIndex];
-
-        //printf( "Feature selected: %s\n", featureVec[selectedFeatureIndex].name );
+        //printf( "Feature selected: %s\n", featureVec[selectedIndex].name );
         //printf( "Gini of parent: %f\n", giniParent );
         //printf( "Max Gini split get: %f\n", giniSplitMax );
         
-        node->featureIndex = selectedFeatureIndex;
+        node->featureIndex = selectedIndex;
         node->threshold    = selectedThreshold;
-        node->gini         = giniParent;
-        node->giniSplit    = giniSplitMax;
+        //node->gini         = giniParent;
+        //node->giniSplit    = giniSplitMax;
         node->classIndex   = -1;
 
-        // Turn off the flag of selected feature
-        featureIndexArray[selectedIndex] = numFeatures;
         height++;
 
-        bool nodeLabeled = false;
+        bool emptyChildFound = false;
 
         // Split children
         for (vector<Item> childGroup : selectedChildren)
         {
-            unsigned int* featureIndexArrayCopy = 
-                (unsigned int*) malloc( featureIndexArraySize );
-            memcpy( featureIndexArrayCopy, featureIndexArray, 
-                featureIndexArraySize );
-
             TreeNode* childNode = Split( childGroup, 
-                featureIndexArrayCopy, featureIndexArraySize, height );
-            if (childNode == nullptr) nodeLabeled = true;
+                featureIndexArray, height );
+            if (childNode == nullptr) emptyChildFound = true;
             node->childrenVec.push_back( childNode );
         }
 
-        if (nodeLabeled) LabelNode( node, iv );
+        if (emptyChildFound) LabelNode( node, iv );
     }
 
-    free( featureIndexArray );
-    featureIndexArray = nullptr;
-    
     return node;
 }
 
-void TreeBuilder::PrintTree( const TreeNode* iter )
+void TreeBuilder::PrintTree( const TreeNode* iter, unsigned int h )
 {
     if (iter == nullptr || iter->classIndex != -1) return;
 
-    printf( "Feature: %s\n", featureVec[iter->featureIndex].name );
+    for (unsigned int i = 0; i <= h; i++) printf( "-" );
+    printf( "%s, ", featureVec[iter->featureIndex].name );
+    printf( "%d\n", iter->threshold );
 
     for (const TreeNode* child : iter->childrenVec)
-        PrintTree( child );
+        PrintTree( child, h + 1 );
 }
 
 TreeNode* TreeBuilder::GetRoot()
@@ -197,16 +212,35 @@ TreeNode* TreeBuilder::GetRoot()
     return root;
 }
 
+float TreeBuilder::ComputeEntropy( const vector<Item>& iv )
+{
+    unsigned int totalItemCount = iv.size();
+    if (totalItemCount == 0) return 0.0f;
+
+    unsigned int* bucketArray = GetDistribution( iv );
+    float entropy = 0.0f;
+
+    for (unsigned short i = 0; i < numClasses; i++)
+    {
+        if (bucketArray[i] > 0 && bucketArray[i] < totalItemCount)
+        {
+            double temp = (double) bucketArray[i] / totalItemCount;
+            entropy -= temp * log2f( temp );
+        }
+    }
+
+    free( bucketArray );
+    bucketArray = nullptr;
+
+    return entropy;
+}
+
 float TreeBuilder::ComputeGini( const vector<Item>& iv )
 {
     float totalItemCount = iv.size();
-
     if (totalItemCount == 0) return 0.0f;
 
-    unsigned int* bucketArray = 
-        (unsigned int*) calloc( numClasses, sizeof( unsigned int ) );
-    for (const Item& item : iv) bucketArray[item.classIndex]++;
-
+    unsigned int* bucketArray = GetDistribution( iv );
     float gini = 1.0f;
 
     for (unsigned short i = 0; i < numClasses; i++)
@@ -221,17 +255,25 @@ float TreeBuilder::ComputeGini( const vector<Item>& iv )
     return gini;
 }
 
+unsigned int* TreeBuilder::GetDistribution( const vector<Item>& iv )
+{
+    unsigned int* bucketArray = 
+        (unsigned int*) calloc( numClasses, sizeof( unsigned int ) );
+    for (const Item& item : iv) bucketArray[item.classIndex]++;
+
+    return bucketArray;
+}
+
 void TreeBuilder::LabelNode( TreeNode* node, const vector<Item>& iv )
 {
     if (node == nullptr) return;
 
-    unsigned int* classCounters = 
-        (unsigned int*) calloc( numClasses, sizeof( unsigned int ) );
-    for (const Item& item : iv) classCounters[item.classIndex]++;
-
+    unsigned int* bucketArray = GetDistribution( iv );
     // Select the class of the largest class group.
-    node->classIndex = getIndexOfMax( classCounters, numClasses );
-    free( classCounters );
+    node->classIndex = getIndexOfMax( bucketArray, numClasses );
+
+    free( bucketArray );
+    bucketArray = nullptr;
 }
 
 void TreeBuilder::DestroyNode( TreeNode* node )

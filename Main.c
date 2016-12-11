@@ -6,10 +6,10 @@
 int main()
 {
     ArffImporter trainSetImporter;
-    trainSetImporter.Read( "Dataset/train/train-first200.arff" );
+    trainSetImporter.Read( "Dataset/train/train-first1000.arff" );
 
     ArffImporter testSetImporter;
-    testSetImporter.Read( "Dataset/test/dev-first200.arff" );
+    testSetImporter.Read( "Dataset/test/dev-first1000.arff" );
 
     Classifier classifier;
     classifier.Train(
@@ -17,6 +17,10 @@ int main()
         trainSetImporter.GetFeatures(), 
         trainSetImporter.GetClassAttr() );
     classifier.Classify( testSetImporter.GetItems() );
+    classifier.Analyze(
+        "This is bad",
+        trainSetImporter.GetFeatures(),
+        trainSetImporter.GetClassAttr() );
 
     return 0;
 }

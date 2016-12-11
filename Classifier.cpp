@@ -1,5 +1,6 @@
 
 #include "Classifier.h"
+#include <time.h>
 
 
 Classifier::Classifier()
@@ -23,56 +24,54 @@ void Classifier::Train(
     classVec = cv;
     featureVec = fv;
 
-    // Randomly select features and build trees.
     unsigned int numFeatures = fv.size();
-
     printf( "Num features: %d\n", numFeatures );
     
-    /********************** Use random sampler *********************/
-    
-    unsigned int* randomIndices = 
-        (unsigned int*) malloc( numFeatures * sizeof( unsigned int ) );
-    for (unsigned int i = 0; i < numFeatures; i++) randomIndices[i] = i;
-    unsigned int numRest = numFeatures;
-    
-    /**** Generate an ordered index container, and disorder it. ****/
-
-    /*unsigned int* randomIndices = 
-        (unsigned int*) malloc( numFeatures * sizeof( unsigned int ) );
-    for (unsigned int i = 0; i < numFeatures; i++) randomIndices[i] = i;
-    randomizeArray( randomIndices, numFeatures );*/
-
     /******************** Init tree constructer ********************/
 
     // Build a number of trees each having the same number of features.
-    // What if numFeatures is 51 ?
-    unsigned int numTrees = numFeatures / NUM_FEATURES_PER_TREE;
-    rootVec.reserve( numTrees );
+    rootVec.reserve( NUM_TREES );
     treeBuilder.Init( fv, cv, NUM_FEATURES_PER_TREE );
-    
-    #pragma omp parallel for schedule(dynamic)
-    for (unsigned int treeIndex = 0; treeIndex < numTrees; treeIndex++)
+
+    time_t start,end;
+    double dif;
+    time( &start );
+
+    #pragma omp parallel
     {
-        /************** Use randomly disordered array **************/
+        if (omp_get_thread_num() == 0)
+            printf( "There're %d threads running.\n", omp_get_num_threads() );
 
-        /*unsigned int* featureIndexArr = (unsigned int*) 
-            malloc( NUM_FEATURES_PER_TREE * sizeof( unsigned int ) );
-        memcpy( featureIndexArr, 
-            randomIndices + treeIndex * NUM_FEATURES_PER_TREE, 
-            NUM_FEATURES_PER_TREE * sizeof( unsigned int ) );*/
-        
-        /******************** Use random sampler *******************/
-        unsigned int* featureIndexArr = 
-            sampleWithoutRep( randomIndices, NUM_FEATURES_PER_TREE, numRest );
-
-        treeBuilder.BuildTree( iv, featureIndexArr );
-
-        #pragma omp critical
-        rootVec.push_back( treeBuilder.GetRoot() );
+        #pragma omp for schedule(dynamic)
+        for (unsigned int treeIndex = 0; treeIndex < NUM_TREES; treeIndex++)
+        {
+            treeBuilder.BuildTree( iv );
+            #pragma omp critical
+            rootVec.push_back( treeBuilder.GetRoot() );
+            //treeBuilder.PrintTree( treeBuilder.GetRoot(), 0 );
+        }
     }
+    
+    time( &end );
+    dif = difftime( end, start );
 
-    free( randomIndices );
-    randomIndices = nullptr;
+    printf( "Build forests: time taken is %.2lf seconds.\n", dif );
+}
+
+char* Classifier::Analyze(
+    const char* str,
+    const vector<NumericAttr>& featureVec,
+    const vector<char*>& cv )
+{
+    Item item = Tokenize( str, featureVec );
+    int classIndex = Classify( item );
+
+    free( item.featureAttrArray );
+    item.featureAttrArray = nullptr;
+
+    printf( "Labeled with: %s\n", cv[classIndex] );
+
+    return cv[classIndex];
 }
 
 void Classifier::Classify( const vector<Item>& iv )

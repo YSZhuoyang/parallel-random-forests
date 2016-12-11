@@ -3,21 +3,26 @@
 #define _CLASSIFIER_H_
 
 #include "TreeBuilder.h"
-
+#include <omp.h>
 
 class Classifier
 {
 #define NUM_FEATURES_PER_TREE 10
+#define NUM_TREES             100
 
 public:
     Classifier();
     ~Classifier();
 
     void Train(
-        const vector<Item>& iv, 
-        const vector<NumericAttr>& fv, 
+        const vector<Item>& iv,
+        const vector<NumericAttr>& fv,
         const vector<char*>& cv );
     void Classify( const vector<Item>& iv );
+    char* Analyze(
+        const char* str,
+        const vector<NumericAttr>& featureVec,
+        const vector<char*>& cv );
 
 
 private:

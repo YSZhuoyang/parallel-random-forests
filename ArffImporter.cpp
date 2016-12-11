@@ -55,8 +55,8 @@ void ArffImporter::Read( const char* fileName )
             // Read feature names
             if (StrEqual( featureType, KEYWORD_NUMERIC ))
             {
-                printf( "Feature name: %s, length: %d \n", 
-                    featureName, GetStrLength( featureName ) );
+                //printf( "Feature name: %s, length: %d \n", 
+                //    featureName, GetStrLength( featureName ) );
 
                 NumericAttr feature;
                 feature.name       = featureName;
@@ -159,7 +159,7 @@ void ArffImporter::Read( const char* fileName )
         }
     }
 
-    fclose(fp);
+    fclose( fp );
 }
 
 vector<char*> ArffImporter::GetClassAttr()
