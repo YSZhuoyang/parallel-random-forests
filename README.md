@@ -2,8 +2,8 @@
 A parallelized version of random forests learning algorithm.
 
 ### Decision tree construction
-* Refer to C4.5 initial tree construction.
-* Gini index was used as split criteria.
+* Refer to weka random tree construction and C4.5 initial tree construction.
+* Support Infogain and Gini index used as split criteria.
 * No need of pruning.
 
 ### Parallelization
@@ -14,11 +14,7 @@ A parallelized version of random forests learning algorithm.
 * Sentiment analysis of 50000 movie reviews from IMDb (25000 for training, 25000 for testing).
 * Used top 1000 words with highest frequencies of occurrences, achieved 77% accuracy without attributes selection and data cleanning.
 * Testing environment: vlsci clusters
-
-#### Speedup
-* Snowy: 3.5X speedup with 5 nodes (1000 attributes) ...
-* Avoca: underway
-* Barcoo: underway
+* Linear speedup.
 
 ## Terms of use for the dataset
 
