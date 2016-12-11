@@ -1,14 +1,10 @@
 
 #include "Classifier.h"
+#include <time.h>
 
 
-Classifier::Classifier(
-    const vector<NumericAttr>& fv, 
-    const vector<char*>& cv )
+Classifier::Classifier()
 {
-    classVec = cv;
-    featureVec = fv;
-
     // Init MPI
     MPI_Initialized( &mpiInitialized );
     if (!mpiInitialized) MPI_Init( nullptr, nullptr );
@@ -20,15 +16,10 @@ Classifier::Classifier(
         printf( "There are %d nodes doing computation.\n", numMpiNodes );
     
     printf( "Id of this node is: %d.\n", mpiNodeId );
-
-    numFeatures = featureVec.size();
-    numClasses = classVec.size();
 }
 
 Classifier::~Classifier()
 {
-    TreeBuilder treeBuilder;
-
     // Destory trees
     for (TreeNode* root : rootVec) treeBuilder.DestroyNode( root );
     rootVec.clear();
@@ -38,62 +29,56 @@ Classifier::~Classifier()
 }
 
 
-void Classifier::Train( const vector<Item>& iv )
+void Classifier::Train(
+    const vector<Item>& iv, 
+    const vector<NumericAttr>& fv, 
+    const vector<char*>& cv )
 {
-    /******************* Prepare buffer *******************/
-    unsigned int* randomIndices = 
-            (unsigned int*) malloc( numFeatures * sizeof( unsigned int ) );
+    classVec = cv;
+    featureVec = fv;
     
-    /************ Broadcast data to other nodes ***********/
-    if (mpiNodeId == MPI_ROOT_ID)
-    {
-        // Randomly select features and build trees.
-        // Generate an ordered index container, and disorder it.
-        for (unsigned int i = 0; i < numFeatures; i++) randomIndices[i] = i;
-        RandomizeArray( randomIndices, numFeatures );
-    }
-
-    CheckMPIErr( MPI_Bcast( randomIndices, numFeatures, 
-        MPI_UNSIGNED, MPI_ROOT_ID, MPI_COMM_WORLD ), mpiNodeId );
-
-    // Build a number of trees each having a fixed number of features.
-    // What if numFeatures is 51 ?
-    unsigned int numTrees = numFeatures / NUM_FEATURES_PER_TREE;
-    unsigned int chunkSize = numTrees / numMpiNodes;
-    unsigned int startIndex = mpiNodeId * chunkSize;
+    /******************** Init tree constructer ********************/
+    // Build a number of trees with randomly selected features.
+    unsigned int chunkSize = NUM_TREES / numMpiNodes;
+    rootVec.reserve( chunkSize );
+    treeBuilder.Init( fv, cv, NUM_FEATURES_PER_TREE );
 
     printf( "Node %d constructed %u trees.\n", mpiNodeId, chunkSize );
 
-    rootVec.reserve( chunkSize );
-    
-    #pragma omp parallel for schedule(dynamic)
-    for (unsigned int i = 0; i < chunkSize; i++)
+    time_t start,end;
+    double dif;
+    time( &start );
+
+    #pragma omp parallel
     {
-        unsigned int treeIndex = startIndex + i;
-        unsigned int* featureIndexArr = (unsigned int*) 
-            malloc( NUM_FEATURES_PER_TREE * sizeof( unsigned int ) );
-        memcpy( featureIndexArr, 
-            randomIndices + treeIndex * NUM_FEATURES_PER_TREE, 
-            NUM_FEATURES_PER_TREE * sizeof( unsigned int ) );
+        if (omp_get_thread_num() == 0)
+            printf(
+                "There're %d threads running on node %d.\n",
+                omp_get_num_threads(),
+                mpiNodeId );
 
-        TreeBuilder treeBuilder;
-        treeBuilder.Init( numClasses, NUM_FEATURES_PER_TREE );
-        treeBuilder.BuildTree( iv, featureIndexArr );
-
-        #pragma omp critical
-        rootVec.push_back( treeBuilder.GetRoot() );
+        #pragma omp for schedule(dynamic)
+        for (unsigned int treeIndex = 0; treeIndex < chunkSize; treeIndex++)
+        {
+            treeBuilder.BuildTree( iv );
+            #pragma omp critical
+            rootVec.push_back( treeBuilder.GetRoot() );
+            //treeBuilder.PrintTree( treeBuilder.GetRoot(), 0 );
+        }
     }
+    
+    time( &end );
+    dif = difftime( end, start );
 
-    free( randomIndices );
-    randomIndices = nullptr;
+    printf( "Node %d builds forests: time taken is %.2lf seconds.\n", mpiNodeId, dif );
 }
 
 void Classifier::Classify( const vector<Item>& iv )
 {
-    if (numClasses == 0)
+    if (classVec.empty())
     {
         printf( "Please train the model first.\n" );
-
+        
         MPI_Initialized( &mpiInitialized );
         if (mpiInitialized)
         {
@@ -105,6 +90,7 @@ void Classifier::Classify( const vector<Item>& iv )
     }
 
     /******************* Prepare buffer *******************/
+    unsigned short numClasses = classVec.size();
     unsigned int numItems = iv.size();
     unsigned int correctCounter = 0;
     unsigned int* votes = (unsigned int*) 
@@ -150,6 +136,8 @@ void Classifier::Classify(
     unsigned int* votes, 
     unsigned int index )
 {
+    unsigned short numClasses = classVec.size();
+
     for (const TreeNode* node : rootVec)
     {
         if (node == nullptr) continue;
