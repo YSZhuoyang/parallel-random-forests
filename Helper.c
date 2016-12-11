@@ -87,4 +87,3 @@ void MyHelper::CheckMPIErr( int errorCode, int mpiNodeId )
         fprintf( stderr, "%3d: %s\n", mpiNodeId, errorString );
     }
 }
-

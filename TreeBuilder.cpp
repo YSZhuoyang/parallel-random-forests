@@ -73,6 +73,7 @@ TreeNode* TreeBuilder::Split(
     vector<vector<Item>> selectedChildren;
 
     // Find the best split feature and threshold
+    #pragma omp parallel for schedule(dynamic)
     for (unsigned int index = 0; index < numFeatures; index++)
     {
         unsigned int i = featureIndexArray[index];
