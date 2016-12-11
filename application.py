@@ -17,7 +17,7 @@ def index():
 @application.route('/rf_train')
 def rf_train():
     """Random forest training api."""
-    invoke_rf_train(20, 6)
+    invoke_rf_train(100, 10)
     accuracy = invoke_rf_test()
     return jsonify({"Accuracy" : accuracy})
 
@@ -27,7 +27,6 @@ def rf_analyze():
     sentence = request.args.get('sentence')
     label = invoke_rf_analyze(sentence)
     response = jsonify({"Result" : label})
-    #invoke_rf_freememo(label)
     return response
 
 if __name__ == '__main__':
