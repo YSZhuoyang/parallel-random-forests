@@ -1,27 +1,33 @@
 #!flask/bin/python
 """Wrap and expose API interfaces for sentiment analysis."""
 
-from flask import Flask, jsonify
-from RandomForestsSenAnalysis import invoke_rf_test, invoke_rf_train
+from flask import Flask, request, jsonify
+from RandomForestsSenAnalysis import (
+    invoke_rf_test,
+    invoke_rf_train,
+    invoke_rf_analyze)
 
 application = Flask(__name__)
 
 @application.route('/')
-
 def index():
     """Random forest test api."""
-    accuracy = invoke_rf_test()
-    response = jsonify({"Accuracy" : accuracy})
-
-    return response
+    return jsonify({"Response" : "This is a sentiment analysis api."})
 
 @application.route('/rf_train')
-
 def rf_train():
     """Random forest training api."""
-    invoke_rf_train(5, 10)
-    response = jsonify({"Result" : "Training finished"})
+    invoke_rf_train(20, 6)
+    accuracy = invoke_rf_test()
+    return jsonify({"Accuracy" : accuracy})
 
+@application.route('/rf_analyze')
+def rf_analyze():
+    """Random forest training api."""
+    sentence = request.args.get('sentence')
+    label = invoke_rf_analyze(sentence)
+    response = jsonify({"Result" : label})
+    #invoke_rf_freememo(label)
     return response
 
 if __name__ == '__main__':

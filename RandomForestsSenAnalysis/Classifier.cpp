@@ -17,7 +17,7 @@ Classifier::~Classifier()
 
 void Classifier::Configure(
     unsigned int numTrees,
-    unsigned int numFeaPerTree)
+    unsigned int numFeaPerTree )
 {
     this->numTrees = numTrees;
     this->numFeaPerTree = numFeaPerTree;
@@ -31,52 +31,43 @@ void Classifier::Train(
     classVec = cv;
     featureVec = fv;
 
-    // Randomly select features and build trees.
-    unsigned int numFeatures = fv.size();
-
-    printf( "Num features: %d\n", numFeatures );
+    printf( "Num features: %lu\n", fv.size() );
     
-    /********************** Use random sampler *********************/
-    
-    unsigned int* randomIndices = 
-        (unsigned int*) malloc( numFeatures * sizeof( unsigned int ) );
-    for (unsigned int i = 0; i < numFeatures; i++) randomIndices[i] = i;
-    
-    /**** Generate an ordered index container, and disorder it. ****/
-
-    /*unsigned int* randomIndices = 
-        (unsigned int*) malloc( numFeatures * sizeof( unsigned int ) );
-    for (unsigned int i = 0; i < numFeatures; i++) randomIndices[i] = i;
-    randomizeArray( randomIndices, numFeatures );*/
-
     /******************** Init tree constructer ********************/
-
     // Build a number of trees each having the same number of features.
     rootVec.reserve( numTrees );
     treeBuilder.Init( fv, cv, numFeaPerTree );
-    
+
+    //#pragma omp parallel for schedule(dynamic)
     for (unsigned int treeIndex = 0; treeIndex < numTrees; treeIndex++)
     {
-        /************** Use randomly disordered array **************/
-
-        /*unsigned int* featureIndexArr = (unsigned int*) 
-            malloc( numFeaPerTree * sizeof( unsigned int ) );
-        memcpy( featureIndexArr, 
-            randomIndices + treeIndex * numFeaPerTree, 
-            numFeaPerTree * sizeof( unsigned int ) );*/
-        
-        /******************** Use random sampler *******************/
-        unsigned int* featureIndexArr = 
-            sampleWithRep( randomIndices, numFeaPerTree, numFeatures );
-
-        treeBuilder.BuildTree( iv, featureIndexArr );
+        treeBuilder.BuildTree( iv );
+        //#pragma omp critical
         rootVec.push_back( treeBuilder.GetRoot() );
+        //treeBuilder.PrintTree( treeBuilder.GetRoot(), 0 );
     }
 
-    free( randomIndices );
-    randomIndices = nullptr;
-
     SaveModel();
+}
+
+char* Classifier::Analyze(
+    const char* str,
+    const vector<NumericAttr>& featureVec,
+    const vector<char*>& cv )
+{
+    classVec = cv;
+    Item item = Tokenize( str, featureVec );
+    int classIndex = Classify( item );
+
+    free( item.featureAttrArray );
+    item.featureAttrArray = nullptr;
+
+    // Need to allocate new memo considering that class vector
+    // will be cleared and all memo used will be released.
+    char* label = (char*) malloc( sizeof( char ) );
+    memcpy( label, classVec[classIndex], sizeof( char ) );
+
+    return label;
 }
 
 float Classifier::Classify(
@@ -97,8 +88,9 @@ float Classifier::Classify(
 
     classVec = cv;
 
-    for (const Item& item : iv)
-        if (Classify( item ) == item.classIndex) correctCounter++;
+    //#pragma omp parallel for reduction(+: correctCounter) schedule(dynamic)
+    for (unsigned int i = 0; i < totalNumber; i++)
+        if (Classify( iv[i] ) == iv[i].classIndex) correctCounter++;
 
     float correctRate = (float) correctCounter / (float) totalNumber;
     float incorrectRate = 1.0f - correctRate;

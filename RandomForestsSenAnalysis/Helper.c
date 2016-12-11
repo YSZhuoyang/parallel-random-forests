@@ -4,13 +4,61 @@
 
 int MyHelper::Compare( const void* ele1, const void* ele2 )
 {
-    int f = *((int*)ele1);
-    int s = *((int*)ele2);
+    return (*((int*) ele1) - *((int*) ele2) );
+}
 
-    if (f > s) return 1;
-    if (f < s) return -1;
+Item MyHelper::Tokenize(
+    const char* str, 
+    const vector<NumericAttr>& featureVec )
+{
+    unsigned int numFeatures = featureVec.size();
+    Item item;
+    item.featureAttrArray = 
+        (int*) calloc( numFeatures, sizeof( int ) );
 
-    return 0;
+    unsigned int iter = 0;
+
+    while (str[iter] != '\0')
+    {
+        unsigned int startIndex = iter;
+
+        while (IsLetter( str[iter] ))
+            iter++;
+
+        // Found a token
+        if (iter > startIndex)
+        {
+            unsigned int tokenLen = iter - startIndex;
+
+            // Compare the token with every feature name
+            // Might use a hashmap (with key: name, value: index) 
+            // to speed up
+            for (unsigned int feaIndex = 0;
+                feaIndex < numFeatures; feaIndex++)
+            {
+                const char* feaName = featureVec[feaIndex].name;
+
+                unsigned index = 0;
+                while (index < tokenLen && feaName[index] != '\0'
+                    && (feaName[index] == str[startIndex + index] ||
+                    feaName[index] == str[startIndex + index] + 32))
+                    index++;
+                
+                if (index == tokenLen && feaName[index] == '\0')
+                    item.featureAttrArray[feaIndex]++;
+            }
+        }
+
+        if (str[iter] != '\0') iter++;
+    }
+
+    return item;
+}
+
+bool MyHelper::IsLetter( const char c )
+{
+    return ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || 
+        c == '\?' || c == '_');
 }
 
 bool MyHelper::StrEqual( const char* str1, const char* str2 )
@@ -69,51 +117,4 @@ int MyHelper::removeDuplicates(
     }
 
     return uniqueId;
-}
-
-unsigned int* MyHelper::sampleWithRep(
-    unsigned int* container, 
-    const unsigned int numSamples, 
-    const unsigned int numTotal )
-{
-    if (numSamples <= 0 || numTotal < numSamples)
-    {
-        printf( "Number of samples must be greater than 0 and total number\n" );
-
-        return nullptr;
-    }
-
-    unsigned int* sampleArr = (unsigned int*)
-        malloc( numSamples * sizeof( unsigned int ) );
-    unsigned int sampleIndex = 0;
-    unsigned int numRest = numTotal - numSamples;
-
-    for (unsigned int i = numTotal - 1; i >= numRest; i--)
-    {
-        unsigned int randPos = rand() % (i + 1);
-
-        // Swap
-        unsigned int temp = container[randPos];
-        container[randPos] = container[i];
-        container[i] = temp;
-
-        sampleArr[sampleIndex++] = container[i];
-    }
-
-    return sampleArr;
-}
-
-void MyHelper::randomizeArray(
-    unsigned int* arr, 
-    const unsigned int length )
-{
-    for (unsigned int i = length - 1; i > 0; i--)
-    {
-        unsigned int randPos = rand() % (i + 1);
-
-        // Swap
-        unsigned int temp = arr[randPos];
-        arr[randPos] = arr[i];
-        arr[i] = temp;
-    }
 }

@@ -5,12 +5,11 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <fstream>
+//#include <omp.h>
 #include "TreeBuilder.h"
 
 class Classifier
 {
-//#define NUM_TREES             5
-//#define NUM_FEATURES_PER_TREE 10
 #define MODEL_FILE_PATH       "./RandomForestsSenAnalysis/model.serial"
 
 public:
@@ -19,10 +18,14 @@ public:
 
     void Configure(
         unsigned int numTrees,
-        unsigned int numFeaPerTree);
+        unsigned int numFeaPerTree );
     void Train(
         const vector<Item>& iv, 
         const vector<NumericAttr>& fv, 
+        const vector<char*>& cv );
+    char* Analyze(
+        const char* str,
+        const vector<NumericAttr>& featureVec,
         const vector<char*>& cv );
     float Classify(
         const vector<Item>& iv, 
@@ -43,7 +46,7 @@ private:
 
     // Settings
     unsigned int numTrees      = 1;
-    unsigned int numFeaPerTree = 1;
+    unsigned int numFeaPerTree = 4;
 };
 
 #endif
