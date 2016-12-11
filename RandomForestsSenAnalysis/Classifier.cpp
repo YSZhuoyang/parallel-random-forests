@@ -70,7 +70,7 @@ char* Classifier::Analyze(
     return label;
 }
 
-float Classifier::Classify(
+float Classifier::Test(
     const vector<Item>& iv, 
     const vector<char*>& cv )
 {

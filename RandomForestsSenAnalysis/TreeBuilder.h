@@ -16,7 +16,7 @@ using namespace MyHelper;
 class TreeBuilder
 {
 #define MIN_NODE_SIZE          1
-#define MIN_NODE_SIZE_TO_SPLIT 100
+#define MIN_NODE_SIZE_TO_SPLIT 50
 #define NUM_CHILDREN           2
 
 public:

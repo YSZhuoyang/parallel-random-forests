@@ -27,7 +27,7 @@ public:
         const char* str,
         const vector<NumericAttr>& featureVec,
         const vector<char*>& cv );
-    float Classify(
+    float Test(
         const vector<Item>& iv, 
         const vector<char*>& cv );
 

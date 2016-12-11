@@ -11,7 +11,7 @@ extern "C"
     {
         ArffImporter trainSetImporter;
         trainSetImporter.Read(
-            "RandomForestsSenAnalysis/Dataset/train/train-first50.arff" );
+            "RandomForestsSenAnalysis/Dataset/train/train-first1000.arff" );
 
         Classifier classifier;
         classifier.Configure( numTrees, numFeaPerTree );
@@ -25,10 +25,10 @@ extern "C"
     {
         ArffImporter testSetImporter;
         testSetImporter.Read( 
-            "RandomForestsSenAnalysis/Dataset/test/dev-first50.arff" );
+            "RandomForestsSenAnalysis/Dataset/test/dev-first1000.arff" );
 
         Classifier classifier;
-        return classifier.Classify(
+        return classifier.Test(
             testSetImporter.GetItems(), 
             testSetImporter.GetClassAttr() );
     }
