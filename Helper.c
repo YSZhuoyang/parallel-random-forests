@@ -2,15 +2,74 @@
 #include "Helper.h"
 
 
+void MyHelper::SwapInst(
+    vector<Item>& iv,
+    int* feaValueArray,
+    const unsigned int first,
+    const unsigned int second )
+{
+    // Swap feature value
+    int tempVal = feaValueArray[first];
+    feaValueArray[first] = feaValueArray[second];
+    feaValueArray[second] = tempVal;
+
+    // Swap instance data
+    Item tempInst = iv[first];
+    iv[first] = iv[second];
+    iv[second] = tempInst;
+}
+
+void MyHelper::QSortInstances(
+    vector<Item>& iv,
+    int* feaValueArray,
+    const unsigned int left,
+    const unsigned int right )
+{
+    if (left >= right) return;
+
+    int slow = left;
+    // Shift pivot to the left.
+    SwapInst( iv, feaValueArray, left, (left + right) >> 1 );
+
+    for (unsigned int fast = left + 1; fast <= right; fast++)
+        if (feaValueArray[fast] < feaValueArray[left])
+            SwapInst( iv, feaValueArray, ++slow, fast );
+
+    // Shift pivot back.
+    SwapInst( iv, feaValueArray, left, slow );
+    if (slow > 0) QSortInstances( iv, feaValueArray, left, slow - 1 );
+    QSortInstances( iv, feaValueArray, slow + 1, right );
+
+    /*if (right - left <= 1)
+    {
+        if (feaValueArray[right] < feaValueArray[left])
+            SwapInst( iv, feaValueArray, left, right );
+        
+        return;
+    }
+
+    const unsigned int middle = (left + right) >> 1;
+    const int pivot = feaValueArray[middle];
+    unsigned int lIter = left;
+    unsigned int rIter = right;
+
+    while (lIter < rIter)
+    {
+        while (feaValueArray[lIter] < pivot) lIter++;
+        while (feaValueArray[rIter] > pivot) rIter--;
+        
+        SwapInst( iv, feaValueArray, lIter, rIter );
+        lIter++;
+        rIter--;
+    }
+
+    QSortInstances( iv, feaValueArray, left, middle );
+    QSortInstances( iv, feaValueArray, middle, right );*/
+}
+
 int MyHelper::Compare( const void* ele1, const void* ele2 )
 {
-    int f = *((int*)ele1);
-    int s = *((int*)ele2);
-
-    if (f > s) return 1;
-    if (f < s) return -1;
-
-    return 0;
+    return (*((int*) ele1) - *((int*) ele2) );
 }
 
 Item MyHelper::Tokenize(
@@ -123,88 +182,4 @@ int MyHelper::removeDuplicates(
     }
 
     return uniqueId;
-}
-
-unsigned int* MyHelper::sampleWithRep(
-    unsigned int* container, 
-    const unsigned int numSamples, 
-    const unsigned int numTotal )
-{
-    if (numSamples <= 0 || numTotal < numSamples)
-    {
-        printf( "Number of samples must be greater than 0 and total number\n" );
-
-        return nullptr;
-    }
-
-    unsigned int* sampleArr = (unsigned int*)
-        malloc( numSamples * sizeof( unsigned int ) );
-    unsigned int sampleIndex = 0;
-    unsigned int numRest = numTotal - numSamples;
-
-    for (unsigned int i = numTotal - 1; i >= numRest; i--)
-    {
-        unsigned int randPos = rand() % (i + 1);
-
-        // Swap
-        unsigned int temp = container[randPos];
-        container[randPos] = container[i];
-        container[i] = temp;
-
-        sampleArr[sampleIndex++] = container[i];
-    }
-
-    return sampleArr;
-}
-
-unsigned int* MyHelper::sampleWithoutRep(
-    unsigned int* container,
-    const unsigned int numSamples,
-    unsigned int& numRest )
-{
-    if (numSamples <= 0 || numRest < numSamples)
-    {
-        printf( "Number of samples must be greater than 0 and bucket size\n" );
-
-        return nullptr;
-    }
-
-    unsigned int* sampleArr = (unsigned int*)
-        malloc( numSamples * sizeof( unsigned int ) );
-    unsigned int sampleIndex = 0;
-    unsigned int newNumRest = numRest - numSamples;
-
-    // Note here 'i--' means i can be smaller than 0,
-    // but i has type of unsigned int!
-    for (unsigned int i = numRest; i > newNumRest; i--)
-    {
-        unsigned int randPos = rand() % i;
-        unsigned int boundary = i - 1;
-
-        // Swap
-        unsigned int temp = container[randPos];
-        container[randPos] = container[boundary];
-        container[boundary] = temp;
-
-        sampleArr[sampleIndex++] = container[boundary];
-    }
-
-    numRest = newNumRest;
-
-    return sampleArr;
-}
-
-void MyHelper::randomizeArray(
-    unsigned int* arr, 
-    const unsigned int length )
-{
-    for (unsigned int i = length - 1; i > 0; i--)
-    {
-        unsigned int randPos = rand() % (i + 1);
-
-        // Swap
-        unsigned int temp = arr[randPos];
-        arr[randPos] = arr[i];
-        arr[i] = temp;
-    }
 }

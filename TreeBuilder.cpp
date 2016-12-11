@@ -15,11 +15,11 @@ TreeBuilder::~TreeBuilder()
 void TreeBuilder::Init(
     const vector<NumericAttr>& fv, 
     const vector<char*>& cv, 
-    const unsigned int nf )
+    const unsigned int nfToSelect )
 {
     featureVec = fv;
     classVec = cv;
-    numFeaturesToSelect = nf;
+    numFeaturesToSelect = nfToSelect;
     numFeaturesTotal = fv.size();
     numClasses = classVec.size();
 }
@@ -51,7 +51,7 @@ TreeNode* TreeBuilder::Split(
         return nullptr;
     }
     // The node is small, make it a leaf node.
-    else if (numItems < MIN_NODE_SIZE_TO_SPLIT)
+    else if (numItems <= MIN_NODE_SIZE_TO_SPLIT)
     {
         TreeNode* leaf = new TreeNode;
         LabelNode( leaf, iv );
@@ -64,6 +64,7 @@ TreeNode* TreeBuilder::Split(
     float entropyParent = ComputeEntropy( iv );
 
     // All node is pure.
+    //if (giniParent <= 0.0f)
     if (entropyParent <= 0.0f)
     {
         TreeNode* leaf = new TreeNode;
@@ -72,45 +73,69 @@ TreeNode* TreeBuilder::Split(
         return leaf;
     }
 
-    unsigned int* feaIndexArrCopy =
-        (unsigned int*) malloc( numFeaturesTotal * sizeof( unsigned int ) );
-    memcpy(
-        feaIndexArrCopy,
-        featureIndexArray, 
-        numFeaturesTotal * sizeof( unsigned int ) );
-
     unsigned int selectedIndex;
     int selectedThreshold;
     vector<vector<Item>> selectedChildren;
 
-    unsigned int index = 0;
+    unsigned int numRestFeaToSelect = numFeaturesToSelect;
     unsigned int numRestFea = numFeaturesTotal;
     bool gainFound = false;
+
     // Find the best split feature and threshold
-    while ((index < numFeaturesToSelect || !gainFound) && numRestFea > 0)
+    while ((numRestFeaToSelect-- > 0 || !gainFound) && numRestFea > 0)
     {
         // Sample (note max of rand() is around 24000)
         unsigned int randPos = rand() % numRestFea;
-        unsigned int randFeaIndex = feaIndexArrCopy[randPos];
+        unsigned int randFeaIndex = featureIndexArray[randPos];
         // Swap
-        feaIndexArrCopy[randPos] = feaIndexArrCopy[--numRestFea];
-        feaIndexArrCopy[numRestFea] = randFeaIndex;
+        featureIndexArray[randPos] = featureIndexArray[--numRestFea];
+        featureIndexArray[numRestFea] = randFeaIndex;
 
         // Get all values of that feature and sort them.
         int* valueArr = (int*) malloc( numItems * sizeof( int ) );
         for (unsigned int itemIndex = 0; itemIndex < numItems; itemIndex++)
             valueArr[itemIndex] = iv[itemIndex].featureAttrArray[randFeaIndex];
         qsort( valueArr, numItems, sizeof( int ), Compare );
+        //QSortInstances( iv, valueArr, 0, numItems - 1 );
         unsigned int numUniqueEle = removeDuplicates( valueArr, numItems );
+
+        /*unsigned int preSplitPoint = 0;*/
+        vector<vector<Item>> groups;
+        groups.resize( NUM_CHILDREN );
+        groups[1] = iv;
 
         // Find split threshold
         for (unsigned int valueIndex = 0; valueIndex < numUniqueEle; valueIndex++)
         {
-            vector<vector<Item>> groups( 2 );
+            unsigned int groupSize = groups[1].size();
+            unsigned int i = 0;
 
-            for (const Item& item : iv)
-                (item.featureAttrArray[randFeaIndex] > valueArr[valueIndex]) ?
-                    groups[1].push_back( item ) : groups[0].push_back( item );
+            while (groupSize > i)
+            {
+                if (groups[1][i].featureAttrArray[randFeaIndex] <=
+                    valueArr[valueIndex])
+                {
+                    groups[0].push_back( groups[1][i] );
+                    swap( groups[1][i], groups[1].back() );
+                    groups[1].pop_back();
+
+                    groupSize--;
+                }
+                else i++;
+            }
+
+            /*if (valueIndex + 1 < numItems && 
+                valueArr[valueIndex] == valueArr[valueIndex + 1])
+                continue;
+
+            for (unsigned int i = preSplitPoint; i <= valueIndex; i++)
+            {
+                groups[0].push_back( iv[i] );
+                groups[1][i - preSplitPoint] = groups[1].back();
+                groups[1].pop_back();
+            }
+
+            preSplitPoint = valueIndex + 1;*/
 
             //float giniSplit = giniParent;
             float infoGain = entropyParent;
@@ -140,12 +165,7 @@ TreeNode* TreeBuilder::Split(
 
         free( valueArr );
         valueArr = nullptr;
-
-        index++;
     }
-
-    free( feaIndexArrCopy );
-    feaIndexArrCopy = nullptr;
 
     //printf( "\n----------------------------------------\n");
     //printf( "Height: %d\n", height );
@@ -155,13 +175,7 @@ TreeNode* TreeBuilder::Split(
     // Split threshold not found, 
     // or gini split / info gain exceeds threshold,
     // thus have reached leaf node.
-    if (!gainFound)
-    {
-        if (entropyParent < 1.0f) LabelNode( node, iv );
-        else return nullptr;
-
-        //printf( "Leaf node labeled with class index: %u\n", node->classIndex );
-    }
+    if (!gainFound) return nullptr;
     // Split node
     else
     {

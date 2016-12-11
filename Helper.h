@@ -12,6 +12,16 @@ using namespace BasicDataStructures;
 
 namespace MyHelper
 {
+    void SwapInst(
+        vector<Item>& iv,
+        int* feaValueArray,
+        const unsigned int first,
+        const unsigned int second );
+    void QSortInstances(
+        vector<Item>& iv,
+        int* feaValueArray,
+        const unsigned int left,
+        const unsigned int right );
     int Compare( const void* ele1, const void* ele2 );
     bool StrEqual( const char* str1, const char* str2 );
     // Include string terminator
@@ -27,17 +37,6 @@ namespace MyHelper
     // Consume a sorted array, remove duplicates in place, 
     // and return the number of unique elements.
     int removeDuplicates( int* sortedArr, unsigned int length );
-    unsigned int* sampleWithRep(
-        unsigned int* container,
-        const unsigned int numSamples,
-        const unsigned int numTotal );
-    unsigned int* sampleWithoutRep(
-        unsigned int* container,
-        const unsigned int numSamples,
-        unsigned int& numRest );
-    void randomizeArray(
-        unsigned int* arr, 
-        const unsigned int length );
 }
 
 #endif

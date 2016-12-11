@@ -31,13 +31,22 @@ void Classifier::Train(
     // Build a number of trees each having the same number of features.
     rootVec.reserve( NUM_TREES );
     treeBuilder.Init( fv, cv, NUM_FEATURES_PER_TREE );
-    
+
+    clock_t start_t, end_t;
+    double total_t;
+    start_t = clock();
+
     for (unsigned int treeIndex = 0; treeIndex < NUM_TREES; treeIndex++)
     {
         treeBuilder.BuildTree( iv );
         rootVec.push_back( treeBuilder.GetRoot() );
         //treeBuilder.PrintTree( treeBuilder.GetRoot(), 0 );
     }
+
+    end_t = clock();
+    total_t = (double)(end_t - start_t) / CLOCKS_PER_SEC;
+    
+    printf("Build forests: time taken by CPU is %f\n", total_t  );
 }
 
 char* Classifier::Analyze(

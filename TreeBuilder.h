@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+#include <time.h>
 
 
 using namespace BasicDataStructures;
@@ -16,7 +17,8 @@ using namespace MyHelper;
 class TreeBuilder
 {
 #define MIN_NODE_SIZE          1
-#define MIN_NODE_SIZE_TO_SPLIT 1
+#define MIN_NODE_SIZE_TO_SPLIT 100
+#define NUM_CHILDREN           2
 
 public:
     TreeBuilder();
@@ -25,7 +27,7 @@ public:
     void Init(
         const vector<NumericAttr>& fv, 
         const vector<char*>& cv, 
-        const unsigned int nf );
+        const unsigned int nfToSelect );
     void BuildTree( const vector<Item>& iv );
     void PrintTree( const TreeNode* iter, unsigned int h );
     void DestroyNode( TreeNode* node );

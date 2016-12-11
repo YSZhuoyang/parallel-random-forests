@@ -6,10 +6,10 @@
 int main()
 {
     ArffImporter trainSetImporter;
-    trainSetImporter.Read( "Dataset/train/train-first10.arff" );
+    trainSetImporter.Read( "Dataset/train/train-first1000.arff" );
 
     ArffImporter testSetImporter;
-    testSetImporter.Read( "Dataset/train/train-first10.arff" );
+    testSetImporter.Read( "Dataset/test/dev-first1000.arff" );
 
     Classifier classifier;
     classifier.Train(
