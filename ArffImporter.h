@@ -6,18 +6,20 @@
 #include "BasicDataStructures.h"
 #include "Helper.h"
 
+#include <cstdio>
+
 
 using namespace BasicDataStructures;
 using namespace MyHelper;
 
 class ArffImporter
 {
-#define READ_LINE_MAX 5000
-#define TOKEN_LENGTH_MAX 20
+#define READ_LINE_MAX     5000
+#define TOKEN_LENGTH_MAX  35
 
 #define KEYWORD_ATTRIBUTE "@ATTRIBUTE"
-#define KEYWORD_DATA "@DATA"
-#define KEYWORD_NUMERIC "NUMERIC"
+#define KEYWORD_DATA      "@DATA"
+#define KEYWORD_NUMERIC   "NUMERIC"
 
 public:
     ArffImporter();

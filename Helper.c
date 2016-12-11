@@ -4,13 +4,61 @@
 
 int MyHelper::Compare( const void* ele1, const void* ele2 )
 {
-    int f = *((int*) ele1);
-    int s = *((int*) ele2);
+    return (*((int*) ele1) - *((int*) ele2) );
+}
 
-    if (f > s) return 1;
-    if (f < s) return -1;
+Item MyHelper::Tokenize(
+    const char* str, 
+    const vector<NumericAttr>& featureVec )
+{
+    unsigned int numFeatures = featureVec.size();
+    Item item;
+    item.featureAttrArray = 
+        (int*) calloc( numFeatures, sizeof( int ) );
 
-    return 0;
+    unsigned int iter = 0;
+
+    while (str[iter] != '\0')
+    {
+        unsigned int startIndex = iter;
+
+        while (IsLetter( str[iter] ))
+            iter++;
+
+        // Found a token
+        if (iter > startIndex)
+        {
+            unsigned int tokenLen = iter - startIndex;
+
+            // Compare the token with every feature name
+            // Might use a hashmap (with key: name, value: index) 
+            // to speed up
+            for (unsigned int feaIndex = 0;
+                feaIndex < numFeatures; feaIndex++)
+            {
+                const char* feaName = featureVec[feaIndex].name;
+
+                unsigned index = 0;
+                while (index < tokenLen && feaName[index] != '\0'
+                    && (feaName[index] == str[startIndex + index] ||
+                    feaName[index] == str[startIndex + index] + 32))
+                    index++;
+                
+                if (index == tokenLen && feaName[index] == '\0')
+                    item.featureAttrArray[feaIndex]++;
+            }
+        }
+
+        if (str[iter] != '\0') iter++;
+    }
+
+    return item;
+}
+
+bool MyHelper::IsLetter( const char c )
+{
+    return ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || 
+        c == '\?' || c == '_');
 }
 
 bool MyHelper::StrEqual( const char* str1, const char* str2 )
@@ -34,11 +82,7 @@ unsigned int MyHelper::getIndexOfMax(
     const unsigned int* uintArray, 
     const unsigned int length )
 {
-    if (uintArray == nullptr || length <= 0)
-    {
-        printf( "Array must not be empty.\n" );
-        return 0;
-    }
+    if (uintArray == nullptr || length <= 0) return 0;
 
     unsigned int indexOfMax = 0;
     unsigned int max = 0;
@@ -55,25 +99,24 @@ unsigned int MyHelper::getIndexOfMax(
     return indexOfMax;
 }
 
-void MyHelper::RandomizeArray(
-    unsigned int* arr, 
-    const unsigned int length )
+int MyHelper::removeDuplicates(
+    int* sortedArr, 
+    unsigned int length )
 {
-    if (arr == nullptr || length < 1)
+    if (sortedArr == nullptr) return 0;
+
+    unsigned int uniqueId = 1;
+    unsigned int iter = 1;
+
+    while (iter < length)
     {
-        printf( "Empty array to randomize or incorrect length.\n" );
-        return;
+        if (sortedArr[iter - 1] != sortedArr[iter])
+            sortedArr[uniqueId++] = sortedArr[iter];
+
+        iter++;
     }
 
-    for (unsigned int i = length - 1; i > 0; i--)
-    {
-        unsigned int randPos = rand() % (i + 1);
-
-        // Swap
-        unsigned int temp = arr[randPos];
-        arr[randPos] = arr[i];
-        arr[i] = temp;
-    }
+    return uniqueId;
 }
 
 void MyHelper::CheckMPIErr( int errorCode, int mpiNodeId )

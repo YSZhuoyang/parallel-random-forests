@@ -78,7 +78,7 @@ void ArffImporter::Read( const char* fileName )
                 
                 while (sscanf( featureType, "%[^,}]%n", className, &readSize ) > 0)
                 {
-                    //printf( "Class name: %s \n", className );
+                    printf( "Class name: %s \n", className );
 
                     classVec.push_back( className );
                     className = (char*) malloc( TOKEN_LENGTH_MAX );
@@ -152,8 +152,6 @@ void ArffImporter::Read( const char* fileName )
                 //printf( "feature %u, bs: %f, mean: %d\n", i, featureVec[i].bucketSize, featureVec[i].mean );
             }
             
-            printf( "Num features: %d\n", numFeatures );
-
             free( featureValueSumArr );
             featureValueSumArr = nullptr;
 
@@ -161,7 +159,7 @@ void ArffImporter::Read( const char* fileName )
         }
     }
 
-    fclose(fp);
+    fclose( fp );
 }
 
 vector<char*> ArffImporter::GetClassAttr()
