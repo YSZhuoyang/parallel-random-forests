@@ -32,9 +32,9 @@ void Classifier::Train(
     rootVec.reserve( NUM_TREES );
     treeBuilder.Init( fv, cv, iv );
 
-    clock_t start_t, end_t;
-    double total_t;
-    start_t = clock();
+    time_t start,end;
+    double dif;
+    time( &start );
 
     for (unsigned int treeIndex = 0; treeIndex < NUM_TREES; treeIndex++)
     {
@@ -43,10 +43,10 @@ void Classifier::Train(
         //treeBuilder.PrintTree( treeBuilder.GetRoot(), 0 );
     }
 
-    end_t = clock();
-    total_t = (double)(end_t - start_t) / CLOCKS_PER_SEC;
-    
-    printf("Build forests: time taken by CPU is %f\n", total_t  );
+    time( &end );
+    dif = difftime( end, start );
+
+    printf( "Build forests: time taken is %.2lf seconds.\n", dif );
 }
 
 char* Classifier::Analyze(
@@ -54,11 +54,11 @@ char* Classifier::Analyze(
     const vector<NumericAttr>& featureVec,
     const vector<char*>& cv )
 {
-    Item item = Tokenize( str, featureVec );
-    int classIndex = Classify( item );
+    Item instance = Tokenize( str, featureVec );
+    int classIndex = Classify( instance );
 
-    free( item.featureAttrArray );
-    item.featureAttrArray = nullptr;
+    free( instance.featureAttrArray );
+    instance.featureAttrArray = nullptr;
 
     printf( "Labeled with: %s\n", cv[classIndex] );
 
@@ -76,8 +76,8 @@ void Classifier::Classify( const vector<Item>& iv )
     unsigned int correctCounter = 0;
     unsigned int totalNumber = iv.size();
 
-    for (const Item& item : iv)
-        if (Classify( item ) == item.classIndex) correctCounter++;
+    for (const Item& instance : iv)
+        if (Classify( instance ) == instance.classIndex) correctCounter++;
 
     float correctRate = (float) correctCounter / (float) totalNumber;
     float incorrectRate = 1.0f - correctRate;
@@ -86,7 +86,7 @@ void Classifier::Classify( const vector<Item>& iv )
     printf( "Incorrect rate: %f\n", incorrectRate );
 }
 
-int Classifier::Classify( const Item& item )
+int Classifier::Classify( const Item& instance )
 {
     unsigned short numClasses = classVec.size();
     unsigned int* votes = (unsigned int*) 
@@ -103,7 +103,7 @@ int Classifier::Classify( const Item& item )
             // 2 buckets by default:
             // one group having feature value smaller than threshold, 
             // another group having feature value greater than threshold.
-            if (item.featureAttrArray[i] <= node->threshold)
+            if (instance.featureAttrArray[i] <= node->threshold)
             {
                 if (node->childrenVec[0] == nullptr)
                     break;

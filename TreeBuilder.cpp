@@ -60,7 +60,7 @@ TreeNode* TreeBuilder::Split(
         return nullptr;
     }
     // The node is small, make it a leaf node.
-    else if (numInstances <= MIN_NODE_SIZE_TO_SPLIT)
+    else if (numInstances < MIN_NODE_SIZE_TO_SPLIT)
     {
         TreeNode* leaf = new TreeNode;
         LabelNode( leaf, iiv );
