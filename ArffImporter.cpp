@@ -111,7 +111,7 @@ void ArffImporter::Read( const char* fileName )
                 item.featureAttrArray = (int*) malloc( featureAttrArraySize );
 
                 // Get feature attribute value
-                while (sscanf( buffer + index, "%u%n", &value, &readSize ) > 0)
+                while (sscanf( buffer + index, "%d%n", &value, &readSize ) > 0)
                 {
                     if (featureVec[featureIndex].min > value)
                         featureVec[featureIndex].min = value;

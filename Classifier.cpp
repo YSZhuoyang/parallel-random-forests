@@ -1,6 +1,5 @@
 
 #include "Classifier.h"
-#include <time.h>
 
 
 Classifier::Classifier()
@@ -31,7 +30,7 @@ void Classifier::Train(
 
     // Build a number of trees each having the same number of features.
     rootVec.reserve( NUM_TREES );
-    treeBuilder.Init( fv, cv, NUM_FEATURES_PER_TREE );
+    treeBuilder.Init( fv, cv, iv );
 
     time_t start,end;
     double dif;
@@ -45,7 +44,7 @@ void Classifier::Train(
         #pragma omp for schedule(dynamic)
         for (unsigned int treeIndex = 0; treeIndex < NUM_TREES; treeIndex++)
         {
-            treeBuilder.BuildTree( iv );
+            treeBuilder.BuildTree( NUM_FEATURES_PER_TREE );
             #pragma omp critical
             rootVec.push_back( treeBuilder.GetRoot() );
             //treeBuilder.PrintTree( treeBuilder.GetRoot(), 0 );
@@ -63,11 +62,11 @@ char* Classifier::Analyze(
     const vector<NumericAttr>& featureVec,
     const vector<char*>& cv )
 {
-    Item item = Tokenize( str, featureVec );
-    int classIndex = Classify( item );
+    Item instance = Tokenize( str, featureVec );
+    int classIndex = Classify( instance );
 
-    free( item.featureAttrArray );
-    item.featureAttrArray = nullptr;
+    free( instance.featureAttrArray );
+    instance.featureAttrArray = nullptr;
 
     printf( "Labeled with: %s\n", cv[classIndex] );
 
@@ -96,7 +95,7 @@ void Classifier::Classify( const vector<Item>& iv )
     printf( "Incorrect rate: %f\n", incorrectRate );
 }
 
-int Classifier::Classify( const Item& item )
+int Classifier::Classify( const Item& instance )
 {
     unsigned short numClasses = classVec.size();
     unsigned int* votes = (unsigned int*) 
@@ -113,7 +112,7 @@ int Classifier::Classify( const Item& item )
             // 2 buckets by default:
             // one group having feature value smaller than threshold, 
             // another group having feature value greater than threshold.
-            if (item.featureAttrArray[i] <= node->threshold)
+            if (instance.featureAttrArray[i] <= node->threshold)
             {
                 if (node->childrenVec[0] == nullptr)
                     break;

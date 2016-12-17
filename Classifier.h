@@ -3,6 +3,7 @@
 #define _CLASSIFIER_H_
 
 #include "TreeBuilder.h"
+#include <time.h>
 #include <omp.h>
 
 class Classifier

@@ -26,25 +26,29 @@ public:
     void Init(
         const vector<NumericAttr>& fv,
         const vector<char*>& cv,
-        const unsigned int nfToSelect );
-    void BuildTree( const vector<Item>& iv );
+        const vector<Item>& iv );
+    void BuildTree( const unsigned int numFeaToSelect );
     void PrintTree( const TreeNode* iter, unsigned int h );
     void DestroyNode( TreeNode* node );
     TreeNode* GetRoot();
 
 private:
     TreeNode* Split(
-        const vector<Item>& iv,
+        const vector<unsigned int>& iiv,
         unsigned int* featureIndexArray,
         unsigned int height );
-    float ComputeGini( const vector<Item>& iv );
-    float ComputeEntropy( const vector<Item>& iv );
+    float ComputeGini( const vector<unsigned int>& iiv );
+    float ComputeEntropy( const vector<unsigned int>& iiv );
     // Count items of each class
-    unsigned int* GetDistribution( const vector<Item>& iv );
-    void LabelNode( TreeNode* node, const vector<Item>& iv );
+    unsigned int* GetDistribution(
+        const vector<unsigned int>& iiv );
+    void LabelNode(
+        TreeNode* node,
+        const vector<unsigned int>& iiv );
 
     vector<char*> classVec;
     vector<NumericAttr> featureVec;
+    vector<Item> instanceVec;
 
     unsigned int numFeaturesToSelect;
     unsigned int numFeaturesTotal;
