@@ -30,7 +30,7 @@ void Classifier::Train(
 
     // Build a number of trees each having the same number of features.
     rootVec.reserve( NUM_TREES );
-    treeBuilder.Init( fv, cv, NUM_FEATURES_PER_TREE );
+    treeBuilder.Init( fv, cv, iv );
 
     clock_t start_t, end_t;
     double total_t;
@@ -38,7 +38,7 @@ void Classifier::Train(
 
     for (unsigned int treeIndex = 0; treeIndex < NUM_TREES; treeIndex++)
     {
-        treeBuilder.BuildTree( iv );
+        treeBuilder.BuildTree( NUM_FEATURES_PER_TREE );
         rootVec.push_back( treeBuilder.GetRoot() );
         //treeBuilder.PrintTree( treeBuilder.GetRoot(), 0 );
     }
