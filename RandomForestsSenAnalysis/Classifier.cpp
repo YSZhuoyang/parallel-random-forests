@@ -36,7 +36,7 @@ void Classifier::Train(
     /******************** Init tree constructer ********************/
     // Build a number of trees each having the same number of features.
     rootVec.reserve( numTrees );
-    treeBuilder.Init( fv, cv, numFeaPerTree );
+    treeBuilder.Init( fv, cv, iv );
 
     time_t start,end;
     double dif;
@@ -45,7 +45,7 @@ void Classifier::Train(
     //#pragma omp parallel for schedule(dynamic)
     for (unsigned int treeIndex = 0; treeIndex < numTrees; treeIndex++)
     {
-        treeBuilder.BuildTree( iv );
+        treeBuilder.BuildTree( numFeaPerTree );
         //#pragma omp critical
         rootVec.push_back( treeBuilder.GetRoot() );
         //treeBuilder.PrintTree( treeBuilder.GetRoot(), 0 );
