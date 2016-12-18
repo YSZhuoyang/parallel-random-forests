@@ -6,7 +6,7 @@ A parallelized version of random forests learning algorithm.
 * Support Infogain and Gini index used as split criteria.
 * No need of pruning.
 
-## Configuration
+### Configuration
 * In 'Classifier.h', change following variables:
 
         NUM_TREES             // Number of trees to construct
