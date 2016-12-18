@@ -4,6 +4,7 @@
 
 #include "TreeBuilder.h"
 #include <omp.h>
+#include <time.h>
 
 
 class Classifier

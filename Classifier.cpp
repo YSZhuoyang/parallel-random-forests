@@ -1,6 +1,5 @@
 
 #include "Classifier.h"
-#include <time.h>
 
 
 Classifier::Classifier()
@@ -41,7 +40,7 @@ void Classifier::Train(
     // Build a number of trees with randomly selected features.
     unsigned int chunkSize = NUM_TREES / numMpiNodes;
     rootVec.reserve( chunkSize );
-    treeBuilder.Init( fv, cv, NUM_FEATURES_PER_TREE );
+    treeBuilder.Init( fv, cv, iv );
 
     printf( "Node %d constructed %u trees.\n", mpiNodeId, chunkSize );
 
@@ -60,7 +59,7 @@ void Classifier::Train(
         #pragma omp for schedule(dynamic)
         for (unsigned int treeIndex = 0; treeIndex < chunkSize; treeIndex++)
         {
-            treeBuilder.BuildTree( iv );
+            treeBuilder.BuildTree( NUM_FEATURES_PER_TREE );
             #pragma omp critical
             rootVec.push_back( treeBuilder.GetRoot() );
             //treeBuilder.PrintTree( treeBuilder.GetRoot(), 0 );
@@ -91,28 +90,28 @@ void Classifier::Classify( const vector<Item>& iv )
 
     /******************* Prepare buffer *******************/
     unsigned short numClasses = classVec.size();
-    unsigned int numItems = iv.size();
+    unsigned int numInstances = iv.size();
     unsigned int correctCounter = 0;
     unsigned int* votes = (unsigned int*) 
-        calloc( numClasses * numItems, sizeof( unsigned int ) );
+        calloc( numClasses * numInstances, sizeof( unsigned int ) );
 
     #pragma omp parallel for schedule(dynamic)
-    for (unsigned int i = 0; i < numItems; i++)
+    for (unsigned int i = 0; i < numInstances; i++)
         Classify( iv[i], votes, i );
     
     /************************** Do reduction *************************/
     if (mpiNodeId == MPI_ROOT_ID)
-        CheckMPIErr( MPI_Reduce( MPI_IN_PLACE, votes, numClasses * numItems, 
+        CheckMPIErr( MPI_Reduce( MPI_IN_PLACE, votes, numClasses * numInstances, 
             MPI_UNSIGNED, MPI_SUM, 0, MPI_COMM_WORLD ), mpiNodeId );
     else
-        CheckMPIErr( MPI_Reduce( votes, nullptr, numClasses * numItems, 
+        CheckMPIErr( MPI_Reduce( votes, nullptr, numClasses * numInstances, 
             MPI_UNSIGNED, MPI_SUM, 0, MPI_COMM_WORLD ), mpiNodeId );
     
     /************************ Compute accuracy ************************/
     if (mpiNodeId == MPI_ROOT_ID)
     {
         #pragma omp parallel for reduction(+: correctCounter) schedule(static)
-        for (unsigned int i = 0; i < numItems; i++)
+        for (unsigned int i = 0; i < numInstances; i++)
         {
             unsigned short predictedClassIndex = 
                 getIndexOfMax( votes + i * numClasses, numClasses );
@@ -120,7 +119,7 @@ void Classifier::Classify( const vector<Item>& iv )
                 correctCounter++;
         }
 
-        float correctRate = (float) correctCounter / (float) numItems;
+        float correctRate = (float) correctCounter / (float) numInstances;
         float incorrectRate = 1.0f - correctRate;
 
         printf( "Correct rate: %f\n", correctRate );
@@ -132,7 +131,7 @@ void Classifier::Classify( const vector<Item>& iv )
 }
 
 void Classifier::Classify(
-    const Item& item, 
+    const Item& instance, 
     unsigned int* votes, 
     unsigned int index )
 {
@@ -149,7 +148,7 @@ void Classifier::Classify(
             // 2 buckets by default:
             // one group having feature value smaller than threshold, 
             // another group having feature value greater than threshold.
-            if (item.featureAttrArray[i] <= node->threshold)
+            if (instance.featureAttrArray[i] <= node->threshold)
             {
                 if (node->childrenVec[0] == nullptr)
                     break;
