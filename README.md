@@ -2,7 +2,7 @@
 A random forest learning algorithm (without bagging).
 * Support both Gini index and info gain as split criteria.
 
-## Configuration
+### Configuration
 * In 'Classifier.h', change following variables:
 
         NUM_TREES             // Number of trees to construct
@@ -13,10 +13,14 @@ A random forest learning algorithm (without bagging).
         MIN_NODE_SIZE          // Minimum size of a node that can be considered as a leaf
         MIN_NODE_SIZE_TO_SPLIT // Minimum size of a node that can be further split
 
-## Author
+### Dataset and testing
+* Sentiment analysis of 50000 movie reviews from IMDb (25000 for training, 25000 for testing).
+* Used top 1000 words with highest frequencies of occurrences, 77% accuracy obtained without attributes selection.
+
+### Author
 * Oscar Yu
 
-## Terms of use for the dataset
+### Terms of use for the dataset
 
     Andrew L. Maas, Raymond E. Daly, Peter T. Pham, Dan Huang, Andrew Y. Ng, and Christopher Potts. (2011).
     Learning Word Vectors for Sentiment Analysis.
