@@ -38,6 +38,10 @@ void Classifier::Train(
     rootVec.reserve( numTrees );
     treeBuilder.Init( fv, cv, numFeaPerTree );
 
+    time_t start,end;
+    double dif;
+    time( &start );
+
     //#pragma omp parallel for schedule(dynamic)
     for (unsigned int treeIndex = 0; treeIndex < numTrees; treeIndex++)
     {
@@ -46,6 +50,10 @@ void Classifier::Train(
         rootVec.push_back( treeBuilder.GetRoot() );
         //treeBuilder.PrintTree( treeBuilder.GetRoot(), 0 );
     }
+
+    time( &end );
+    dif = difftime( end, start );
+    printf( "Build forests: time taken is %.2lf seconds.\n", dif );
 
     SaveModel();
 }

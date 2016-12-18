@@ -128,7 +128,7 @@ TreeNode* TreeBuilder::Split(
             float infoGain = entropyParent;
             
             // Compute entropy of children
-            for (vector<Item>& group : groups)
+            for (const vector<Item>& group : groups)
             {
                 //float giniChild = ComputeGini( group );
                 float entropyChild = ComputeEntropy( group );
@@ -181,7 +181,7 @@ TreeNode* TreeBuilder::Split(
         bool emptyChildFound = false;
 
         // Split children
-        for (vector<Item> childGroup : selectedChildren)
+        for (const vector<Item>& childGroup : selectedChildren)
         {
             TreeNode* childNode = Split( childGroup, 
                 featureIndexArray, height );
