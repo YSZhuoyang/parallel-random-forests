@@ -12,22 +12,22 @@ using namespace BasicDataStructures;
 
 namespace MyHelper
 {
-    void SwapInst(
-        vector<Item>& iv,
-        int* feaValueArray,
-        const unsigned int first,
-        const unsigned int second );
-    void QSortInstances(
-        vector<Item>& iv,
-        int* feaValueArray,
-        const unsigned int left,
-        const unsigned int right );
+    // void SwapInst(
+    //     vector<Instance>& iv,
+    //     int* feaValueArray,
+    //     const unsigned int first,
+    //     const unsigned int second );
+    // void QSortInstances(
+    //     vector<Instance>& iv,
+    //     int* feaValueArray,
+    //     const unsigned int left,
+    //     const unsigned int right );
     int Compare( const void* ele1, const void* ele2 );
     bool StrEqual( const char* str1, const char* str2 );
     // Include string terminator
     unsigned int GetStrLength( const char* str );
     bool IsLetter( const char c );
-    Item Tokenize(
+    Instance Tokenize(
         const char* str, 
         const vector<NumericAttr>& featureVec );
 
@@ -36,7 +36,9 @@ namespace MyHelper
         const unsigned int length );
     // Consume a sorted array, remove duplicates in place, 
     // and return the number of unique elements.
-    int removeDuplicates( int* sortedArr, unsigned int length );
+    unsigned int removeDuplicates(
+        float* sortedArr,
+        unsigned int length );
 }
 
 #endif

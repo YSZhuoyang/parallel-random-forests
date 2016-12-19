@@ -2,84 +2,58 @@
 #include "Helper.h"
 
 
-void MyHelper::SwapInst(
-    vector<Item>& iv,
-    int* feaValueArray,
-    const unsigned int first,
-    const unsigned int second )
-{
-    // Swap feature value
-    int tempVal = feaValueArray[first];
-    feaValueArray[first] = feaValueArray[second];
-    feaValueArray[second] = tempVal;
+// void MyHelper::SwapInst(
+//     vector<Instance>& iv,
+//     int* feaValueArray,
+//     const unsigned int first,
+//     const unsigned int second )
+// {
+//     // Swap feature value
+//     int tempVal = feaValueArray[first];
+//     feaValueArray[first] = feaValueArray[second];
+//     feaValueArray[second] = tempVal;
 
-    // Swap instance data
-    Item tempInst = iv[first];
-    iv[first] = iv[second];
-    iv[second] = tempInst;
-}
+//     // Swap instance data
+//     Instance tempInst = iv[first];
+//     iv[first] = iv[second];
+//     iv[second] = tempInst;
+// }
 
-void MyHelper::QSortInstances(
-    vector<Item>& iv,
-    int* feaValueArray,
-    const unsigned int left,
-    const unsigned int right )
-{
-    if (left >= right) return;
+// void MyHelper::QSortInstances(
+//     vector<Instance>& iv,
+//     int* feaValueArray,
+//     const unsigned int left,
+//     const unsigned int right )
+// {
+//     if (left >= right) return;
 
-    int slow = left;
-    // Shift pivot to the left.
-    SwapInst( iv, feaValueArray, left, (left + right) >> 1 );
+//     int slow = left;
+//     // Shift pivot to the left.
+//     SwapInst( iv, feaValueArray, left, (left + right) >> 1 );
 
-    for (unsigned int fast = left + 1; fast <= right; fast++)
-        if (feaValueArray[fast] < feaValueArray[left])
-            SwapInst( iv, feaValueArray, ++slow, fast );
+//     for (unsigned int fast = left + 1; fast <= right; fast++)
+//         if (feaValueArray[fast] < feaValueArray[left])
+//             SwapInst( iv, feaValueArray, ++slow, fast );
 
-    // Shift pivot back.
-    SwapInst( iv, feaValueArray, left, slow );
-    if (slow > 0) QSortInstances( iv, feaValueArray, left, slow - 1 );
-    QSortInstances( iv, feaValueArray, slow + 1, right );
-
-    /*if (right - left <= 1)
-    {
-        if (feaValueArray[right] < feaValueArray[left])
-            SwapInst( iv, feaValueArray, left, right );
-        
-        return;
-    }
-
-    const unsigned int middle = (left + right) >> 1;
-    const int pivot = feaValueArray[middle];
-    unsigned int lIter = left;
-    unsigned int rIter = right;
-
-    while (lIter < rIter)
-    {
-        while (feaValueArray[lIter] < pivot) lIter++;
-        while (feaValueArray[rIter] > pivot) rIter--;
-        
-        SwapInst( iv, feaValueArray, lIter, rIter );
-        lIter++;
-        rIter--;
-    }
-
-    QSortInstances( iv, feaValueArray, left, middle );
-    QSortInstances( iv, feaValueArray, middle, right );*/
-}
+//     // Shift pivot back.
+//     SwapInst( iv, feaValueArray, left, slow );
+//     if (slow > 0) QSortInstances( iv, feaValueArray, left, slow - 1 );
+//     QSortInstances( iv, feaValueArray, slow + 1, right );
+// }
 
 int MyHelper::Compare( const void* ele1, const void* ele2 )
 {
-    return (*((int*) ele1) - *((int*) ele2) );
+    return (*((float*) ele1) - *((float*) ele2) );
 }
 
-Item MyHelper::Tokenize(
+Instance MyHelper::Tokenize(
     const char* str, 
     const vector<NumericAttr>& featureVec )
 {
     unsigned int numFeatures = featureVec.size();
-    Item item;
-    item.featureAttrArray = 
-        (int*) calloc( numFeatures, sizeof( int ) );
+    Instance instance;
+    instance.featureAttrArray = 
+        (float*) calloc( numFeatures, sizeof( float ) );
 
     unsigned int iter = 0;
 
@@ -110,14 +84,14 @@ Item MyHelper::Tokenize(
                     index++;
                 
                 if (index == tokenLen && feaName[index] == '\0')
-                    item.featureAttrArray[feaIndex]++;
+                    instance.featureAttrArray[feaIndex]++;
             }
         }
 
         if (str[iter] != '\0') iter++;
     }
 
-    return item;
+    return instance;
 }
 
 bool MyHelper::IsLetter( const char c )
@@ -164,8 +138,8 @@ unsigned int MyHelper::getIndexOfMax(
     return indexOfMax;
 }
 
-int MyHelper::removeDuplicates(
-    int* sortedArr, 
+unsigned int MyHelper::removeDuplicates(
+    float* sortedArr, 
     unsigned int length )
 {
     if (sortedArr == nullptr) return 0;

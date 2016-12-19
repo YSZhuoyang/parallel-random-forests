@@ -17,8 +17,8 @@ ArffImporter::~ArffImporter()
     for (NumericAttr& feature : featureVec) free( feature.name );
     featureVec.clear();
 
-    for (Item& item : itemVec) free( item.featureAttrArray );
-    itemVec.clear();
+    for (Instance& instance : instanceVec) free( instance.featureAttrArray );
+    instanceVec.clear();
 }
 
 // Need to check string length boundary
@@ -32,7 +32,7 @@ void ArffImporter::Read( const char* fileName )
 		return;
 	}
 
-    // Assuming all data types of all features are integer
+    // Assuming all data types of all features are float
     // and ignoring feature types
     char firstToken[TOKEN_LENGTH_MAX];
     char buffer[READ_LINE_MAX];
@@ -60,10 +60,10 @@ void ArffImporter::Read( const char* fileName )
 
                 NumericAttr feature;
                 feature.name       = featureName;
-                feature.min        = 0;
-                feature.max        = 0;
-                feature.mean       = 0;
-                feature.bucketSize = 0;
+                feature.min        = 0.0f;
+                feature.max        = 0.0f;
+                feature.mean       = 0.0f;
+                feature.bucketSize = 0.0f;
                 // Two buckets by default: <= threshold, and > threshold
                 feature.numBuckets = 2;
 
@@ -96,22 +96,22 @@ void ArffImporter::Read( const char* fileName )
             numClasses = classVec.size();
             
             unsigned int featureAttrArraySize = 
-                numFeatures * sizeof( unsigned int );
+                numFeatures * sizeof( float );
 
-            int* featureValueSumArr = (int*) calloc( numFeatures, 
-                sizeof( int ) );
+            float* featureValueSumArr = (float*) calloc( numFeatures, 
+                sizeof( float ) );
 
             while (fgets( buffer, READ_LINE_MAX, fp ) != nullptr)
             {
                 unsigned int index = 0;
                 unsigned int featureIndex = 0;
-                int value;
+                float value;
                 
-                Item item;
-                item.featureAttrArray = (int*) malloc( featureAttrArraySize );
+                Instance instance;
+                instance.featureAttrArray = (float*) malloc( featureAttrArraySize );
 
                 // Get feature attribute value
-                while (sscanf( buffer + index, "%d%n", &value, &readSize ) > 0)
+                while (sscanf( buffer + index, "%f%n", &value, &readSize ) > 0)
                 {
                     if (featureVec[featureIndex].min > value)
                         featureVec[featureIndex].min = value;
@@ -120,7 +120,7 @@ void ArffImporter::Read( const char* fileName )
                         featureVec[featureIndex].max = value;
 
                     featureValueSumArr[featureIndex] += value;
-                    item.featureAttrArray[featureIndex++] = value;
+                    instance.featureAttrArray[featureIndex++] = value;
                     index += readSize + 1;
                 }
 
@@ -132,24 +132,24 @@ void ArffImporter::Read( const char* fileName )
                 {
                     if (StrEqual( classVec[i], classValue ))
                     {
-                        item.classIndex = i;
+                        instance.classIndex = i;
                         break;
                     }
                 }
 
-                itemVec.push_back( item );
+                instanceVec.push_back( instance );
             }
 
-            unsigned int itemSize = itemVec.size();
+            unsigned int instanceSize = instanceVec.size();
 
             // Compute bucket size and mean value for each numerical attribute
             for (unsigned int i = 0; i < numFeatures; i++)
             {
                 float sizeOfRange = featureVec[i].max - featureVec[i].min + 1;
                 featureVec[i].bucketSize = sizeOfRange / (float) featureVec[i].numBuckets;
-                featureVec[i].mean = featureValueSumArr[i] / itemSize;
+                featureVec[i].mean = featureValueSumArr[i] / instanceSize;
 
-                //printf( "feature %u, bs: %f, mean: %d\n", i, featureVec[i].bucketSize, featureVec[i].mean );
+                //printf( "feature %u, bs: %f, mean: %f\n", i, featureVec[i].bucketSize, featureVec[i].mean );
             }
             
             free( featureValueSumArr );
@@ -172,7 +172,7 @@ vector<NumericAttr> ArffImporter::GetFeatures()
     return featureVec;
 }
 
-vector<Item> ArffImporter::GetItems()
+vector<Instance> ArffImporter::GetInstances()
 {
-    return itemVec;
+    return instanceVec;
 }

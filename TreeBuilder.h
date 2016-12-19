@@ -26,7 +26,7 @@ public:
     void Init(
         const vector<NumericAttr>& fv,
         const vector<char*>& cv,
-        const vector<Item>& iv );
+        const vector<Instance>& iv );
     void BuildTree( const unsigned int numFeaToSelect );
     void PrintTree( const TreeNode* iter, unsigned int h );
     void DestroyNode( TreeNode* node );
@@ -39,7 +39,7 @@ private:
         unsigned int height );
     float ComputeGini( const vector<unsigned int>& iiv );
     float ComputeEntropy( const vector<unsigned int>& iiv );
-    // Count items of each class
+    // Count instances of each class
     unsigned int* GetDistribution(
         const vector<unsigned int>& iiv );
     void LabelNode(
@@ -48,7 +48,7 @@ private:
 
     vector<char*> classVec;
     vector<NumericAttr> featureVec;
-    vector<Item> instanceVec;
+    vector<Instance> instanceVec;
 
     unsigned int numFeaturesToSelect;
     unsigned int numFeaturesTotal;

@@ -4,7 +4,7 @@
 
 Classifier::Classifier()
 {
-
+    
 }
 
 Classifier::~Classifier()
@@ -16,7 +16,7 @@ Classifier::~Classifier()
 
 
 void Classifier::Train(
-    const vector<Item>& iv, 
+    const vector<Instance>& iv, 
     const vector<NumericAttr>& fv, 
     const vector<char*>& cv )
 {
@@ -54,8 +54,8 @@ char* Classifier::Analyze(
     const vector<NumericAttr>& featureVec,
     const vector<char*>& cv )
 {
-    Item instance = Tokenize( str, featureVec );
-    int classIndex = Classify( instance );
+    Instance instance = Tokenize( str, featureVec );
+    unsigned short classIndex = Classify( instance );
 
     free( instance.featureAttrArray );
     instance.featureAttrArray = nullptr;
@@ -65,7 +65,7 @@ char* Classifier::Analyze(
     return cv[classIndex];
 }
 
-void Classifier::Classify( const vector<Item>& iv )
+void Classifier::Classify( const vector<Instance>& iv )
 {
     if (classVec.empty())
     {
@@ -76,7 +76,7 @@ void Classifier::Classify( const vector<Item>& iv )
     unsigned int correctCounter = 0;
     unsigned int totalNumber = iv.size();
 
-    for (const Item& instance : iv)
+    for (const Instance& instance : iv)
         if (Classify( instance ) == instance.classIndex) correctCounter++;
 
     float correctRate = (float) correctCounter / (float) totalNumber;
@@ -86,7 +86,7 @@ void Classifier::Classify( const vector<Item>& iv )
     printf( "Incorrect rate: %f\n", incorrectRate );
 }
 
-int Classifier::Classify( const Item& instance )
+unsigned short Classifier::Classify( const Instance& instance )
 {
     unsigned short numClasses = classVec.size();
     unsigned int* votes = (unsigned int*) 

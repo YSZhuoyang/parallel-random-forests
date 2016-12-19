@@ -15,7 +15,7 @@ TreeBuilder::~TreeBuilder()
 void TreeBuilder::Init(
     const vector<NumericAttr>& fv, 
     const vector<char*>& cv,
-    const vector<Item>& iv )
+    const vector<Instance>& iv )
 {
     featureVec = fv;
     classVec = cv;
@@ -83,7 +83,7 @@ TreeNode* TreeBuilder::Split(
     }
 
     unsigned int selectedFeaIndex;
-    int selectedThreshold;
+    float selectedThreshold;
     vector<vector<unsigned int>> selectedChildrenIndex;
 
     unsigned int numRestFeaToSelect = numFeaturesToSelect;
@@ -101,13 +101,12 @@ TreeNode* TreeBuilder::Split(
         featureIndexArray[numRestFea] = randFeaIndex;
 
         // Get all values of that feature and sort them.
-        int* valueArr = (int*) malloc( numInstances * sizeof( int ) );
+        float* valueArr = (float*) malloc( numInstances * sizeof( float ) );
         for (unsigned int i = 0; i < numInstances; i++)
             valueArr[i] = instanceVec[iiv[i]].featureAttrArray[randFeaIndex];
-        qsort( valueArr, numInstances, sizeof( int ), Compare );
+        qsort( valueArr, numInstances, sizeof( float ), Compare );
         unsigned int numUniqueEle = removeDuplicates( valueArr, numInstances );
 
-        /*unsigned int preSplitPoint = 0;*/
         vector<vector<unsigned int>> groups;
         groups.resize( NUM_CHILDREN );
         groups[1] = iiv;
@@ -120,7 +119,7 @@ TreeNode* TreeBuilder::Split(
 
             while (groupSize > i)
             {
-                const Item& instance = instanceVec[groups[1][i]];
+                const Instance& instance = instanceVec[groups[1][i]];
 
                 if (instance.featureAttrArray[randFeaIndex] <=
                     valueArr[valueIndex])
@@ -133,19 +132,6 @@ TreeNode* TreeBuilder::Split(
                 }
                 else i++;
             }
-
-            /*if (valueIndex + 1 < numInstances && 
-                valueArr[valueIndex] == valueArr[valueIndex + 1])
-                continue;
-
-            for (unsigned int i = preSplitPoint; i <= valueIndex; i++)
-            {
-                groups[0].push_back( iv[i] );
-                groups[1][i - preSplitPoint] = groups[1].back();
-                groups[1].pop_back();
-            }
-
-            preSplitPoint = valueIndex + 1;*/
 
             //float giniSplit = giniParent;
             float infoGain = entropyParent;
@@ -197,7 +183,7 @@ TreeNode* TreeBuilder::Split(
         node->threshold    = selectedThreshold;
         //node->gini         = giniParent;
         //node->giniSplit    = giniSplitMax;
-        node->classIndex   = -1;
+        node->labeled      = false;
 
         height++;
 
@@ -220,11 +206,11 @@ TreeNode* TreeBuilder::Split(
 
 void TreeBuilder::PrintTree( const TreeNode* iter, unsigned int h )
 {
-    if (iter == nullptr || iter->classIndex != -1) return;
+    if (iter == nullptr || iter->labeled) return;
 
     for (unsigned int i = 0; i <= h; i++) printf( "-" );
     printf( "%s, ", featureVec[iter->featureIndex].name );
-    printf( "%d\n", iter->threshold );
+    printf( "%f\n", iter->threshold );
 
     for (const TreeNode* child : iter->childrenVec)
         PrintTree( child, h + 1 );
@@ -247,7 +233,7 @@ float TreeBuilder::ComputeEntropy( const vector<unsigned int>& iiv )
     {
         if (bucketArray[i] > 0 && bucketArray[i] < totalInstCount)
         {
-            double temp = (double) bucketArray[i] / totalInstCount;
+            float temp = (float) bucketArray[i] / totalInstCount;
             entropy -= temp * log2f( temp );
         }
     }
@@ -298,6 +284,7 @@ void TreeBuilder::LabelNode(
     unsigned int* bucketArray = GetDistribution( iiv );
     // Select the class of the largest class group.
     node->classIndex = getIndexOfMax( bucketArray, numClasses );
+    node->labeled = true;
 
     free( bucketArray );
     bucketArray = nullptr;
