@@ -11,8 +11,9 @@ A parallelized version of random forests learning algorithm.
         source venv/bin/activate
         pip3 install flask
 
-## Deploy locally
+## Build and deploy locally
 * Install boost on Ubuntu: run 'sudo apt install libboost-serialization-dev'
+* Under each module directories, run 'make' to compile C shared lib files
 
 ## Deploy on aws elastic beanstalk
 * Create a folder named '.ebextensions' under root dir
@@ -28,9 +29,6 @@ A parallelized version of random forests learning algorithm.
           yum:
             gcc-c++: []
             boost-devel: []
-
-## Build components
-* Under each module directories, run 'make' to compile C shared lib files
 
 ## Author
 * Oscar Yu
