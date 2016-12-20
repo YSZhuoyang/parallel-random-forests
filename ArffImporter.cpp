@@ -63,7 +63,6 @@ void ArffImporter::Read( const char* fileName )
                 feature.min        = 0.0;
                 feature.max        = 0.0;
                 feature.mean       = 0.0;
-                feature.bucketSize = 0.0;
                 // Two buckets by default: <= threshold, and > threshold
                 feature.numBuckets = 2;
 
@@ -145,19 +144,16 @@ void ArffImporter::Read( const char* fileName )
             // Compute bucket size and mean value for each numerical attribute
             for (unsigned int i = 0; i < numFeatures; i++)
             {
-                double sizeOfRange = featureVec[i].max - featureVec[i].min + 1;
-                featureVec[i].bucketSize = sizeOfRange / (double) featureVec[i].numBuckets;
                 featureVec[i].mean = featureValueSumArr[i] / instanceSize;
 
                 // printf(
-                //     "feature %u, bs: %f, max: %f, min: %f, mean: %f\n",
+                //     "feature %u, max: %f, min: %f, mean: %f\n",
                 //     i,
-                //     featureVec[i].bucketSize,
                 //     featureVec[i].max,
                 //     featureVec[i].min,
                 //     featureVec[i].mean );
             }
-            
+
             free( featureValueSumArr );
             featureValueSumArr = nullptr;
 
