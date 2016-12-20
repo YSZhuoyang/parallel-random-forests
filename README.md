@@ -1,5 +1,5 @@
 # Parallelized Random Forests
-A parallelized version of random forests learning algorithm.
+An openMP parallelized version of random forests learning algorithm.
 
 ## Author
 * Oscar Yu

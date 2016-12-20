@@ -2,19 +2,58 @@
 #include "Helper.h"
 
 
+// void MyHelper::SwapInst(
+//     vector<Instance>& iv,
+//     int* feaValueArray,
+//     const unsigned int first,
+//     const unsigned int second )
+// {
+//     // Swap feature value
+//     int tempVal = feaValueArray[first];
+//     feaValueArray[first] = feaValueArray[second];
+//     feaValueArray[second] = tempVal;
+
+//     // Swap instance data
+//     Instance tempInst = iv[first];
+//     iv[first] = iv[second];
+//     iv[second] = tempInst;
+// }
+
+// void MyHelper::QSortInstances(
+//     vector<Instance>& iv,
+//     int* feaValueArray,
+//     const unsigned int left,
+//     const unsigned int right )
+// {
+//     if (left >= right) return;
+
+//     int slow = left;
+//     // Shift pivot to the left.
+//     SwapInst( iv, feaValueArray, left, (left + right) >> 1 );
+
+//     for (unsigned int fast = left + 1; fast <= right; fast++)
+//         if (feaValueArray[fast] < feaValueArray[left])
+//             SwapInst( iv, feaValueArray, ++slow, fast );
+
+//     // Shift pivot back.
+//     SwapInst( iv, feaValueArray, left, slow );
+//     if (slow > 0) QSortInstances( iv, feaValueArray, left, slow - 1 );
+//     QSortInstances( iv, feaValueArray, slow + 1, right );
+// }
+
 int MyHelper::Compare( const void* ele1, const void* ele2 )
 {
-    return (*((int*) ele1) - *((int*) ele2) );
+    return (*((double*) ele1) - *((double*) ele2) );
 }
 
-Item MyHelper::Tokenize(
+Instance MyHelper::Tokenize(
     const char* str, 
     const vector<NumericAttr>& featureVec )
 {
     unsigned int numFeatures = featureVec.size();
-    Item item;
-    item.featureAttrArray = 
-        (int*) calloc( numFeatures, sizeof( int ) );
+    Instance instance;
+    instance.featureAttrArray = 
+        (double*) calloc( numFeatures, sizeof( double ) );
 
     unsigned int iter = 0;
 
@@ -22,7 +61,8 @@ Item MyHelper::Tokenize(
     {
         unsigned int startIndex = iter;
 
-        while (IsLetter( str[iter] ))
+        while (IsLetter( str[iter] ) ||
+            str[iter] == '\?' || str[iter] == '_')
             iter++;
 
         // Found a token
@@ -45,26 +85,36 @@ Item MyHelper::Tokenize(
                     index++;
                 
                 if (index == tokenLen && feaName[index] == '\0')
-                    item.featureAttrArray[feaIndex]++;
+                    instance.featureAttrArray[feaIndex]++;
             }
         }
 
         if (str[iter] != '\0') iter++;
     }
 
-    return item;
+    return instance;
 }
 
 bool MyHelper::IsLetter( const char c )
 {
-    return ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || 
-        c == '\?' || c == '_');
+    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
 }
 
-bool MyHelper::StrEqual( const char* str1, const char* str2 )
+bool MyHelper::StrEqualCaseSen( const char* str1, const char* str2 )
 {
     unsigned short i = 0;
-    while (str1[i] != '\0' && str2[i] != '\0' && str1[i] == str2[i]) i++;
+    while (str1[i] != '\0' && str1[i] == str2[i]) i++;
+
+    return (str1[i] == '\0' && str2[i] == '\0') ? true : false;
+}
+
+bool MyHelper::StrEqualCaseInsen( const char* str1, const char* str2 )
+{
+    unsigned short i = 0;
+    while (str1[i] != '\0' &&
+        (str1[i] == str2[i] ||
+        (IsLetter( str1[i] ) && IsLetter( str2[i] ) &&
+        abs( str1[i] - str2[i] ) == 32))) i++;
 
     return (str1[i] == '\0' && str2[i] == '\0') ? true : false;
 }
@@ -99,8 +149,8 @@ unsigned int MyHelper::getIndexOfMax(
     return indexOfMax;
 }
 
-int MyHelper::removeDuplicates(
-    int* sortedArr, 
+unsigned int MyHelper::removeDuplicates(
+    double* sortedArr, 
     unsigned int length )
 {
     if (sortedArr == nullptr) return 0;

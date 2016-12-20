@@ -4,7 +4,7 @@
 
 Classifier::Classifier()
 {
-    
+
 }
 
 Classifier::~Classifier()
@@ -16,7 +16,7 @@ Classifier::~Classifier()
 
 
 void Classifier::Train(
-    const vector<Instance>& iv, 
+    const vector<Item>& iv, 
     const vector<NumericAttr>& fv, 
     const vector<char*>& cv )
 {
@@ -27,6 +27,8 @@ void Classifier::Train(
     printf( "Num features: %d\n", numFeatures );
     
     /******************** Init tree constructer ********************/
+
+    // Build a number of trees each having the same number of features.
     rootVec.reserve( NUM_TREES );
     treeBuilder.Init( fv, cv, iv );
 
@@ -48,7 +50,7 @@ void Classifier::Train(
             //treeBuilder.PrintTree( treeBuilder.GetRoot(), 0 );
         }
     }
-
+    
     time( &end );
     dif = difftime( end, start );
 
@@ -60,8 +62,8 @@ char* Classifier::Analyze(
     const vector<NumericAttr>& featureVec,
     const vector<char*>& cv )
 {
-    Instance instance = Tokenize( str, featureVec );
-    unsigned short classIndex = Classify( instance );
+    Item instance = Tokenize( str, featureVec );
+    int classIndex = Classify( instance );
 
     free( instance.featureAttrArray );
     instance.featureAttrArray = nullptr;
@@ -71,7 +73,7 @@ char* Classifier::Analyze(
     return cv[classIndex];
 }
 
-void Classifier::Classify( const vector<Instance>& iv )
+void Classifier::Classify( const vector<Item>& iv )
 {
     if (classVec.empty())
     {
@@ -80,21 +82,20 @@ void Classifier::Classify( const vector<Instance>& iv )
     }
 
     unsigned int correctCounter = 0;
-    unsigned int numInstances = iv.size();
+    unsigned int totalNumber = iv.size();
 
-    #pragma omp parallel for reduction (+: correctCounter) schedule(dynamic)
-    for (unsigned int instId = 0; instId < numInstances; instId++)
-        if (Classify( iv[instId] ) == iv[instId].classIndex)
-            correctCounter++;
+    #pragma omp parallel for reduction(+: correctCounter) schedule(dynamic)
+    for (unsigned int i = 0; i < totalNumber; i++)
+        if (Classify( iv[i] ) == iv[i].classIndex) correctCounter++;
 
-    double correctRate = (double) correctCounter / (double) numInstances;
-    double incorrectRate = 1.0 - correctRate;
+    float correctRate = (float) correctCounter / (float) totalNumber;
+    float incorrectRate = 1.0f - correctRate;
 
     printf( "Correct rate: %f\n", correctRate );
     printf( "Incorrect rate: %f\n", incorrectRate );
 }
 
-unsigned short Classifier::Classify( const Instance& instance )
+int Classifier::Classify( const Item& instance )
 {
     unsigned short numClasses = classVec.size();
     unsigned int* votes = (unsigned int*) 
@@ -111,10 +112,20 @@ unsigned short Classifier::Classify( const Instance& instance )
             // 2 buckets by default:
             // one group having feature value smaller than threshold, 
             // another group having feature value greater than threshold.
-            unsigned int childId =
-                (unsigned int) (instance.featureAttrArray[i] >= node->threshold);
-            if (node->childrenVec[childId] == nullptr) break;
-            else node = node->childrenVec[childId];
+            if (instance.featureAttrArray[i] <= node->threshold)
+            {
+                if (node->childrenVec[0] == nullptr)
+                    break;
+                else
+                    node = node->childrenVec[0];
+            }
+            else
+            {
+                if (node->childrenVec[1] == nullptr)
+                    break;
+                else
+                    node = node->childrenVec[1];
+            }
         }
 
         votes[node->classIndex]++;

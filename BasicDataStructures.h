@@ -9,29 +9,29 @@ using namespace std;
 
 namespace BasicDataStructures
 {
-    struct Item
+    struct Instance
     {
-        int* featureAttrArray;
+        double* featureAttrArray;
         unsigned short classIndex;
     };
 
     struct NumericAttr
     {
         char* name;
-        int min;
-        int max;
-        int mean;                // Not used.
-        float bucketSize;        // Not used.
+        double min;
+        double max;
+        double mean;             // Not used.
         unsigned int numBuckets; // Not used.
     };
 
     struct TreeNode
     {
-        float gini;
-        float giniSplit;
+        //double gini;
+        //double giniSplit;
+        double threshold;
+        bool labeled;
         unsigned int featureIndex;
-        int threshold;
-        int classIndex;
+        unsigned short classIndex;
         vector<TreeNode*> childrenVec;
     };
 }
