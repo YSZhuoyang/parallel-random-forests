@@ -11,25 +11,25 @@ namespace BasicDataStructures
 {
     struct Instance
     {
-        float* featureAttrArray;
+        double* featureAttrArray;
         unsigned short classIndex;
     };
 
     struct NumericAttr
     {
         char* name;
-        float min;
-        float max;
-        float mean;              // Not used.
-        float bucketSize;        // Not used.
+        double min;
+        double max;
+        double mean;              // Not used.
+        double bucketSize;        // Not used.
         unsigned int numBuckets; // Not used.
     };
 
     struct TreeNode
     {
-        //float gini;
-        //float giniSplit;
-        float threshold;
+        //double gini;
+        //double giniSplit;
+        double threshold;
         bool labeled;
         unsigned int featureIndex;
         unsigned short classIndex;

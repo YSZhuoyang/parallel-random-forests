@@ -79,8 +79,8 @@ void Classifier::Classify( const vector<Instance>& iv )
     for (const Instance& instance : iv)
         if (Classify( instance ) == instance.classIndex) correctCounter++;
 
-    float correctRate = (float) correctCounter / (float) totalNumber;
-    float incorrectRate = 1.0f - correctRate;
+    double correctRate = (double) correctCounter / (double) totalNumber;
+    double incorrectRate = 1.0 - correctRate;
 
     printf( "Correct rate: %f\n", correctRate );
     printf( "Incorrect rate: %f\n", incorrectRate );
@@ -103,20 +103,20 @@ unsigned short Classifier::Classify( const Instance& instance )
             // 2 buckets by default:
             // one group having feature value smaller than threshold, 
             // another group having feature value greater than threshold.
-            if (instance.featureAttrArray[i] <= node->threshold)
-            {
-                if (node->childrenVec[0] == nullptr)
-                    break;
-                else
-                    node = node->childrenVec[0];
-            }
-            else
-            {
-                if (node->childrenVec[1] == nullptr)
-                    break;
-                else
-                    node = node->childrenVec[1];
-            }
+            unsigned int childId =
+                (unsigned int) (instance.featureAttrArray[i] >= node->threshold);
+            if (node->childrenVec[childId] == nullptr) break;
+            else node = node->childrenVec[childId];
+            // if (instance.featureAttrArray[i] < node->threshold)
+            // {
+            //     if (node->childrenVec[0] == nullptr) break;
+            //     else node = node->childrenVec[0];
+            // }
+            // else
+            // {
+            //     if (node->childrenVec[1] == nullptr) break;
+            //     else node = node->childrenVec[1];
+            // }
         }
 
         votes[node->classIndex]++;

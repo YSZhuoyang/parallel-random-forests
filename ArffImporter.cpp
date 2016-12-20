@@ -32,7 +32,7 @@ void ArffImporter::Read( const char* fileName )
 		return;
 	}
 
-    // Assuming all data types of all features are float
+    // Assuming all data types of all features are double
     // and ignoring feature types
     char firstToken[TOKEN_LENGTH_MAX];
     char buffer[READ_LINE_MAX];
@@ -45,7 +45,7 @@ void ArffImporter::Read( const char* fileName )
         int readSize;
         sscanf( buffer, "%s%n", firstToken, &readSize );
 
-        if (StrEqual( firstToken, KEYWORD_ATTRIBUTE ))
+        if (StrEqualCaseInsen( firstToken, KEYWORD_ATTRIBUTE ))
         {
             char* featureName = (char*) malloc( TOKEN_LENGTH_MAX );
             char* featureType = (char*) malloc( TOKEN_LENGTH_MAX );
@@ -53,17 +53,17 @@ void ArffImporter::Read( const char* fileName )
             sscanf( buffer + readSize, "%s %s", featureName, featureType );
 
             // Read feature names
-            if (StrEqual( featureType, KEYWORD_NUMERIC ))
+            if (StrEqualCaseInsen( featureType, KEYWORD_NUMERIC ))
             {
                 //printf( "Feature name: %s, length: %d \n", 
                 //    featureName, GetStrLength( featureName ) );
 
                 NumericAttr feature;
                 feature.name       = featureName;
-                feature.min        = 0.0f;
-                feature.max        = 0.0f;
-                feature.mean       = 0.0f;
-                feature.bucketSize = 0.0f;
+                feature.min        = 0.0;
+                feature.max        = 0.0;
+                feature.mean       = 0.0;
+                feature.bucketSize = 0.0;
                 // Two buckets by default: <= threshold, and > threshold
                 feature.numBuckets = 2;
 
@@ -90,28 +90,28 @@ void ArffImporter::Read( const char* fileName )
             continue;
         }
         // Read feature values
-        else if (StrEqual( firstToken, KEYWORD_DATA ))
+        else if (StrEqualCaseInsen( firstToken, KEYWORD_DATA ))
         {
             numFeatures = featureVec.size();
             numClasses = classVec.size();
             
             unsigned int featureAttrArraySize = 
-                numFeatures * sizeof( float );
+                numFeatures * sizeof( double );
 
-            float* featureValueSumArr = (float*) calloc( numFeatures, 
-                sizeof( float ) );
+            double* featureValueSumArr = (double*) calloc( numFeatures, 
+                sizeof( double ) );
 
             while (fgets( buffer, READ_LINE_MAX, fp ) != nullptr)
             {
                 unsigned int index = 0;
                 unsigned int featureIndex = 0;
-                float value;
+                double value;
                 
                 Instance instance;
-                instance.featureAttrArray = (float*) malloc( featureAttrArraySize );
+                instance.featureAttrArray = (double*) malloc( featureAttrArraySize );
 
                 // Get feature attribute value
-                while (sscanf( buffer + index, "%f%n", &value, &readSize ) > 0)
+                while (sscanf( buffer + index, "%lf%n", &value, &readSize ) > 0)
                 {
                     if (featureVec[featureIndex].min > value)
                         featureVec[featureIndex].min = value;
@@ -130,7 +130,7 @@ void ArffImporter::Read( const char* fileName )
 
                 for (unsigned short i = 0; i < numClasses; i++)
                 {
-                    if (StrEqual( classVec[i], classValue ))
+                    if (StrEqualCaseSen( classVec[i], classValue ))
                     {
                         instance.classIndex = i;
                         break;
@@ -145,11 +145,17 @@ void ArffImporter::Read( const char* fileName )
             // Compute bucket size and mean value for each numerical attribute
             for (unsigned int i = 0; i < numFeatures; i++)
             {
-                float sizeOfRange = featureVec[i].max - featureVec[i].min + 1;
-                featureVec[i].bucketSize = sizeOfRange / (float) featureVec[i].numBuckets;
+                double sizeOfRange = featureVec[i].max - featureVec[i].min + 1;
+                featureVec[i].bucketSize = sizeOfRange / (double) featureVec[i].numBuckets;
                 featureVec[i].mean = featureValueSumArr[i] / instanceSize;
 
-                //printf( "feature %u, bs: %f, mean: %f\n", i, featureVec[i].bucketSize, featureVec[i].mean );
+                // printf(
+                //     "feature %u, bs: %f, max: %f, min: %f, mean: %f\n",
+                //     i,
+                //     featureVec[i].bucketSize,
+                //     featureVec[i].max,
+                //     featureVec[i].min,
+                //     featureVec[i].mean );
             }
             
             free( featureValueSumArr );

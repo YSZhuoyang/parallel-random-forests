@@ -43,7 +43,7 @@
 
 int MyHelper::Compare( const void* ele1, const void* ele2 )
 {
-    return (*((float*) ele1) - *((float*) ele2) );
+    return (*((double*) ele1) - *((double*) ele2) );
 }
 
 Instance MyHelper::Tokenize(
@@ -53,7 +53,7 @@ Instance MyHelper::Tokenize(
     unsigned int numFeatures = featureVec.size();
     Instance instance;
     instance.featureAttrArray = 
-        (float*) calloc( numFeatures, sizeof( float ) );
+        (double*) calloc( numFeatures, sizeof( double ) );
 
     unsigned int iter = 0;
 
@@ -61,7 +61,8 @@ Instance MyHelper::Tokenize(
     {
         unsigned int startIndex = iter;
 
-        while (IsLetter( str[iter] ))
+        while (IsLetter( str[iter] ) ||
+            str[iter] == '\?' || str[iter] == '_')
             iter++;
 
         // Found a token
@@ -96,14 +97,24 @@ Instance MyHelper::Tokenize(
 
 bool MyHelper::IsLetter( const char c )
 {
-    return ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || 
-        c == '\?' || c == '_');
+    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
 }
 
-bool MyHelper::StrEqual( const char* str1, const char* str2 )
+bool MyHelper::StrEqualCaseSen( const char* str1, const char* str2 )
 {
     unsigned short i = 0;
-    while (str1[i] != '\0' && str2[i] != '\0' && str1[i] == str2[i]) i++;
+    while (str1[i] != '\0' && str1[i] == str2[i]) i++;
+
+    return (str1[i] == '\0' && str2[i] == '\0') ? true : false;
+}
+
+bool MyHelper::StrEqualCaseInsen( const char* str1, const char* str2 )
+{
+    unsigned short i = 0;
+    while (str1[i] != '\0' &&
+        (str1[i] == str2[i] ||
+        (IsLetter( str1[i] ) && IsLetter( str2[i] ) &&
+        abs( str1[i] - str2[i] ) == 32))) i++;
 
     return (str1[i] == '\0' && str2[i] == '\0') ? true : false;
 }
@@ -139,7 +150,7 @@ unsigned int MyHelper::getIndexOfMax(
 }
 
 unsigned int MyHelper::removeDuplicates(
-    float* sortedArr, 
+    double* sortedArr, 
     unsigned int length )
 {
     if (sortedArr == nullptr) return 0;

@@ -7,7 +7,6 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <math.h>
 
 
 using namespace BasicDataStructures;
@@ -37,8 +36,8 @@ private:
         const vector<unsigned int>& iiv,
         unsigned int* featureIndexArray,
         unsigned int height );
-    float ComputeGini( const vector<unsigned int>& iiv );
-    float ComputeEntropy( const vector<unsigned int>& iiv );
+    double ComputeGini( const vector<unsigned int>& iiv );
+    double ComputeEntropy( const vector<unsigned int>& iiv );
     // Count instances of each class
     unsigned int* GetDistribution(
         const vector<unsigned int>& iiv );
