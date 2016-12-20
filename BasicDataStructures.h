@@ -21,7 +21,6 @@ namespace BasicDataStructures
         double min;
         double max;
         double mean;             // Not used.
-        double bucketSize;       // Not used.
         unsigned int numBuckets; // Not used.
     };
 
