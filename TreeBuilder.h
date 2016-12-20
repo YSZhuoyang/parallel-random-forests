@@ -36,12 +36,16 @@ private:
         const vector<unsigned int>& iiv,
         unsigned int* featureIndexArray,
         unsigned int height );
-    double ComputeGini( const vector<unsigned int>& iiv );
-    double ComputeEntropy( const vector<unsigned int>& iiv );
-    // Count instances of each class
-    unsigned int* GetDistribution(
+    inline double ComputeGini(
+        const unsigned int* classDistribution,
+        const unsigned int numInstances );
+    inline double ComputeEntropy(
+        const unsigned int* classDistribution,
+        const unsigned int numInstances );
+    // Count instances belonging to each class
+    inline unsigned int* GetDistribution(
         const vector<unsigned int>& iiv );
-    void LabelNode(
+    inline void LabelNode(
         TreeNode* node,
         const vector<unsigned int>& iiv );
 
