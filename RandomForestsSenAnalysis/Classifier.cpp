@@ -24,7 +24,7 @@ void Classifier::Configure(
 }
 
 void Classifier::Train(
-    const vector<Item>& iv, 
+    const vector<Instance>& iv, 
     const vector<NumericAttr>& fv, 
     const vector<char*>& cv )
 {
@@ -64,11 +64,11 @@ char* Classifier::Analyze(
     const vector<char*>& cv )
 {
     classVec = cv;
-    Item item = Tokenize( str, featureVec );
-    int classIndex = Classify( item );
+    Instance instance = Tokenize( str, featureVec );
+    int classIndex = Classify( instance );
 
-    free( item.featureAttrArray );
-    item.featureAttrArray = nullptr;
+    free( instance.featureAttrArray );
+    instance.featureAttrArray = nullptr;
 
     // Need to allocate new memo considering that class vector
     // will be cleared and all memo used will be released.
@@ -78,8 +78,8 @@ char* Classifier::Analyze(
     return label;
 }
 
-float Classifier::Test(
-    const vector<Item>& iv, 
+double Classifier::Test(
+    const vector<Instance>& iv, 
     const vector<char*>& cv )
 {
     if (rootVec.empty())
@@ -100,8 +100,8 @@ float Classifier::Test(
     for (unsigned int i = 0; i < totalNumber; i++)
         if (Classify( iv[i] ) == iv[i].classIndex) correctCounter++;
 
-    float correctRate = (float) correctCounter / (float) totalNumber;
-    float incorrectRate = 1.0f - correctRate;
+    double correctRate = (double) correctCounter / (double) totalNumber;
+    double incorrectRate = 1.0f - correctRate;
 
     printf( "Correct rate: %f\n", correctRate );
     printf( "Incorrect rate: %f\n", incorrectRate );
@@ -109,7 +109,7 @@ float Classifier::Test(
     return correctRate;
 }
 
-int Classifier::Classify( const Item& item )
+int Classifier::Classify( const Instance& instance )
 {
     unsigned short numClasses = classVec.size();
     unsigned int* votes = (unsigned int*) 
@@ -126,20 +126,10 @@ int Classifier::Classify( const Item& item )
             // 2 buckets by default:
             // one group having feature value smaller than threshold, 
             // another group having feature value greater than threshold.
-            if (item.featureAttrArray[i] <= node->threshold)
-            {
-                if (node->childrenVec[0] == nullptr)
-                    break;
-                else
-                    node = node->childrenVec[0];
-            }
-            else
-            {
-                if (node->childrenVec[1] == nullptr)
-                    break;
-                else
-                    node = node->childrenVec[1];
-            }
+            unsigned int childId =
+                (unsigned int) (instance.featureAttrArray[i] >= node->threshold);
+            if (node->childrenVec[childId] == nullptr) break;
+            else node = node->childrenVec[childId];
         }
 
         votes[node->classIndex]++;

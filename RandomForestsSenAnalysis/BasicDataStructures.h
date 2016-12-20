@@ -6,35 +6,36 @@
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/access.hpp>
 
+
 using namespace std;
 
 namespace BasicDataStructures
 {
-    struct Item
+    struct Instance
     {
-        int* featureAttrArray;
+        double* featureAttrArray;
         unsigned short classIndex;
     };
 
     struct NumericAttr
     {
         char* name;
-        int min;
-        int max;
-        int mean;                // Not used.
-        float bucketSize;        // Not used.
+        double min;
+        double max;
+        double mean;             // Not used.
         unsigned int numBuckets; // Not used.
     };
 
     struct TreeNode
     {
-        float gini;
-        float giniSplit;
+        // double gini;
+        // double giniSplit;
+        double threshold;
         unsigned int featureIndex;
-        int threshold;
-        int classIndex;
+        unsigned short classIndex;
+        bool labeled;
         vector<TreeNode*> childrenVec;
-
+        
         // Serialization
         friend class boost::serialization::access;
         template<class Archive>
@@ -42,11 +43,12 @@ namespace BasicDataStructures
             Archive &ar,
             const unsigned int version )
         {
-            ar & gini;
-            ar & giniSplit;
-            ar & featureIndex;
+            // ar & gini;
+            // ar & giniSplit;
             ar & threshold;
+            ar & featureIndex;
             ar & classIndex;
+            ar & labeled;
             ar & childrenVec;
         }
     };

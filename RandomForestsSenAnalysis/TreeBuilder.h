@@ -7,7 +7,6 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <math.h>
 
 
 using namespace BasicDataStructures;
@@ -16,7 +15,7 @@ using namespace MyHelper;
 class TreeBuilder
 {
 #define MIN_NODE_SIZE          1
-#define MIN_NODE_SIZE_TO_SPLIT 100
+#define MIN_NODE_SIZE_TO_SPLIT 2
 #define NUM_CHILDREN           2
 
 public:
@@ -26,7 +25,7 @@ public:
     void Init(
         const vector<NumericAttr>& fv,
         const vector<char*>& cv,
-        const vector<Item>& iv );
+        const vector<Instance>& iv );
     void BuildTree( const unsigned int numFeaToSelect );
     void PrintTree( const TreeNode* iter, unsigned int h );
     void DestroyNode( TreeNode* node );
@@ -37,9 +36,9 @@ private:
         const vector<unsigned int>& iiv,
         unsigned int* featureIndexArray,
         unsigned int height );
-    float ComputeGini( const vector<unsigned int>& iiv );
-    float ComputeEntropy( const vector<unsigned int>& iiv );
-    // Count items of each class
+    double ComputeGini( const vector<unsigned int>& iiv );
+    double ComputeEntropy( const vector<unsigned int>& iiv );
+    // Count instances of each class
     unsigned int* GetDistribution(
         const vector<unsigned int>& iiv );
     void LabelNode(
@@ -48,7 +47,7 @@ private:
 
     vector<char*> classVec;
     vector<NumericAttr> featureVec;
-    vector<Item> instanceVec;
+    vector<Instance> instanceVec;
 
     unsigned int numFeaturesToSelect;
     unsigned int numFeaturesTotal;

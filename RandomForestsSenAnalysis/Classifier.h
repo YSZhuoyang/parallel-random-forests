@@ -21,21 +21,21 @@ public:
         unsigned int numTrees,
         unsigned int numFeaPerTree );
     void Train(
-        const vector<Item>& iv, 
+        const vector<Instance>& iv, 
         const vector<NumericAttr>& fv, 
         const vector<char*>& cv );
     char* Analyze(
         const char* str,
         const vector<NumericAttr>& featureVec,
         const vector<char*>& cv );
-    float Test(
-        const vector<Item>& iv, 
+    double Test(
+        const vector<Instance>& iv, 
         const vector<char*>& cv );
 
 
 private:
     // Return the index of the predicted class
-    int Classify( const Item& item );
+    int Classify( const Instance& instance );
     void SaveModel();
     void LoadModel();
 
@@ -47,7 +47,7 @@ private:
 
     // Settings
     unsigned int numTrees      = 1;
-    unsigned int numFeaPerTree = 4;
+    unsigned int numFeaPerTree = 1;
 };
 
 #endif

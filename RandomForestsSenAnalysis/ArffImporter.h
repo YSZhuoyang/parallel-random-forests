@@ -28,13 +28,13 @@ public:
     void Read( const char* fileName );
     vector<char*> GetClassAttr();
     vector<NumericAttr> GetFeatures();
-    vector<Item> GetItems();
+    vector<Instance> GetInstances();
 
 
 private:
     vector<char*> classVec;
     vector<NumericAttr> featureVec;
-    vector<Item> itemVec;
+    vector<Instance> instanceVec;
 
     unsigned int numFeatures       = 0;
     unsigned short numClasses      = 0;

@@ -16,7 +16,7 @@ extern "C"
         Classifier classifier;
         classifier.Configure( numTrees, numFeaPerTree );
         classifier.Train(
-            trainSetImporter.GetItems(),
+            trainSetImporter.GetInstances(),
             trainSetImporter.GetFeatures(),
             trainSetImporter.GetClassAttr() );
     }
@@ -29,7 +29,7 @@ extern "C"
 
         Classifier classifier;
         return classifier.Test(
-            testSetImporter.GetItems(), 
+            testSetImporter.GetInstances(), 
             testSetImporter.GetClassAttr() );
     }
 
@@ -37,7 +37,7 @@ extern "C"
     {
         ArffImporter trainSetImporter;
         trainSetImporter.Read(
-            "RandomForestsSenAnalysis/Dataset/train/train-first50.arff" );
+            "RandomForestsSenAnalysis/Dataset/train/train-first1000.arff" );
 
         Classifier classifier;
         char* label = classifier.Analyze(

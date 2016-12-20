@@ -21,6 +21,12 @@ def rf_train():
     accuracy = invoke_rf_test()
     return jsonify({"Accuracy" : accuracy})
 
+@application.route('/rf_test')
+def rf_test():
+    """Random forest training api."""
+    accuracy = invoke_rf_test()
+    return jsonify({"Accuracy" : accuracy})
+
 @application.route('/rf_analyze')
 def rf_analyze():
     """Random forest training api."""
