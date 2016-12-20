@@ -12,7 +12,7 @@ OBJECTS = Helper.o ArffImporter.o TreeBuilder.o Classifier.o
 exec: ${OBJECTS} Main.c
 	$(CC) ${CFLAGS} -o $@ ${OBJECTS} Main.c
 
-Helper.o: Helper.c Helper.h
+Helper.o: Helper.c Helper.h BasicDataStructures.h
 	$(CC) ${CFLAGS} -c Helper.c
 
 ArffImporter.o: ArffImporter.cpp ArffImporter.h BasicDataStructures.h Helper.h

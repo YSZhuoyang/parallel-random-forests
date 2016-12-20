@@ -1,4 +1,5 @@
 .vscode/
+.elasticbeanstalk/
 *.h.gch
 *.o
 exec
