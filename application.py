@@ -17,7 +17,9 @@ def index():
 @application.route('/rf_train')
 def rf_train():
     """Random forest training api."""
-    invoke_rf_train(100, 10)
+    numTrees = int(request.args.get('num_trees'))
+    numFeaPerTree = int(request.args.get('num_features_per_tree'))
+    invoke_rf_train(numTrees, numFeaPerTree)
     accuracy = invoke_rf_test()
     return jsonify({"Accuracy" : accuracy})
 
