@@ -47,7 +47,7 @@ private:
         const vector<unsigned int>& iiv );
     inline void LabelNode(
         TreeNode* node,
-        const vector<unsigned int>& iiv );
+        const unsigned int* classDistribution );
 
     vector<char*> classVec;
     vector<NumericAttr> featureVec;

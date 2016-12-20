@@ -56,17 +56,19 @@ TreeNode* TreeBuilder::Split(
 
     // The node is too small thus it is ignored.
     if (numInstances < MIN_NODE_SIZE) return nullptr;
+
+    // Compute entropy of parent node.
+    unsigned int* parentClassDist = GetDistribution( iiv );
+
     // The node is small, make it a leaf node.
-    else if (numInstances < MIN_NODE_SIZE_TO_SPLIT)
+    if (numInstances < MIN_NODE_SIZE_TO_SPLIT)
     {
         TreeNode* leaf = new TreeNode;
-        LabelNode( leaf, iiv );
+        LabelNode( leaf, parentClassDist );
         
         return leaf;
     }
 
-    // Compute entropy of parent node.
-    unsigned int* parentClassDist = GetDistribution( iiv );
     double entropyParent = ComputeEntropy( parentClassDist, numInstances );
     // double giniParent = ComputeGini( parentClassDist, numInstances );
 
@@ -75,7 +77,7 @@ TreeNode* TreeBuilder::Split(
     if (entropyParent <= 0.0)
     {
         TreeNode* leaf = new TreeNode;
-        LabelNode( leaf, iiv );
+        LabelNode( leaf, parentClassDist );
 
         return leaf;
     }
@@ -226,7 +228,7 @@ TreeNode* TreeBuilder::Split(
             node->childrenVec.push_back( childNode );
         }
 
-        if (emptyChildFound) LabelNode( node, iiv );
+        if (emptyChildFound) LabelNode( node, parentClassDist );
     }
 
     return node;
@@ -299,17 +301,14 @@ inline unsigned int* TreeBuilder::GetDistribution(
 
 inline void TreeBuilder::LabelNode(
     TreeNode* node,
-    const vector<unsigned int>& iiv )
+    const unsigned int* classDistribution )
 {
-    if (node == nullptr) return;
+    if (node == nullptr || classDistribution == nullptr)
+        return;
 
-    unsigned int* bucketArray = GetDistribution( iiv );
     // Select the class of the largest class group.
-    node->classIndex = getIndexOfMax( bucketArray, numClasses );
+    node->classIndex = getIndexOfMax( classDistribution, numClasses );
     node->labeled = true;
-
-    free( bucketArray );
-    bucketArray = nullptr;
 }
 
 void TreeBuilder::DestroyNode( TreeNode* node )
