@@ -7,8 +7,8 @@ A parallelized version of random forests learning algorithm.
 
     [http://my-apis-env.ap-southeast-2.elasticbeanstalk.com/rf_train](http://my-apis-env.ap-southeast-2.elasticbeanstalk.com/rf_train)
 
-        e.g.
-        http://my-apis-env.ap-southeast-2.elasticbeanstalk.com/rf_train?num_trees=10&num_features_per_tree=6
+    e.g.
+    http://my-apis-env.ap-southeast-2.elasticbeanstalk.com/rf_train?num_trees=10&num_features_per_tree=6
 
 ### Configuration
 * In 'Classifier.h', change following variables:
