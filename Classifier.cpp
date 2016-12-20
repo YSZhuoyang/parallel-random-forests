@@ -29,7 +29,7 @@ Classifier::~Classifier()
 
 
 void Classifier::Train(
-    const vector<Item>& iv, 
+    const vector<Instance>& iv, 
     const vector<NumericAttr>& fv, 
     const vector<char*>& cv )
 {
@@ -37,7 +37,7 @@ void Classifier::Train(
     featureVec = fv;
     
     /******************** Init tree constructer ********************/
-    // Build a number of trees with randomly selected features.
+    // Chunk size need to be able to be divided by number of mpi processes.
     unsigned int chunkSize = NUM_TREES / numMpiNodes;
     rootVec.reserve( chunkSize );
     treeBuilder.Init( fv, cv, iv );
@@ -72,7 +72,7 @@ void Classifier::Train(
     printf( "Node %d builds forests: time taken is %.2lf seconds.\n", mpiNodeId, dif );
 }
 
-void Classifier::Classify( const vector<Item>& iv )
+void Classifier::Classify( const vector<Instance>& iv )
 {
     if (classVec.empty())
     {
@@ -119,8 +119,8 @@ void Classifier::Classify( const vector<Item>& iv )
                 correctCounter++;
         }
 
-        float correctRate = (float) correctCounter / (float) numInstances;
-        float incorrectRate = 1.0f - correctRate;
+        double correctRate = (double) correctCounter / (double) numInstances;
+        double incorrectRate = 1.0 - correctRate;
 
         printf( "Correct rate: %f\n", correctRate );
         printf( "Incorrect rate: %f\n", incorrectRate );
@@ -131,9 +131,9 @@ void Classifier::Classify( const vector<Item>& iv )
 }
 
 void Classifier::Classify(
-    const Item& instance, 
+    const Instance& instance, 
     unsigned int* votes, 
-    unsigned int index )
+    const unsigned int index )
 {
     unsigned short numClasses = classVec.size();
 
@@ -148,20 +148,10 @@ void Classifier::Classify(
             // 2 buckets by default:
             // one group having feature value smaller than threshold, 
             // another group having feature value greater than threshold.
-            if (instance.featureAttrArray[i] <= node->threshold)
-            {
-                if (node->childrenVec[0] == nullptr)
-                    break;
-                else
-                    node = node->childrenVec[0];
-            }
-            else
-            {
-                if (node->childrenVec[1] == nullptr)
-                    break;
-                else
-                    node = node->childrenVec[1];
-            }
+            unsigned int childId =
+                (unsigned int) (instance.featureAttrArray[i] >= node->threshold);
+            if (node->childrenVec[childId] == nullptr) break;
+            else node = node->childrenVec[childId];
         }
 
         votes[index * numClasses + node->classIndex]++;

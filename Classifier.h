@@ -9,7 +9,7 @@
 
 class Classifier
 {
-#define MPI_ROOT_ID 0
+#define MPI_ROOT_ID           0
 #define NUM_FEATURES_PER_TREE 10
 #define NUM_TREES             100
 
@@ -18,10 +18,10 @@ public:
     ~Classifier();
 
     void Train(
-        const vector<Item>& iv,
+        const vector<Instance>& iv,
         const vector<NumericAttr>& fv,
         const vector<char*>& cv );
-    void Classify( const vector<Item>& iv );
+    void Classify( const vector<Instance>& iv );
     char* Analyze(
         const char* str,
         const vector<NumericAttr>& featureVec,
@@ -31,9 +31,9 @@ public:
 private:
     // Return the index of the predicted class
     void Classify(
-        const Item& item,
+        const Instance& instance,
         unsigned int* votes,
-        unsigned int index );
+        const unsigned int index );
 
     vector<char*> classVec;
     vector<NumericAttr> featureVec;
