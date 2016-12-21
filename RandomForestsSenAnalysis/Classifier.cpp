@@ -63,6 +63,8 @@ char* Classifier::Analyze(
     const vector<NumericAttr>& featureVec,
     const vector<char*>& cv )
 {
+    if (rootVec.empty()) LoadModel();
+
     classVec = cv;
     Instance instance = Tokenize( str, featureVec );
     unsigned short classIndex = Classify( instance );
@@ -82,12 +84,7 @@ double Classifier::Test(
     const vector<Instance>& iv, 
     const vector<char*>& cv )
 {
-    if (rootVec.empty())
-    {
-        LoadModel();
-        //printf( "Please train the model first.\n" );
-        //return;
-    }
+    if (rootVec.empty()) LoadModel();
 
     unsigned int correctCounter = 0;
     unsigned int totalNumber = iv.size();

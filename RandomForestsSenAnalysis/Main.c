@@ -29,7 +29,7 @@ extern "C"
 
         Classifier classifier;
         return classifier.Test(
-            testSetImporter.GetInstances(), 
+            testSetImporter.GetInstances(),
             testSetImporter.GetClassAttr() );
     }
 
