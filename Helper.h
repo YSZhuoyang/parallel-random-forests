@@ -12,14 +12,10 @@ using namespace BasicDataStructures;
 
 namespace MyHelper
 {
-    // void SwapInst(
-    //     vector<Instance>& iv,
-    //     int* feaValueArray,
-    //     const unsigned int first,
-    //     const unsigned int second );
-    // void QSortInstances(
-    //     vector<Instance>& iv,
-    //     int* feaValueArray,
+    // void QSortInstIndex(
+    //     vector<unsigned int>& iiv,
+    //     const vector<Instance>& iv,
+    //     const unsigned int featureId,
     //     const unsigned int left,
     //     const unsigned int right );
     int Compare( const void* ele1, const void* ele2 );

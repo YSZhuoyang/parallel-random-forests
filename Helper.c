@@ -2,43 +2,35 @@
 #include "Helper.h"
 
 
-// void MyHelper::SwapInst(
-//     vector<Instance>& iv,
-//     int* feaValueArray,
-//     const unsigned int first,
-//     const unsigned int second )
-// {
-//     // Swap feature value
-//     int tempVal = feaValueArray[first];
-//     feaValueArray[first] = feaValueArray[second];
-//     feaValueArray[second] = tempVal;
-
-//     // Swap instance data
-//     Instance tempInst = iv[first];
-//     iv[first] = iv[second];
-//     iv[second] = tempInst;
-// }
-
-// void MyHelper::QSortInstances(
-//     vector<Instance>& iv,
-//     int* feaValueArray,
+// void MyHelper::QSortInstIndex(
+//     vector<unsigned int>& iiv,
+//     const vector<Instance>& iv,
+//     const unsigned int featureId,
 //     const unsigned int left,
 //     const unsigned int right )
 // {
 //     if (left >= right) return;
 
 //     int slow = left;
+//     unsigned int middle = (left + right) >> 1;
 //     // Shift pivot to the left.
-//     SwapInst( iv, feaValueArray, left, (left + right) >> 1 );
+//     swap( iiv[left], iiv[middle] );
 
 //     for (unsigned int fast = left + 1; fast <= right; fast++)
-//         if (feaValueArray[fast] < feaValueArray[left])
-//             SwapInst( iv, feaValueArray, ++slow, fast );
+//     {
+//         const double feaValueFast =
+//             iv[iiv[fast]].featureAttrArray[featureId];
+//         const double feaValueLeft =
+//             iv[iiv[left]].featureAttrArray[featureId];
+        
+//         if (feaValueFast < feaValueLeft)
+//             swap( iiv[++slow], iiv[fast] );
+//     }
 
 //     // Shift pivot back.
-//     SwapInst( iv, feaValueArray, left, slow );
-//     if (slow > 0) QSortInstances( iv, feaValueArray, left, slow - 1 );
-//     QSortInstances( iv, feaValueArray, slow + 1, right );
+//     swap( iiv[left], iiv[slow] );
+//     if (slow > 0) QSortInstIndex( iiv, iv, featureId, left, slow - 1 );
+//     QSortInstIndex( iiv, iv, featureId, slow + 1, right );
 // }
 
 int MyHelper::Compare( const void* ele1, const void* ele2 )
