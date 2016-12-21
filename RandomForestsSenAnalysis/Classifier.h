@@ -6,7 +6,7 @@
 #include <boost/archive/text_iarchive.hpp>
 #include <fstream>
 #include <time.h>
-//#include <omp.h>
+#include <omp.h>
 #include "TreeBuilder.h"
 
 class Classifier
@@ -35,7 +35,7 @@ public:
 
 private:
     // Return the index of the predicted class
-    int Classify( const Instance& instance );
+    unsigned short Classify( const Instance& instance );
     void SaveModel();
     void LoadModel();
 

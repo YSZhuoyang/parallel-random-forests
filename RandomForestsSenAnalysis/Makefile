@@ -3,7 +3,7 @@
 ################################ Macros #################################
 
 SHELL = /bin/sh
-CFLAGS = -g -std=c++11 -Wall -fPIC
+CFLAGS = -g -fopenmp -std=c++11 -Wall -fPIC
 CC = g++
 OBJECTS = Helper.o ArffImporter.o TreeBuilder.o Classifier.o
 

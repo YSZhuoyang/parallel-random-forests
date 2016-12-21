@@ -42,11 +42,11 @@ void Classifier::Train(
     double dif;
     time( &start );
 
-    //#pragma omp parallel for schedule(dynamic)
+    #pragma omp parallel for schedule(dynamic)
     for (unsigned int treeIndex = 0; treeIndex < numTrees; treeIndex++)
     {
         treeBuilder.BuildTree( numFeaPerTree );
-        //#pragma omp critical
+        #pragma omp critical
         rootVec.push_back( treeBuilder.GetRoot() );
         //treeBuilder.PrintTree( treeBuilder.GetRoot(), 0 );
     }
@@ -65,7 +65,7 @@ char* Classifier::Analyze(
 {
     classVec = cv;
     Instance instance = Tokenize( str, featureVec );
-    int classIndex = Classify( instance );
+    unsigned short classIndex = Classify( instance );
 
     free( instance.featureAttrArray );
     instance.featureAttrArray = nullptr;
@@ -96,7 +96,7 @@ double Classifier::Test(
 
     classVec = cv;
 
-    //#pragma omp parallel for reduction(+: correctCounter) schedule(dynamic)
+    #pragma omp parallel for reduction(+: correctCounter) schedule(dynamic)
     for (unsigned int i = 0; i < totalNumber; i++)
         if (Classify( iv[i] ) == iv[i].classIndex) correctCounter++;
 
@@ -109,7 +109,7 @@ double Classifier::Test(
     return correctRate;
 }
 
-int Classifier::Classify( const Instance& instance )
+unsigned short Classifier::Classify( const Instance& instance )
 {
     unsigned short numClasses = classVec.size();
     unsigned int* votes = (unsigned int*) 
