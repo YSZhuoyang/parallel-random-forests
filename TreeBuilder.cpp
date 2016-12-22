@@ -144,7 +144,7 @@ TreeNode* TreeBuilder::Split(
                 if (instance.featureAttrArray[randFeaIndex] < splitPoint)
                 {
                     groups[0].push_back( groups[1][i] );
-                    swap( groups[1][i], groups[1].back() );
+                    groups[1][i] = groups[1].back();
                     groups[1].pop_back();
 
                     classDistVec[0][instance.classIndex]++;
