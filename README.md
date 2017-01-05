@@ -1,14 +1,8 @@
 # Parallelized Random Forests
 A parallelized version of random forests learning algorithm.
 * Refer to weka random tree construction and C4.5 initial tree construction.
-* Support Infogain and Gini index used as split criteria.
+* Support Infogain and Gini impurity used as split criteria.
 * No need of pruning.
-* Try it out (post a get request to the below address with two attributes: 'num_trees' and 'num_features_per_tree'):
-
-    [http://my-apis-env.ap-southeast-2.elasticbeanstalk.com/rf_train](http://my-apis-env.ap-southeast-2.elasticbeanstalk.com/rf_train)
-
-    e.g.
-    http://my-apis-env.ap-southeast-2.elasticbeanstalk.com/rf_train?num_trees=10&num_features_per_tree=6
 
 ### Configuration
 * In 'Classifier.h', change following variables:
