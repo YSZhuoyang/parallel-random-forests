@@ -89,7 +89,6 @@ TreeNode* TreeBuilder::Split(
     // Init child class distribution and instance vector
     vector<vector<unsigned int>> groups;
     groups.resize( NUM_CHILDREN );
-    groups[1] = iiv;
 
     vector<unsigned int*> classDistVec;
     classDistVec.resize( NUM_CHILDREN );
@@ -192,18 +191,15 @@ TreeNode* TreeBuilder::Split(
     for (unsigned int classId = 0; classId < numClasses; classId++)
         free( classDistVec[classId] );
 
-    free( parentClassDist );
-    parentClassDist = nullptr;
-
     //printf( "\n----------------------------------------\n");
     //printf( "Height: %d\n", height );
 
-    TreeNode* node = new TreeNode;
+    TreeNode* node;
 
     // Split threshold not found, 
     // or gini impurity / info gain exceeds threshold,
     // thus have reached leaf node.
-    if (!gainFound) return nullptr;
+    if (!gainFound) node = nullptr;
     // Split node
     else
     {
@@ -211,6 +207,7 @@ TreeNode* TreeBuilder::Split(
         //printf( "Gini of parent: %f\n", giniParent );
         //printf( "Max Gini split get: %f\n", giniImpurityMax );
         
+        node = new TreeNode;
         node->featureIndex = selectedFeaIndex;
         node->threshold    = selectedThreshold;
         node->labeled      = false;
@@ -230,6 +227,9 @@ TreeNode* TreeBuilder::Split(
 
         if (emptyChildFound) LabelNode( node, parentClassDist );
     }
+
+    free( parentClassDist );
+    parentClassDist = nullptr;
 
     return node;
 }
