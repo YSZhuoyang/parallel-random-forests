@@ -2,40 +2,14 @@
 #include "Helper.h"
 
 
-// void MyHelper::QSortInstIndex(
-//     vector<unsigned int>& iiv,
-//     const vector<Instance>& iv,
-//     const unsigned int featureId,
-//     const unsigned int left,
-//     const unsigned int right )
-// {
-//     if (left >= right) return;
-
-//     int slow = left;
-//     unsigned int middle = (left + right) >> 1;
-//     // Shift pivot to the left.
-//     swap( iiv[left], iiv[middle] );
-
-//     for (unsigned int fast = left + 1; fast <= right; fast++)
-//     {
-//         const double feaValueFast =
-//             iv[iiv[fast]].featureAttrArray[featureId];
-//         const double feaValueLeft =
-//             iv[iiv[left]].featureAttrArray[featureId];
-        
-//         if (feaValueFast < feaValueLeft)
-//             swap( iiv[++slow], iiv[fast] );
-//     }
-
-//     // Shift pivot back.
-//     swap( iiv[left], iiv[slow] );
-//     if (slow > 0) QSortInstIndex( iiv, iv, featureId, left, slow - 1 );
-//     QSortInstIndex( iiv, iv, featureId, slow + 1, right );
-// }
-
 int MyHelper::Compare( const void* ele1, const void* ele2 )
 {
-    return (*((double*) ele1) - *((double*) ele2) );
+    double x = ((ValueIndexPair*) ele1)->featureValue;
+    double y = ((ValueIndexPair*) ele2)->featureValue;
+    
+    if (x > y) return 1;
+    else if (x < y) return -1;
+    else return 0;
 }
 
 Instance MyHelper::Tokenize(

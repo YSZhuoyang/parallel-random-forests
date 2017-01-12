@@ -33,8 +33,9 @@ public:
 
 private:
     TreeNode* Split(
-        const vector<unsigned int>& iiv,
+        unsigned int* iia,
         unsigned int* featureIndexArray,
+        const unsigned int numInstances,
         unsigned int height );
     inline double ComputeGini(
         const unsigned int* classDistribution,
@@ -44,7 +45,8 @@ private:
         const unsigned int numInstances );
     // Count instances belonging to each class
     inline unsigned int* GetDistribution(
-        const vector<unsigned int>& iiv );
+        const unsigned int* iia,
+        const unsigned int numInstances );
     inline void LabelNode(
         TreeNode* node,
         const unsigned int* classDistribution );

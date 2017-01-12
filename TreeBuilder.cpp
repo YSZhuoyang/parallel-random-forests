@@ -34,31 +34,32 @@ void TreeBuilder::BuildTree( const unsigned int numFeaToSelect )
     for (unsigned int i = 0; i < numFeaturesTotal; i++)
         featureIndexArray[i] = i;
 
-    vector<unsigned int> instIndexVec;
-    instIndexVec.reserve( numInstances );
+    unsigned int* instIndexArr =
+        (unsigned int*) malloc( numInstances * sizeof( unsigned int ) );
     for (unsigned int i = 0; i < numInstances; i++)
-        instIndexVec.push_back( i );
+        instIndexArr[i] = i;
     
-    root = Split( instIndexVec, featureIndexArray, 0 );
+    root = Split( instIndexArr, featureIndexArray, numInstances, 0 );
 
+    free( instIndexArr );
+    instIndexArr = nullptr;
     free( featureIndexArray );
     featureIndexArray = nullptr;
 }
 
 TreeNode* TreeBuilder::Split(
-    const vector<unsigned int>& iiv,
+    unsigned int* iia,
     unsigned int* featureIndexArray,
+    const unsigned int numInstances,
     unsigned int height )
 {
     // double giniImpurityMax = 0;
     double infoGainMax = 0;
-    unsigned int numInstances = iiv.size();
 
     // The node is too small thus it is ignored.
     if (numInstances < MIN_NODE_SIZE) return nullptr;
 
-    // Compute entropy of parent node.
-    unsigned int* parentClassDist = GetDistribution( iiv );
+    unsigned int* parentClassDist = GetDistribution( iia, numInstances );
 
     // The node is small, make it a leaf node.
     if (numInstances < MIN_NODE_SIZE_TO_SPLIT)
@@ -69,6 +70,7 @@ TreeNode* TreeBuilder::Split(
         return leaf;
     }
 
+    // Compute entropy of parent node.
     double entropyParent = ComputeEntropy( parentClassDist, numInstances );
     // double giniParent = ComputeGini( parentClassDist, numInstances );
 
@@ -84,43 +86,61 @@ TreeNode* TreeBuilder::Split(
 
     unsigned int selectedFeaIndex;
     double selectedThreshold;
-    vector<vector<unsigned int>> selectedChildrenIndex;
 
     // Init child class distribution and instance vector
-    vector<vector<unsigned int>> groups;
-    groups.resize( NUM_CHILDREN );
+    vector<unsigned int> selectedChildSizeVec;
+    selectedChildSizeVec.resize( NUM_CHILDREN );
 
     vector<unsigned int*> classDistVec;
     classDistVec.resize( NUM_CHILDREN );
     for (unsigned int childId = 0; childId < NUM_CHILDREN; childId++)
         classDistVec[childId] = ( unsigned int* )
-            calloc( numClasses, sizeof( unsigned int ) );
+            malloc( numClasses * sizeof( unsigned int ) );
 
+    // For storing sorted index sequence
+    unsigned int* selectedInstIndicesArr =
+        (unsigned int*) malloc( numInstances * sizeof( unsigned int ) );
+    
     unsigned int numRestFeaToSelect = numFeaturesToSelect;
     unsigned int numRestFea = numFeaturesTotal;
     bool gainFound = false;
 
     // Find the best split feature and threshold
-    while ((numRestFeaToSelect-- > 0 || !gainFound) && numRestFea > 0)
+    while ((numRestFeaToSelect > 0 || !gainFound) && numRestFea > 0)
     {
-        // Sample (note max of rand() is around 24000)
+        // Sample (note max of rand() is around 32000)
         unsigned int randPos = rand() % numRestFea;
         unsigned int randFeaIndex = featureIndexArray[randPos];
         // Swap
         featureIndexArray[randPos] = featureIndexArray[--numRestFea];
         featureIndexArray[numRestFea] = randFeaIndex;
 
-        // Get all values of that feature and sort them.
+        if (numRestFeaToSelect > 0) numRestFeaToSelect--;
+
+        // Get all values of that feature with indices and sort them.
+        ValueIndexPair* valueIndexPairArr =
+            (ValueIndexPair*) malloc( numInstances * sizeof( ValueIndexPair ) );
+        for (unsigned int i = 0; i < numInstances; i++)
+        {
+            valueIndexPairArr[i].featureValue =
+                instanceVec[iia[i]].featureAttrArray[randFeaIndex];
+            valueIndexPairArr[i].featureIndex = iia[i];
+        }
+        qsort( valueIndexPairArr, numInstances, sizeof( ValueIndexPair ), Compare );
+
         double* valueArr = (double*) malloc( numInstances * sizeof( double ) );
         for (unsigned int i = 0; i < numInstances; i++)
-            valueArr[i] = instanceVec[iiv[i]].featureAttrArray[randFeaIndex];
-        qsort( valueArr, numInstances, sizeof( double ), Compare );
+        {
+            valueArr[i] = valueIndexPairArr[i].featureValue;
+            iia[i] = valueIndexPairArr[i].featureIndex;
+        }
         unsigned int numSplit = removeDuplicates( valueArr, numInstances ) - 1;
 
-        // Reset child data and child class distribution
-        groups[0].clear();
-        groups[1] = iiv;
+        free( valueIndexPairArr );
+        valueIndexPairArr = nullptr;
 
+        // Reset child data and child class distribution
+        unsigned int splitIndex = 0;
         for (unsigned int classId = 0; classId < numClasses; classId++)
             classDistVec[0][classId] = 0;
         memcpy(
@@ -128,31 +148,29 @@ TreeNode* TreeBuilder::Split(
             parentClassDist,
             numClasses * sizeof( unsigned int ) );
 
+        vector<unsigned int> childSizeVec;
+        childSizeVec.resize( NUM_CHILDREN );
+
         // Find best split threshold
         for (unsigned int valueIndex = 0; valueIndex < numSplit; valueIndex++)
         {
-            unsigned int groupSize = groups[1].size();
-            unsigned int i = 0;
             double splitPoint =
                 (valueArr[valueIndex] + valueArr[valueIndex + 1]) / 2.0;
             
-            while (groupSize > i)
+            while (splitIndex < numInstances)
             {
-                const Instance& instance = instanceVec[groups[1][i]];
+                const Instance& instance = instanceVec[iia[splitIndex]];
+                if (instance.featureAttrArray[randFeaIndex] >= splitPoint)
+                    break;
+                
+                classDistVec[0][instance.classIndex]++;
+                classDistVec[1][instance.classIndex]--;
 
-                if (instance.featureAttrArray[randFeaIndex] < splitPoint)
-                {
-                    groups[0].push_back( groups[1][i] );
-                    groups[1][i] = groups[1].back();
-                    groups[1].pop_back();
-
-                    classDistVec[0][instance.classIndex]++;
-                    classDistVec[1][instance.classIndex]--;
-
-                    groupSize--;
-                }
-                else i++;
+                splitIndex++;
             }
+
+            childSizeVec[0] = splitIndex;
+            childSizeVec[1] = numInstances - splitIndex;
 
             // double giniImpurity = giniParent;
             double infoGain = entropyParent;
@@ -160,7 +178,7 @@ TreeNode* TreeBuilder::Split(
             // Compute entropy of children
             for (unsigned int childId = 0; childId < NUM_CHILDREN; childId++)
             {
-                double numChildren = groups[childId].size();
+                double numChildren = childSizeVec[childId];
                 double entropyChild = ComputeEntropy(
                     classDistVec[childId],
                     numChildren );
@@ -175,9 +193,14 @@ TreeNode* TreeBuilder::Split(
             // if (giniImpurityMax < giniImpurity)
             if (infoGainMax < infoGain)
             {
+                memcpy(
+                    selectedInstIndicesArr,
+                    iia,
+                    numInstances * sizeof( unsigned int ) );
+                
                 // giniImpurityMax = giniImpurity;
                 infoGainMax = infoGain;
-                selectedChildrenIndex = groups;
+                selectedChildSizeVec = childSizeVec;
                 selectedThreshold = splitPoint;
                 selectedFeaIndex = randFeaIndex;
                 gainFound = true;
@@ -188,8 +211,8 @@ TreeNode* TreeBuilder::Split(
         valueArr = nullptr;
     }
 
-    for (unsigned int classId = 0; classId < numClasses; classId++)
-        free( classDistVec[classId] );
+    for (unsigned int childId = 0; childId < NUM_CHILDREN; childId++)
+        free( classDistVec[childId] );
 
     //printf( "\n----------------------------------------\n");
     //printf( "Height: %d\n", height );
@@ -217,13 +240,33 @@ TreeNode* TreeBuilder::Split(
         bool emptyChildFound = false;
 
         // Split children
-        for (const vector<unsigned int>& childGroup : selectedChildrenIndex)
+        for (unsigned int childId = 0; childId < NUM_CHILDREN; childId++)
         {
-            TreeNode* childNode = Split( childGroup, 
-                featureIndexArray, height );
+            unsigned int* childIndexArr = (unsigned int*)
+                malloc( selectedChildSizeVec[childId] * sizeof( unsigned int ) );
+            // Consider NUM_CHILDREN is always 2, childId is either 0 or 1.
+            unsigned int* offset = selectedInstIndicesArr + ((childId) ?
+                selectedChildSizeVec[0] : 0);
+            memcpy(
+                childIndexArr,
+                offset,
+                selectedChildSizeVec[childId] * sizeof( unsigned int ) );
+            
+            TreeNode* childNode = Split(
+                childIndexArr,
+                featureIndexArray,
+                selectedChildSizeVec[childId],
+                height );
+
+            free( childIndexArr );
+            childIndexArr = nullptr;
+
             if (childNode == nullptr) emptyChildFound = true;
             node->childrenVec.push_back( childNode );
         }
+
+        free( selectedInstIndicesArr );
+        selectedInstIndicesArr = nullptr;
 
         if (emptyChildFound) LabelNode( node, parentClassDist );
     }
@@ -236,7 +279,7 @@ TreeNode* TreeBuilder::Split(
 
 void TreeBuilder::PrintTree( const TreeNode* iter, unsigned int h )
 {
-    if (iter == nullptr || iter->labeled) return;
+    if (iter == nullptr || iter->labeled || h > 3) return;
 
     for (unsigned int i = 0; i <= h; i++) printf( "-" );
     printf( "%s, ", featureVec[iter->featureIndex].name );
@@ -289,14 +332,15 @@ inline double TreeBuilder::ComputeGini(
 }
 
 inline unsigned int* TreeBuilder::GetDistribution(
-    const vector<unsigned int>& iiv )
+    const unsigned int* iia,
+    const unsigned int numInstances )
 {
-    unsigned int* bucketArray = 
+    unsigned int* distribution = 
         (unsigned int*) calloc( numClasses, sizeof( unsigned int ) );
-    for (const unsigned int& instIndex : iiv)
-        bucketArray[instanceVec[instIndex].classIndex]++;
+    for (unsigned int i = 0; i < numInstances; i++)
+        distribution[instanceVec[iia[i]].classIndex]++;
 
-    return bucketArray;
+    return distribution;
 }
 
 inline void TreeBuilder::LabelNode(

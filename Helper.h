@@ -12,12 +12,6 @@ using namespace BasicDataStructures;
 
 namespace MyHelper
 {
-    // void QSortInstIndex(
-    //     vector<unsigned int>& iiv,
-    //     const vector<Instance>& iv,
-    //     const unsigned int featureId,
-    //     const unsigned int left,
-    //     const unsigned int right );
     int Compare( const void* ele1, const void* ele2 );
     bool StrEqualCaseSen( const char* str1, const char* str2 );
     bool StrEqualCaseInsen( const char* str1, const char* str2 );

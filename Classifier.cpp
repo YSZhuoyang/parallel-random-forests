@@ -40,7 +40,7 @@ void Classifier::Train(
     {
         treeBuilder.BuildTree( NUM_FEATURES_PER_TREE );
         rootVec.push_back( treeBuilder.GetRoot() );
-        //treeBuilder.PrintTree( treeBuilder.GetRoot(), 0 );
+        // treeBuilder.PrintTree( treeBuilder.GetRoot(), 0 );
     }
 
     time( &end );
@@ -107,16 +107,6 @@ unsigned short Classifier::Classify( const Instance& instance )
                 (unsigned int) (instance.featureAttrArray[i] >= node->threshold);
             if (node->childrenVec[childId] == nullptr) break;
             else node = node->childrenVec[childId];
-            // if (instance.featureAttrArray[i] < node->threshold)
-            // {
-            //     if (node->childrenVec[0] == nullptr) break;
-            //     else node = node->childrenVec[0];
-            // }
-            // else
-            // {
-            //     if (node->childrenVec[1] == nullptr) break;
-            //     else node = node->childrenVec[1];
-            // }
         }
 
         votes[node->classIndex]++;
