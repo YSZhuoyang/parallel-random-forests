@@ -39,8 +39,18 @@ void TreeBuilder::BuildTree( const unsigned int numFeaToSelect )
     for (unsigned int i = 0; i < numInstances; i++)
         instIndexArr[i] = i;
     
-    root = Split( instIndexArr, featureIndexArray, numInstances, 0 );
+    unsigned int* parentClassDist =
+        GetDistribution( instIndexArr, numInstances );
 
+    root = Split(
+        instIndexArr,
+        featureIndexArray,
+        parentClassDist,
+        numInstances,
+        0 );
+
+    free( parentClassDist );
+    parentClassDist = nullptr;
     free( instIndexArr );
     instIndexArr = nullptr;
     free( featureIndexArray );
@@ -50,6 +60,7 @@ void TreeBuilder::BuildTree( const unsigned int numFeaToSelect )
 TreeNode* TreeBuilder::Split(
     unsigned int* iia,
     unsigned int* featureIndexArray,
+    const unsigned int* parentClassDist,
     const unsigned int numInstances,
     unsigned int height )
 {
@@ -58,8 +69,6 @@ TreeNode* TreeBuilder::Split(
 
     // The node is too small thus it is ignored.
     if (numInstances < MIN_NODE_SIZE) return nullptr;
-
-    unsigned int* parentClassDist = GetDistribution( iia, numInstances );
 
     // The node is small, make it a leaf node.
     if (numInstances < MIN_NODE_SIZE_TO_SPLIT)
@@ -93,9 +102,15 @@ TreeNode* TreeBuilder::Split(
 
     vector<unsigned int*> classDistVec;
     classDistVec.resize( NUM_CHILDREN );
+    vector<unsigned int*> selectedClassDistVec;
+    selectedClassDistVec.resize( NUM_CHILDREN );
     for (unsigned int childId = 0; childId < NUM_CHILDREN; childId++)
+    {
         classDistVec[childId] = ( unsigned int* )
             malloc( numClasses * sizeof( unsigned int ) );
+        selectedClassDistVec[childId] = ( unsigned int* )
+            malloc( numClasses * sizeof( unsigned int ) );
+    }
 
     // Store sorted index sequence
     unsigned int* selectedInstIndicesArr =
@@ -128,14 +143,19 @@ TreeNode* TreeBuilder::Split(
                 instanceVec[iia[i]].featureAttrArray[randFeaIndex];
             valueIndexPairArr[i].featureIndex = iia[i];
         }
-        qsort( valueIndexPairArr, numInstances, sizeof( ValueIndexPair ), Compare );
+        qsort(
+            valueIndexPairArr,
+            numInstances,
+            sizeof( ValueIndexPair ),
+            Compare );
 
         for (unsigned int i = 0; i < numInstances; i++)
         {
             valueArr[i] = valueIndexPairArr[i].featureValue;
             iia[i] = valueIndexPairArr[i].featureIndex;
         }
-        unsigned int numSplit = removeDuplicates( valueArr, numInstances ) - 1;
+        unsigned int numSplit =
+            removeDuplicates( valueArr, numInstances ) - 1;
 
         // Reset child data and child class distribution
         unsigned int splitIndex = 0;
@@ -204,6 +224,12 @@ TreeNode* TreeBuilder::Split(
                     featureIndexStored = true;
                 }
 
+                for (unsigned int childId = 0; childId < NUM_CHILDREN; childId++)
+                    memcpy(
+                        selectedClassDistVec[childId],
+                        classDistVec[childId],
+                        numClasses * sizeof( unsigned int ) );
+
                 // giniImpurityMax = giniImpurity;
                 infoGainMax = infoGain;
                 selectedChildSizeVec = childSizeVec;
@@ -263,9 +289,12 @@ TreeNode* TreeBuilder::Split(
             TreeNode* childNode = Split(
                 childIndexArr,
                 featureIndexArray,
+                selectedClassDistVec[childId],
                 selectedChildSizeVec[childId],
                 height );
 
+            free( selectedClassDistVec[childId] );
+            selectedClassDistVec[childId] = nullptr;
             free( childIndexArr );
             childIndexArr = nullptr;
 
@@ -278,8 +307,6 @@ TreeNode* TreeBuilder::Split(
 
     free( selectedInstIndicesArr );
     selectedInstIndicesArr = nullptr;
-    free( parentClassDist );
-    parentClassDist = nullptr;
 
     return node;
 }
@@ -310,13 +337,11 @@ inline double TreeBuilder::ComputeEntropy(
     double entropy = 0.0;
 
     for (unsigned short i = 0; i < numClasses; i++)
-    {
         if (classDistribution[i] > 0 && classDistribution[i] < numInstances)
         {
             double temp = (double) classDistribution[i] / numInstances;
             entropy -= temp * log2( temp );
         }
-    }
 
     return entropy;
 }
