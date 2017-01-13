@@ -104,7 +104,7 @@ TreeNode* TreeBuilder::Split(
     ValueIndexPair* valueIndexPairArr =
         (ValueIndexPair*) malloc( numInstances * sizeof( ValueIndexPair ) );
     double* valueArr = (double*) malloc( numInstances * sizeof( double ) );
-    
+
     unsigned int numRestFeaToSelect = numFeaturesToSelect;
     unsigned int numRestFea = numFeaturesTotal;
     bool gainFound = false;
@@ -149,6 +149,8 @@ TreeNode* TreeBuilder::Split(
         vector<unsigned int> childSizeVec;
         childSizeVec.resize( NUM_CHILDREN );
 
+        bool featureIndexStored = false;
+
         // Find best split threshold
         for (unsigned int valueIndex = 0; valueIndex < numSplit; valueIndex++)
         {
@@ -191,17 +193,23 @@ TreeNode* TreeBuilder::Split(
             // if (giniImpurityMax < giniImpurity)
             if (infoGainMax < infoGain)
             {
-                memcpy(
-                    selectedInstIndicesArr,
-                    iia,
-                    numInstances * sizeof( unsigned int ) );
-                
+                if (!featureIndexStored)
+                {
+                    memcpy(
+                        selectedInstIndicesArr,
+                        iia,
+                        numInstances * sizeof( unsigned int ) );
+
+                    selectedFeaIndex = randFeaIndex;
+                    featureIndexStored = true;
+                }
+
                 // giniImpurityMax = giniImpurity;
                 infoGainMax = infoGain;
                 selectedChildSizeVec = childSizeVec;
                 selectedThreshold = splitPoint;
-                selectedFeaIndex = randFeaIndex;
-                gainFound = true;
+
+                if (!gainFound) gainFound = true;
             }
         }
     }
