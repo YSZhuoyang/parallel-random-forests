@@ -224,11 +224,11 @@ TreeNode* TreeBuilder::Split(
                     featureIndexStored = true;
                 }
 
+                // Faster than memcpy for short arrays
                 for (unsigned int childId = 0; childId < NUM_CHILDREN; childId++)
-                    memcpy(
-                        selectedClassDistVec[childId],
-                        classDistVec[childId],
-                        numClasses * sizeof( unsigned int ) );
+                    for (unsigned int classId = 0; classId < numClasses; classId++)
+                        selectedClassDistVec[childId][classId] =
+                            classDistVec[childId][classId];
 
                 // giniImpurityMax = giniImpurity;
                 infoGainMax = infoGain;
