@@ -1,24 +1,29 @@
 
+import datetime
 import arff, numpy as np
-from sklearn.ensemble import RandomForestClassifier 
+from sklearn.ensemble import RandomForestClassifier
 
-train_arff = arff.load(open('../Dataset/train/train-first200.arff', 'r'))
-train_data = np.array(train_arff['data'])
+START_IMPORT = datetime.datetime.now().replace(microsecond=0)
 
-test_arff = arff.load(open('../Dataset/test/dev-first200.arff', 'r'))
-test_data = np.array(test_arff['data'])
+TRAIN_ARFF = arff.load(open('../Dataset/train/train-first200.arff', 'r'))
+TRAIN_DATA = np.array(TRAIN_ARFF['data'])
 
+TEST_ARFF = arff.load(open('../Dataset/test/dev-first200.arff', 'r'))
+TEST_DATA = np.array(TEST_ARFF['data'])
 
-forest = RandomForestClassifier(n_estimators = 100, max_features = 8)
-forest = forest.fit(train_data[0::, :-1],train_data[0::, -1])
+START_TRAIN = datetime.datetime.now().replace(microsecond=0)
 
-accuracy = forest.score(test_data[0::, :-1],test_data[0::, -1])
+print("Time taken by loading data: ")
+print(START_TRAIN - START_IMPORT)
 
-print( accuracy )
+FOREST = RandomForestClassifier(n_estimators=100, max_features=8, bootstrap=False, n_jobs=-1)
+FOREST = FOREST.fit(TRAIN_DATA[0::, :-1], TRAIN_DATA[0::, -1])
 
-#train_data = [[float(string) for string in inner] for inner in train_data[0::, 0:-1]]
-#s = sum(map(sum, train_data))
+END_TRAIN = datetime.datetime.now().replace(microsecond=0)
 
-#l = len( train_data[0] ) - 1
+ACCURACY = FOREST.score(TEST_DATA[0::, :-1], TEST_DATA[0::, -1])
 
-#print( s )
+print("Accuracy: ")
+print(ACCURACY)
+print("Time taken by training: ")
+print(END_TRAIN - START_TRAIN)
