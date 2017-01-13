@@ -4,7 +4,12 @@
 
 int MyHelper::Compare( const void* ele1, const void* ele2 )
 {
-    return (*((double*) ele1) - *((double*) ele2) );
+    double x = ((ValueIndexPair*) ele1)->featureValue;
+    double y = ((ValueIndexPair*) ele2)->featureValue;
+    
+    if (x > y) return 1;
+    else if (x < y) return -1;
+    else return 0;
 }
 
 Instance MyHelper::Tokenize(
@@ -83,6 +88,7 @@ bool MyHelper::StrEqualCaseInsen( const char* str1, const char* str2 )
 unsigned int MyHelper::GetStrLength( const char* str )
 {
     unsigned int len = 0;
+
     while (str[len++] != '\0');
 
     return len;
