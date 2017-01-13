@@ -17,6 +17,12 @@ namespace BasicDataStructures
         unsigned short classIndex;
     };
 
+    struct ValueIndexPair
+    {
+        double featureValue;
+        unsigned int featureIndex;
+    };
+
     struct NumericAttr
     {
         char* name;
