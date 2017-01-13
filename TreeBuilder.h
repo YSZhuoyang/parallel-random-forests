@@ -35,6 +35,7 @@ private:
     TreeNode* Split(
         unsigned int* iia,
         unsigned int* featureIndexArray,
+        const unsigned int* parentClassDist,
         const unsigned int numInstances,
         unsigned int height );
     inline double ComputeGini(

@@ -13,7 +13,7 @@ TreeBuilder::~TreeBuilder()
 }
 
 void TreeBuilder::Init(
-    const vector<NumericAttr>& fv, 
+    const vector<NumericAttr>& fv,
     const vector<char*>& cv,
     const vector<Instance>& iv )
 {
@@ -39,8 +39,18 @@ void TreeBuilder::BuildTree( const unsigned int numFeaToSelect )
     for (unsigned int i = 0; i < numInstances; i++)
         instIndexArr[i] = i;
     
-    root = Split( instIndexArr, featureIndexArray, numInstances, 0 );
+    unsigned int* parentClassDist =
+        GetDistribution( instIndexArr, numInstances );
 
+    root = Split(
+        instIndexArr,
+        featureIndexArray,
+        parentClassDist,
+        numInstances,
+        0 );
+
+    free( parentClassDist );
+    parentClassDist = nullptr;
     free( instIndexArr );
     instIndexArr = nullptr;
     free( featureIndexArray );
@@ -50,6 +60,7 @@ void TreeBuilder::BuildTree( const unsigned int numFeaToSelect )
 TreeNode* TreeBuilder::Split(
     unsigned int* iia,
     unsigned int* featureIndexArray,
+    const unsigned int* parentClassDist,
     const unsigned int numInstances,
     unsigned int height )
 {
@@ -58,8 +69,6 @@ TreeNode* TreeBuilder::Split(
 
     // The node is too small thus it is ignored.
     if (numInstances < MIN_NODE_SIZE) return nullptr;
-
-    unsigned int* parentClassDist = GetDistribution( iia, numInstances );
 
     // The node is small, make it a leaf node.
     if (numInstances < MIN_NODE_SIZE_TO_SPLIT)
@@ -93,14 +102,24 @@ TreeNode* TreeBuilder::Split(
 
     vector<unsigned int*> classDistVec;
     classDistVec.resize( NUM_CHILDREN );
+    vector<unsigned int*> selectedClassDistVec;
+    selectedClassDistVec.resize( NUM_CHILDREN );
     for (unsigned int childId = 0; childId < NUM_CHILDREN; childId++)
+    {
         classDistVec[childId] = ( unsigned int* )
             malloc( numClasses * sizeof( unsigned int ) );
+        selectedClassDistVec[childId] = ( unsigned int* )
+            malloc( numClasses * sizeof( unsigned int ) );
+    }
 
-    // For storing sorted index sequence
+    // Store sorted index sequence
     unsigned int* selectedInstIndicesArr =
         (unsigned int*) malloc( numInstances * sizeof( unsigned int ) );
-    
+    // Store all values of that feature with indices
+    ValueIndexPair* valueIndexPairArr =
+        (ValueIndexPair*) malloc( numInstances * sizeof( ValueIndexPair ) );
+    double* valueArr = (double*) malloc( numInstances * sizeof( double ) );
+
     unsigned int numRestFeaToSelect = numFeaturesToSelect;
     unsigned int numRestFea = numFeaturesTotal;
     bool gainFound = false;
@@ -118,26 +137,25 @@ TreeNode* TreeBuilder::Split(
         if (numRestFeaToSelect > 0) numRestFeaToSelect--;
 
         // Get all values of that feature with indices and sort them.
-        ValueIndexPair* valueIndexPairArr =
-            (ValueIndexPair*) malloc( numInstances * sizeof( ValueIndexPair ) );
         for (unsigned int i = 0; i < numInstances; i++)
         {
             valueIndexPairArr[i].featureValue =
                 instanceVec[iia[i]].featureAttrArray[randFeaIndex];
             valueIndexPairArr[i].featureIndex = iia[i];
         }
-        qsort( valueIndexPairArr, numInstances, sizeof( ValueIndexPair ), Compare );
+        qsort(
+            valueIndexPairArr,
+            numInstances,
+            sizeof( ValueIndexPair ),
+            Compare );
 
-        double* valueArr = (double*) malloc( numInstances * sizeof( double ) );
         for (unsigned int i = 0; i < numInstances; i++)
         {
             valueArr[i] = valueIndexPairArr[i].featureValue;
             iia[i] = valueIndexPairArr[i].featureIndex;
         }
-        unsigned int numSplit = removeDuplicates( valueArr, numInstances ) - 1;
-
-        free( valueIndexPairArr );
-        valueIndexPairArr = nullptr;
+        unsigned int numSplit =
+            removeDuplicates( valueArr, numInstances ) - 1;
 
         // Reset child data and child class distribution
         unsigned int splitIndex = 0;
@@ -150,6 +168,8 @@ TreeNode* TreeBuilder::Split(
 
         vector<unsigned int> childSizeVec;
         childSizeVec.resize( NUM_CHILDREN );
+
+        bool featureIndexStored = false;
 
         // Find best split threshold
         for (unsigned int valueIndex = 0; valueIndex < numSplit; valueIndex++)
@@ -193,23 +213,37 @@ TreeNode* TreeBuilder::Split(
             // if (giniImpurityMax < giniImpurity)
             if (infoGainMax < infoGain)
             {
-                memcpy(
-                    selectedInstIndicesArr,
-                    iia,
-                    numInstances * sizeof( unsigned int ) );
-                
+                if (!featureIndexStored)
+                {
+                    memcpy(
+                        selectedInstIndicesArr,
+                        iia,
+                        numInstances * sizeof( unsigned int ) );
+
+                    selectedFeaIndex = randFeaIndex;
+                    featureIndexStored = true;
+                }
+
+                // Faster than memcpy for short arrays
+                for (unsigned int childId = 0; childId < NUM_CHILDREN; childId++)
+                    for (unsigned int classId = 0; classId < numClasses; classId++)
+                        selectedClassDistVec[childId][classId] =
+                            classDistVec[childId][classId];
+
                 // giniImpurityMax = giniImpurity;
                 infoGainMax = infoGain;
                 selectedChildSizeVec = childSizeVec;
                 selectedThreshold = splitPoint;
-                selectedFeaIndex = randFeaIndex;
-                gainFound = true;
+
+                if (!gainFound) gainFound = true;
             }
         }
-
-        free( valueArr );
-        valueArr = nullptr;
     }
+
+    free( valueIndexPairArr );
+    valueIndexPairArr = nullptr;
+    free( valueArr );
+    valueArr = nullptr;
 
     for (unsigned int childId = 0; childId < NUM_CHILDREN; childId++)
         free( classDistVec[childId] );
@@ -255,9 +289,12 @@ TreeNode* TreeBuilder::Split(
             TreeNode* childNode = Split(
                 childIndexArr,
                 featureIndexArray,
+                selectedClassDistVec[childId],
                 selectedChildSizeVec[childId],
                 height );
 
+            free( selectedClassDistVec[childId] );
+            selectedClassDistVec[childId] = nullptr;
             free( childIndexArr );
             childIndexArr = nullptr;
 
@@ -265,14 +302,11 @@ TreeNode* TreeBuilder::Split(
             node->childrenVec.push_back( childNode );
         }
 
-        free( selectedInstIndicesArr );
-        selectedInstIndicesArr = nullptr;
-
         if (emptyChildFound) LabelNode( node, parentClassDist );
     }
 
-    free( parentClassDist );
-    parentClassDist = nullptr;
+    free( selectedInstIndicesArr );
+    selectedInstIndicesArr = nullptr;
 
     return node;
 }
@@ -303,13 +337,11 @@ inline double TreeBuilder::ComputeEntropy(
     double entropy = 0.0;
 
     for (unsigned short i = 0; i < numClasses; i++)
-    {
         if (classDistribution[i] > 0 && classDistribution[i] < numInstances)
         {
             double temp = (double) classDistribution[i] / numInstances;
             entropy -= temp * log2( temp );
         }
-    }
 
     return entropy;
 }
