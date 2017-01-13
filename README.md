@@ -1,6 +1,6 @@
 # Parallelized Random Forests
 A random forest learning algorithm (without bagging).
-* Support both Gini index and info gain as split criteria.
+* Support both Gini impurity and info gain as split criteria.
 
 ### Configuration
 * In 'Classifier.h', change following variables:
@@ -15,7 +15,7 @@ A random forest learning algorithm (without bagging).
 
 ### Dataset and testing
 * Sentiment analysis of 50000 movie reviews from IMDb (25000 for training, 25000 for testing).
-* Used top 1000 words with highest frequencies of occurrences, 77% accuracy obtained without attributes selection.
+* Used top 1000 words with highest frequencies of occurrences, 83% accuracy obtained without attributes selection.
 
 ### Author
 * Oscar Yu

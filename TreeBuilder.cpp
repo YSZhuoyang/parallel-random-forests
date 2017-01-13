@@ -13,7 +13,7 @@ TreeBuilder::~TreeBuilder()
 }
 
 void TreeBuilder::Init(
-    const vector<NumericAttr>& fv, 
+    const vector<NumericAttr>& fv,
     const vector<char*>& cv,
     const vector<Instance>& iv )
 {
