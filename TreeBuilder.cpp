@@ -97,9 +97,13 @@ TreeNode* TreeBuilder::Split(
         classDistVec[childId] = ( unsigned int* )
             malloc( numClasses * sizeof( unsigned int ) );
 
-    // For storing sorted index sequence
+    // Store sorted index sequence
     unsigned int* selectedInstIndicesArr =
         (unsigned int*) malloc( numInstances * sizeof( unsigned int ) );
+    // Store all values of that feature with indices
+    ValueIndexPair* valueIndexPairArr =
+        (ValueIndexPair*) malloc( numInstances * sizeof( ValueIndexPair ) );
+    double* valueArr = (double*) malloc( numInstances * sizeof( double ) );
     
     unsigned int numRestFeaToSelect = numFeaturesToSelect;
     unsigned int numRestFea = numFeaturesTotal;
@@ -118,8 +122,6 @@ TreeNode* TreeBuilder::Split(
         if (numRestFeaToSelect > 0) numRestFeaToSelect--;
 
         // Get all values of that feature with indices and sort them.
-        ValueIndexPair* valueIndexPairArr =
-            (ValueIndexPair*) malloc( numInstances * sizeof( ValueIndexPair ) );
         for (unsigned int i = 0; i < numInstances; i++)
         {
             valueIndexPairArr[i].featureValue =
@@ -128,16 +130,12 @@ TreeNode* TreeBuilder::Split(
         }
         qsort( valueIndexPairArr, numInstances, sizeof( ValueIndexPair ), Compare );
 
-        double* valueArr = (double*) malloc( numInstances * sizeof( double ) );
         for (unsigned int i = 0; i < numInstances; i++)
         {
             valueArr[i] = valueIndexPairArr[i].featureValue;
             iia[i] = valueIndexPairArr[i].featureIndex;
         }
         unsigned int numSplit = removeDuplicates( valueArr, numInstances ) - 1;
-
-        free( valueIndexPairArr );
-        valueIndexPairArr = nullptr;
 
         // Reset child data and child class distribution
         unsigned int splitIndex = 0;
@@ -206,10 +204,12 @@ TreeNode* TreeBuilder::Split(
                 gainFound = true;
             }
         }
-
-        free( valueArr );
-        valueArr = nullptr;
     }
+
+    free( valueIndexPairArr );
+    valueIndexPairArr = nullptr;
+    free( valueArr );
+    valueArr = nullptr;
 
     for (unsigned int childId = 0; childId < NUM_CHILDREN; childId++)
         free( classDistVec[childId] );
@@ -265,12 +265,11 @@ TreeNode* TreeBuilder::Split(
             node->childrenVec.push_back( childNode );
         }
 
-        free( selectedInstIndicesArr );
-        selectedInstIndicesArr = nullptr;
-
         if (emptyChildFound) LabelNode( node, parentClassDist );
     }
 
+    free( selectedInstIndicesArr );
+    selectedInstIndicesArr = nullptr;
     free( parentClassDist );
     parentClassDist = nullptr;
 
