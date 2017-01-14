@@ -16,9 +16,10 @@ Classifier::~Classifier()
 
 
 void Classifier::Train(
-    const vector<Instance>& iv, 
-    const vector<NumericAttr>& fv, 
-    const vector<char*>& cv )
+    const Instance* instanceTable,
+    const vector<NumericAttr>& fv,
+    const vector<char*>& cv,
+    const unsigned int numInstances )
 {
     classVec = cv;
     featureVec = fv;
@@ -28,7 +29,7 @@ void Classifier::Train(
     
     /******************** Init tree constructer ********************/
     rootVec.reserve( NUM_TREES );
-    treeBuilder.Init( fv, cv, iv );
+    treeBuilder.Init( fv, cv, instanceTable, numInstances );
 
     time_t start,end;
     double dif;
@@ -71,7 +72,9 @@ char* Classifier::Analyze(
     return cv[classIndex];
 }
 
-void Classifier::Classify( const vector<Instance>& iv )
+void Classifier::Classify(
+    const Instance* instanceTable,
+    const unsigned int numInstances )
 {
     if (classVec.empty())
     {
@@ -80,11 +83,11 @@ void Classifier::Classify( const vector<Instance>& iv )
     }
 
     unsigned int correctCounter = 0;
-    unsigned int numInstances = iv.size();
 
     #pragma omp parallel for reduction (+: correctCounter) schedule(dynamic)
     for (unsigned int instId = 0; instId < numInstances; instId++)
-        if (Classify( iv[instId] ) == iv[instId].classIndex)
+        if (Classify( instanceTable[instId] ) ==
+            instanceTable[instId].classIndex)
             correctCounter++;
 
     double correctRate = (double) correctCounter / (double) numInstances;

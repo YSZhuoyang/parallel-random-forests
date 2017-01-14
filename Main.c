@@ -15,8 +15,11 @@ int main()
     classifier.Train(
         trainSetImporter.GetInstances(), 
         trainSetImporter.GetFeatures(), 
-        trainSetImporter.GetClassAttr() );
-    classifier.Classify( testSetImporter.GetInstances() );
+        trainSetImporter.GetClassAttr(),
+        trainSetImporter.GetNumInstances() );
+    classifier.Classify(
+        testSetImporter.GetInstances(),
+        trainSetImporter.GetNumInstances() );
     classifier.Analyze(
         "This is bad",
         trainSetImporter.GetFeatures(),
