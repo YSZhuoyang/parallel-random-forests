@@ -20,7 +20,6 @@ ArffImporter::~ArffImporter()
 
     for (NumericAttr& feature : featureVec) free( feature.name );
     featureVec.clear();
-
 }
 
 void ArffImporter::BuildInstanceTable()
