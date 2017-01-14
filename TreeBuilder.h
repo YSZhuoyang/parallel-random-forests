@@ -44,10 +44,6 @@ private:
     inline double ComputeEntropy(
         const unsigned int* classDistribution,
         const unsigned int numInstances );
-    // Count instances belonging to each class
-    inline unsigned int* GetDistribution(
-        const unsigned int* iia,
-        const unsigned int numInstances );
     inline void LabelNode(
         TreeNode* node,
         const unsigned int* classDistribution );
