@@ -29,9 +29,10 @@ Classifier::~Classifier()
 
 
 void Classifier::Train(
-    const vector<Instance>& iv, 
-    const vector<NumericAttr>& fv, 
-    const vector<char*>& cv )
+    const Instance* instanceTable,
+    const vector<NumericAttr>& fv,
+    const vector<char*>& cv,
+    const unsigned int numInstances )
 {
     classVec = cv;
     featureVec = fv;
@@ -40,7 +41,7 @@ void Classifier::Train(
     // Chunk size need to be able to be divided by number of mpi processes.
     unsigned int chunkSize = NUM_TREES / numMpiNodes;
     rootVec.reserve( chunkSize );
-    treeBuilder.Init( fv, cv, iv );
+    treeBuilder.Init( fv, cv, instanceTable, numInstances );
 
     printf( "Node %d constructed %u trees.\n", mpiNodeId, chunkSize );
 
@@ -72,7 +73,9 @@ void Classifier::Train(
     printf( "Node %d builds forests: time taken is %.2lf seconds.\n", mpiNodeId, dif );
 }
 
-void Classifier::Classify( const vector<Instance>& iv )
+void Classifier::Classify(
+    const Instance* instanceTable,
+    const unsigned int numInstances )
 {
     if (classVec.empty())
     {
@@ -90,14 +93,13 @@ void Classifier::Classify( const vector<Instance>& iv )
 
     /******************* Prepare buffer *******************/
     unsigned short numClasses = classVec.size();
-    unsigned int numInstances = iv.size();
     unsigned int correctCounter = 0;
     unsigned int* votes = (unsigned int*) 
         calloc( numClasses * numInstances, sizeof( unsigned int ) );
 
     #pragma omp parallel for schedule(dynamic)
     for (unsigned int i = 0; i < numInstances; i++)
-        Classify( iv[i], votes, i );
+        Classify( instanceTable[i], votes, i );
     
     /************************** Do reduction *************************/
     if (mpiNodeId == MPI_ROOT_ID)
@@ -115,7 +117,7 @@ void Classifier::Classify( const vector<Instance>& iv )
         {
             unsigned short predictedClassIndex = 
                 getIndexOfMax( votes + i * numClasses, numClasses );
-            if (predictedClassIndex == iv[i].classIndex)
+            if (predictedClassIndex == instanceTable[i].classIndex)
                 correctCounter++;
         }
 
