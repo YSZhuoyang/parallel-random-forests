@@ -101,16 +101,12 @@ TreeNode* TreeBuilder::Split(
     unsigned int selectedFeaIndex;
     double selectedThreshold;
 
-    unsigned int* selectedChildSizeArr =
-        (unsigned int*) malloc( NUM_CHILDREN * sizeof( unsigned int ) );
-    unsigned int* childSizeArr =
-        (unsigned int*) malloc( NUM_CHILDREN * sizeof( unsigned int ) );
+    unsigned int childSizeArr[NUM_CHILDREN];
+    unsigned int selectedChildSizeArr[NUM_CHILDREN];
 
     // Init child class distribution vector
-    unsigned int** classDistArr =
-        (unsigned int**) malloc( NUM_CHILDREN * sizeof( unsigned int* ) );
-    unsigned int** selectedClassDistArr =
-        (unsigned int**) malloc( NUM_CHILDREN * sizeof( unsigned int* ) );
+    unsigned int* classDistArr[NUM_CHILDREN];
+    unsigned int* selectedClassDistArr[NUM_CHILDREN];
     for (unsigned int childId = 0; childId < NUM_CHILDREN; childId++)
     {
         classDistArr[childId] = ( unsigned int* )
@@ -240,15 +236,11 @@ TreeNode* TreeBuilder::Split(
         }
     }
 
-    free( childSizeArr );
-    childSizeArr = nullptr;
     free( splitCandidates );
     splitCandidates = nullptr;
 
     for (unsigned int childId = 0; childId < NUM_CHILDREN; childId++)
         free( classDistArr[childId] );
-    free( classDistArr );
-    classDistArr = nullptr;
     //printf( "\n----------------------------------------\n");
     //printf( "Height: %d\n", height );
 
@@ -306,10 +298,6 @@ TreeNode* TreeBuilder::Split(
         if (emptyChildFound) LabelNode( node, parentClassDist );
     }
 
-    free( selectedClassDistArr );
-    selectedClassDistArr = nullptr;
-    free( selectedChildSizeArr );
-    selectedChildSizeArr = nullptr;
     free( selectedValueIndexPairArr );
     selectedValueIndexPairArr = nullptr;
 
