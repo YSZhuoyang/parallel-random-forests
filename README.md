@@ -9,7 +9,7 @@ A parallelized version of random forests learning algorithm.
 * In 'Classifier.h', change following variables:
 
         NUM_TREES             // Number of trees to construct
-        NUM_FEATURES_PER_TREE // Number of features to be considered for finding the best split features and their values
+        NUM_FEATURES_PER_TREE // Number of features to be considered for finding the best split candidates
 
 * In 'TreeBuilder.h', change following variables:
 
