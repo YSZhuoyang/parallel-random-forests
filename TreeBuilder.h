@@ -33,7 +33,7 @@ public:
 
 private:
     TreeNode* Split(
-        unsigned int* iia,
+        ValueIndexPair* valueIndexPairArr,
         unsigned int* featureIndexArray,
         const unsigned int* parentClassDist,
         const unsigned int numInstances,
@@ -43,10 +43,6 @@ private:
         const unsigned int numInstances );
     inline double ComputeEntropy(
         const unsigned int* classDistribution,
-        const unsigned int numInstances );
-    // Count instances belonging to each class
-    inline unsigned int* GetDistribution(
-        const unsigned int* iia,
         const unsigned int numInstances );
     inline void LabelNode(
         TreeNode* node,
