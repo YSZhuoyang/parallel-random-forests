@@ -24,19 +24,22 @@ void Classifier::Configure(
 }
 
 void Classifier::Train(
-    const vector<Instance>& iv, 
-    const vector<NumericAttr>& fv, 
-    const vector<char*>& cv )
+    const Instance* instanceTable,
+    const vector<NumericAttr>& fv,
+    const vector<char*>& cv,
+    const unsigned int numInstances )
 {
     classVec = cv;
     featureVec = fv;
 
-    printf( "Num features: %lu\n", fv.size() );
+    unsigned int numFeatures = fv.size();
+    printf( "Num features: %d\n", numFeatures );
     
     /******************** Init tree constructer ********************/
+
     // Build a number of trees each having the same number of features.
     rootVec.reserve( numTrees );
-    treeBuilder.Init( fv, cv, iv );
+    treeBuilder.Init( fv, cv, instanceTable, numInstances );
 
     time_t start,end;
     double dif;
@@ -81,23 +84,24 @@ char* Classifier::Analyze(
 }
 
 double Classifier::Test(
-    const vector<Instance>& iv, 
-    const vector<char*>& cv )
+    const vector<char*>& cv,
+    const Instance* instanceTable,
+    const unsigned int numInstances )
 {
     if (rootVec.empty()) LoadModel();
 
     unsigned int correctCounter = 0;
-    unsigned int totalNumber = iv.size();
 
-    printf( "Test set size: %u\n", totalNumber );
+    printf( "Test set size: %u\n", numInstances );
 
     classVec = cv;
 
     #pragma omp parallel for reduction(+: correctCounter) schedule(dynamic)
-    for (unsigned int i = 0; i < totalNumber; i++)
-        if (Classify( iv[i] ) == iv[i].classIndex) correctCounter++;
+    for (unsigned int i = 0; i < numInstances; i++)
+        if (Classify( instanceTable[i] ) == instanceTable[i].classIndex)
+            correctCounter++;
 
-    double correctRate = (double) correctCounter / (double) totalNumber;
+    double correctRate = (double) correctCounter / (double) numInstances;
     double incorrectRate = 1.0f - correctRate;
 
     printf( "Correct rate: %f\n", correctRate );

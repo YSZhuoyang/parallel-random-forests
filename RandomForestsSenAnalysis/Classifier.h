@@ -21,16 +21,18 @@ public:
         unsigned int numTrees,
         unsigned int numFeaPerTree );
     void Train(
-        const vector<Instance>& iv, 
-        const vector<NumericAttr>& fv, 
-        const vector<char*>& cv );
+        const Instance* instanceTable,
+        const vector<NumericAttr>& fv,
+        const vector<char*>& cv,
+        const unsigned int numInstances );
     char* Analyze(
         const char* str,
         const vector<NumericAttr>& featureVec,
         const vector<char*>& cv );
     double Test(
-        const vector<Instance>& iv, 
-        const vector<char*>& cv );
+        const vector<char*>& cv,
+        const Instance* instanceTable,
+        const unsigned int numInstances );
 
 
 private:

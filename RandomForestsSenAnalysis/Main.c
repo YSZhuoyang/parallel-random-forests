@@ -16,9 +16,10 @@ extern "C"
         Classifier classifier;
         classifier.Configure( numTrees, numFeaPerTree );
         classifier.Train(
-            trainSetImporter.GetInstances(),
-            trainSetImporter.GetFeatures(),
-            trainSetImporter.GetClassAttr() );
+            trainSetImporter.GetInstances(), 
+            trainSetImporter.GetFeatures(), 
+            trainSetImporter.GetClassAttr(),
+            trainSetImporter.GetNumInstances() );
     }
 
     float Test()
@@ -29,8 +30,9 @@ extern "C"
 
         Classifier classifier;
         return classifier.Test(
+            testSetImporter.GetClassAttr(),
             testSetImporter.GetInstances(),
-            testSetImporter.GetClassAttr() );
+            testSetImporter.GetNumInstances() );
     }
 
     char* Analyze( char* sentence )
@@ -55,4 +57,3 @@ extern "C"
         str = nullptr;
     }
 }
-
