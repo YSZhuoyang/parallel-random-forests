@@ -1,14 +1,15 @@
 # Parallelized Random Forests
 A parallelized version of random forests learning algorithm.
-* Refer to weka random tree construction and C4.5 initial tree construction.
-* Support Infogain and Gini impurity used as split criteria.
+* Refer to Breiman random tree construction.
+* Support continus features, which are repeatedly used during split.
+* Support both Infogain and Gini impurity as split criteria.
 * No need of pruning.
 
 ### Configuration
 * In 'Classifier.h', change following variables:
 
         NUM_TREES             // Number of trees to construct
-        NUM_FEATURES_PER_TREE // Number of features to be considered in each node for finding best split criteria
+        NUM_FEATURES_PER_TREE // Number of features to be considered for finding the best split features and their values
 
 * In 'TreeBuilder.h', change following variables:
 
