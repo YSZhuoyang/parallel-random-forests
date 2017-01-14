@@ -28,15 +28,21 @@ public:
     void Read( const char* fileName );
     vector<char*> GetClassAttr();
     vector<NumericAttr> GetFeatures();
-    vector<Instance> GetInstances();
+    Instance* GetInstances();
+    unsigned int GetNumInstances();
 
 
 private:
+    void BuildInstanceTable();
+
     vector<char*> classVec;
     vector<NumericAttr> featureVec;
     vector<Instance> instanceVec;
 
+    Instance* instanceTable;
+
     unsigned int numFeatures       = 0;
+    unsigned int numInstances      = 0;
     unsigned short numClasses      = 0;
 };
 

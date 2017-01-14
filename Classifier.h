@@ -15,10 +15,13 @@ public:
     ~Classifier();
 
     void Train(
-        const vector<Instance>& iv,
+        const Instance* instanceTable,
         const vector<NumericAttr>& fv,
-        const vector<char*>& cv );
-    void Classify( const vector<Instance>& iv );
+        const vector<char*>& cv,
+        const unsigned int numInstances );
+    void Classify( 
+        const Instance* instanceTable,
+        const unsigned int numInstances );
     char* Analyze(
         const char* str,
         const vector<NumericAttr>& featureVec,

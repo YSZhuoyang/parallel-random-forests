@@ -16,9 +16,10 @@ Classifier::~Classifier()
 
 
 void Classifier::Train(
-    const vector<Instance>& iv, 
-    const vector<NumericAttr>& fv, 
-    const vector<char*>& cv )
+    const Instance* instanceTable,
+    const vector<NumericAttr>& fv,
+    const vector<char*>& cv,
+    const unsigned int numInstances )
 {
     classVec = cv;
     featureVec = fv;
@@ -30,7 +31,7 @@ void Classifier::Train(
 
     // Build a number of trees each having the same number of features.
     rootVec.reserve( NUM_TREES );
-    treeBuilder.Init( fv, cv, iv );
+    treeBuilder.Init( fv, cv, instanceTable, numInstances );
 
     time_t start,end;
     double dif;
@@ -65,7 +66,9 @@ char* Classifier::Analyze(
     return cv[classIndex];
 }
 
-void Classifier::Classify( const vector<Instance>& iv )
+void Classifier::Classify(
+    const Instance* instanceTable,
+    const unsigned int numInstances )
 {
     if (classVec.empty())
     {
@@ -74,12 +77,11 @@ void Classifier::Classify( const vector<Instance>& iv )
     }
 
     unsigned int correctCounter = 0;
-    unsigned int totalNumber = iv.size();
 
-    for (const Instance& instance : iv)
-        if (Classify( instance ) == instance.classIndex) correctCounter++;
+    for (unsigned int i = 0; i < numInstances; i++)
+        if (Classify( instanceTable[i] ) == instanceTable[i].classIndex) correctCounter++;
 
-    double correctRate = (double) correctCounter / (double) totalNumber;
+    double correctRate = (double) correctCounter / (double) numInstances;
     double incorrectRate = 1.0 - correctRate;
 
     printf( "Correct rate: %f\n", correctRate );
