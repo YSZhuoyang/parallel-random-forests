@@ -33,7 +33,7 @@ public:
 
 private:
     TreeNode* Split(
-        unsigned int* iia,
+        ValueIndexPair* valueIndexPairArr,
         unsigned int* featureIndexArray,
         const unsigned int* parentClassDist,
         const unsigned int numInstances,
