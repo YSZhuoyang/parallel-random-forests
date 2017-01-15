@@ -118,8 +118,6 @@ TreeNode* TreeBuilder::Split(
     // Store sorted values of that feature with indices
     ValueIndexPair* selectedValueIndexPairArr =
         (ValueIndexPair*) malloc( numInstances * sizeof( ValueIndexPair ) );
-    // Store split threshold candidates
-    double* splitCandidates = (double*) malloc( numInstances * sizeof( double ) );
 
     unsigned int numRestFeaToSelect = numFeaturesToSelect;
     unsigned int numRestFea = numFeaturesTotal;
@@ -148,12 +146,7 @@ TreeNode* TreeBuilder::Split(
             sizeof( ValueIndexPair ),
             Compare );
 
-        for (unsigned int i = 0; i < numInstances; i++)
-            splitCandidates[i] = valueIndexPairArr[i].featureValue;
-        unsigned int numSplit =
-            removeDuplicates( splitCandidates, numInstances ) - 1;
-
-        // Reset child data and child class distribution
+        // Reset child class distribution
         unsigned int splitIndex = 0;
         for (unsigned int classId = 0; classId < numClasses; classId++)
             classDistArr[0][classId] = 0;
@@ -163,18 +156,24 @@ TreeNode* TreeBuilder::Split(
             numClasses * sizeof( unsigned int ) );
 
         bool featureIndexStored = false;
+        double priorCandidate = valueIndexPairArr[0].featureValue;
 
-        // Find best split threshold
-        for (unsigned int valueIndex = 0; valueIndex < numSplit; valueIndex++)
+        // Find the best split threshold
+        for (unsigned int candidateId = 1;
+            candidateId < numInstances; candidateId++)
         {
-            double splitPoint =
-                (splitCandidates[valueIndex] + splitCandidates[valueIndex + 1]) / 2.0;
+            if (priorCandidate == valueIndexPairArr[candidateId].featureValue)
+                continue;
+            
+            double splitThreshold = (priorCandidate + 
+                valueIndexPairArr[candidateId].featureValue) / 2.0;
+            priorCandidate = valueIndexPairArr[candidateId].featureValue;
 
             while (splitIndex < numInstances)
             {
                 const Instance& instance =
                     instanceTable[valueIndexPairArr[splitIndex].featureIndex];
-                if (instance.featureAttrArray[randFeaIndex] >= splitPoint)
+                if (instance.featureAttrArray[randFeaIndex] >= splitThreshold)
                     break;
 
                 classDistArr[0][instance.classIndex]++;
@@ -203,7 +202,7 @@ TreeNode* TreeBuilder::Split(
                 // giniImpurity -= numChildren / (double) numInstances * giniChild;
             }
 
-            // Get max split criteria and related feature
+            // Get max split outcome and related feature
             // if (giniImpurityMax < giniImpurity)
             if (infoGainMax < infoGain)
             {
@@ -229,15 +228,12 @@ TreeNode* TreeBuilder::Split(
 
                 // giniImpurityMax = giniImpurity;
                 infoGainMax = infoGain;
-                selectedThreshold = splitPoint;
+                selectedThreshold = splitThreshold;
 
                 if (!gainFound) gainFound = true;
             }
         }
     }
-
-    free( splitCandidates );
-    splitCandidates = nullptr;
 
     for (unsigned int childId = 0; childId < NUM_CHILDREN; childId++)
         free( classDistArr[childId] );
