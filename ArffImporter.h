@@ -28,7 +28,7 @@ public:
     void Read( const char* fileName );
     vector<char*> GetClassAttr();
     vector<NumericAttr> GetFeatures();
-    Instance* GetInstances();
+    double** GetInstances();
     unsigned int GetNumInstances();
 
 
@@ -37,9 +37,9 @@ private:
 
     vector<char*> classVec;
     vector<NumericAttr> featureVec;
-    vector<Instance> instanceVec;
+    vector<double*> instanceVec;
 
-    Instance* instanceTable;
+    double** instanceTable;
 
     unsigned int numFeatures       = 0;
     unsigned int numInstances      = 0;

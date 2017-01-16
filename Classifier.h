@@ -15,12 +15,12 @@ public:
     ~Classifier();
 
     void Train(
-        const Instance* instanceTable,
+        double** instanceTable,
         const vector<NumericAttr>& fv,
         const vector<char*>& cv,
         const unsigned int numInstances );
-    void Classify( 
-        const Instance* instanceTable,
+    void Classify(
+        double** instanceTable,
         const unsigned int numInstances );
     char* Analyze(
         const char* str,
@@ -30,7 +30,7 @@ public:
 
 private:
     // Return the index of the predicted class
-    unsigned short Classify( const Instance& instance );
+    unsigned short Classify( const double* instance );
 
     vector<char*> classVec;
     vector<NumericAttr> featureVec;

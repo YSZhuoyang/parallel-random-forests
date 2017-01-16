@@ -24,17 +24,18 @@ public:
 
     void Init(
         const vector<NumericAttr>& fv,
-        const vector<char*>& cv,
-        const Instance* it,
-        const unsigned int numInstances );
-    void BuildTree( const unsigned int numFeaToSelect );
+        const vector<char*>& cv );
+    void BuildTree(
+        double** instanceTable,
+        const unsigned int numInstances,
+        const unsigned int numFeaToSelect );
     void PrintTree( const TreeNode* iter, unsigned int h );
     void DestroyNode( TreeNode* node );
     TreeNode* GetRoot();
 
 private:
     TreeNode* Split(
-        ValueIndexPair* valueIndexPairArr,
+        double** instanceTable,
         unsigned int* featureIndexArray,
         const unsigned int* parentClassDist,
         const unsigned int numInstances,
@@ -51,11 +52,11 @@ private:
 
     vector<char*> classVec;
     vector<NumericAttr> featureVec;
-    const Instance* instanceTable;
+    // const Instance* instanceTable;
 
     unsigned int numFeaturesToSelect;
     unsigned int numFeaturesTotal;
-    unsigned int numInstancesTotal;
+    // unsigned int numInstancesTotal;
     unsigned short numClasses;
     
     TreeNode* root = nullptr;

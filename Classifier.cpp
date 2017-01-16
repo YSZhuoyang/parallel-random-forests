@@ -16,7 +16,7 @@ Classifier::~Classifier()
 
 
 void Classifier::Train(
-    const Instance* instanceTable,
+    double** instanceTable,
     const vector<NumericAttr>& fv,
     const vector<char*>& cv,
     const unsigned int numInstances )
@@ -31,7 +31,7 @@ void Classifier::Train(
 
     // Build a number of trees each having the same number of features.
     rootVec.reserve( NUM_TREES );
-    treeBuilder.Init( fv, cv, instanceTable, numInstances );
+    treeBuilder.Init( fv, cv );
 
     time_t start,end;
     double dif;
@@ -39,7 +39,10 @@ void Classifier::Train(
 
     for (unsigned int treeIndex = 0; treeIndex < NUM_TREES; treeIndex++)
     {
-        treeBuilder.BuildTree( NUM_FEATURES_PER_TREE );
+        treeBuilder.BuildTree(
+            instanceTable,
+            numInstances,
+            NUM_FEATURES_PER_TREE );
         rootVec.push_back( treeBuilder.GetRoot() );
         // treeBuilder.PrintTree( treeBuilder.GetRoot(), 0 );
     }
@@ -55,11 +58,11 @@ char* Classifier::Analyze(
     const vector<NumericAttr>& featureVec,
     const vector<char*>& cv )
 {
-    Instance instance = Tokenize( str, featureVec );
+    double* instance = Tokenize( str, featureVec );
     unsigned short classIndex = Classify( instance );
 
-    free( instance.featureAttrArray );
-    instance.featureAttrArray = nullptr;
+    free( instance );
+    instance = nullptr;
 
     printf( "Labeled with: %s\n", cv[classIndex] );
 
@@ -67,7 +70,7 @@ char* Classifier::Analyze(
 }
 
 void Classifier::Classify(
-    const Instance* instanceTable,
+    double** instanceTable,
     const unsigned int numInstances )
 {
     if (classVec.empty())
@@ -77,9 +80,12 @@ void Classifier::Classify(
     }
 
     unsigned int correctCounter = 0;
+    unsigned int numFeatures = featureVec.size();
 
     for (unsigned int i = 0; i < numInstances; i++)
-        if (Classify( instanceTable[i] ) == instanceTable[i].classIndex) correctCounter++;
+        if (Classify( instanceTable[i] ) == 
+            (unsigned short) instanceTable[i][numFeatures])
+            correctCounter++;
 
     double correctRate = (double) correctCounter / (double) numInstances;
     double incorrectRate = 1.0 - correctRate;
@@ -88,7 +94,7 @@ void Classifier::Classify(
     printf( "Incorrect rate: %f\n", incorrectRate );
 }
 
-unsigned short Classifier::Classify( const Instance& instance )
+unsigned short Classifier::Classify( const double* instance )
 {
     unsigned short numClasses = classVec.size();
     unsigned int* votes = (unsigned int*) 
@@ -106,7 +112,7 @@ unsigned short Classifier::Classify( const Instance& instance )
             // one group having feature value smaller than threshold, 
             // another group having feature value greater than threshold.
             unsigned int childId =
-                (unsigned int) (instance.featureAttrArray[i] >= node->threshold);
+                (unsigned int) (instance[i] >= node->threshold);
             if (node->childrenVec[childId] == nullptr) break;
             else node = node->childrenVec[childId];
         }

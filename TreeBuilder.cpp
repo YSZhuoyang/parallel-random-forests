@@ -1,5 +1,6 @@
 
 #include "TreeBuilder.h"
+#include <bits/stdc++.h>
 
 
 TreeBuilder::TreeBuilder()
@@ -14,19 +15,18 @@ TreeBuilder::~TreeBuilder()
 
 void TreeBuilder::Init(
     const vector<NumericAttr>& fv,
-    const vector<char*>& cv,
-    const Instance* it,
-    const unsigned int numInstances )
+    const vector<char*>& cv )
 {
     featureVec = fv;
     classVec = cv;
-    instanceTable = it;
-    numInstancesTotal = numInstances;
     numFeaturesTotal = featureVec.size();
     numClasses = classVec.size();
 }
 
-void TreeBuilder::BuildTree( const unsigned int numFeaToSelect )
+void TreeBuilder::BuildTree(
+    double** instanceTable,
+    const unsigned int numInstances,
+    const unsigned int numFeaToSelect )
 {
     numFeaturesToSelect = numFeaToSelect;
     
@@ -35,35 +35,37 @@ void TreeBuilder::BuildTree( const unsigned int numFeaToSelect )
     for (unsigned int i = 0; i < numFeaturesTotal; i++)
         featureIndexArray[i] = i;
 
-    ValueIndexPair* valueIndexPairArr =
-        (ValueIndexPair*) malloc( numInstancesTotal * sizeof( ValueIndexPair ) );
+    // ValueIndexPair* valueIndexPairArr =
+    //     (ValueIndexPair*) malloc( numInstancesTotal * sizeof( ValueIndexPair ) );
     unsigned int* initialClassDist = 
         (unsigned int*) calloc( numClasses, sizeof( unsigned int ) );
-    for (unsigned int i = 0; i < numInstancesTotal; i++)
+    for (unsigned int i = 0; i < numInstances; i++)
     {
         // Get overall distribution
-        initialClassDist[instanceTable[i].classIndex]++;
+        initialClassDist[(unsigned int) instanceTable[i][numFeaturesTotal]]++;
         // Init data indices
-        valueIndexPairArr[i].featureIndex = i;
+        // valueIndexPairArr[i].featureIndex = i;
     }
+
+    // printf( "c1: %u, c2: %u\n", initialClassDist[0], initialClassDist[1] );
     
     root = Split(
-        valueIndexPairArr,
+        instanceTable,
         featureIndexArray,
         initialClassDist,
-        numInstancesTotal,
+        numInstances,
         0 );
 
     free( initialClassDist );
     initialClassDist = nullptr;
-    free( valueIndexPairArr );
-    valueIndexPairArr = nullptr;
+    // free( valueIndexPairArr );
+    // valueIndexPairArr = nullptr;
     free( featureIndexArray );
     featureIndexArray = nullptr;
 }
 
 TreeNode* TreeBuilder::Split(
-    ValueIndexPair* valueIndexPairArr,
+    double** instanceTable,
     unsigned int* featureIndexArray,
     const unsigned int* parentClassDist,
     const unsigned int numInstances,
@@ -116,8 +118,10 @@ TreeNode* TreeBuilder::Split(
     }
 
     // Store sorted values of that feature with indices
-    ValueIndexPair* selectedValueIndexPairArr =
-        (ValueIndexPair*) malloc( numInstances * sizeof( ValueIndexPair ) );
+    double** selectedInstanceTable =
+        (double**) malloc( numInstances * sizeof( double* ) );
+    // ValueIndexPair* selectedValueIndexPairArr =
+    //     (ValueIndexPair*) malloc( numInstances * sizeof( ValueIndexPair ) );
 
     unsigned int numRestFeaToSelect = numFeaturesToSelect;
     unsigned int numRestFea = numFeaturesTotal;
@@ -136,15 +140,39 @@ TreeNode* TreeBuilder::Split(
         if (numRestFeaToSelect > 0) numRestFeaToSelect--;
 
         // Get all values of that feature with indices and sort them.
-        for (unsigned int i = 0; i < numInstances; i++)
-            valueIndexPairArr[i].featureValue =
-                instanceTable[valueIndexPairArr[i].featureIndex].
-                    featureAttrArray[randFeaIndex];
-        qsort(
-            valueIndexPairArr,
-            numInstances,
-            sizeof( ValueIndexPair ),
-            Compare );
+        // for (unsigned int i = 0; i < numInstances; i++)
+        //     instanceTable[i].splitCanFeaId = randFeaIndex;
+            // valueIndexPairArr[i].featureValue =
+            //     instanceTable[valueIndexPairArr[i].featureIndex].
+            //         featureAttrArray[randFeaIndex];
+        // for (unsigned int i = 0; i < numInstances; i++)
+        //     instanceTable[i].splitCanFeaId = randFeaIndex;
+        Comp comp( randFeaIndex );
+        sort(
+            instanceTable,//valueIndexPairArr,
+            instanceTable + numInstances,
+            comp );
+
+        // if (height == 0)
+        // {
+        //     for (int i = 0; i < 50; i++)
+        //         printf( "%f ", instanceTable[i][randFeaIndex] );
+        //     printf( "\n after:\n" );
+        // }
+
+        // qsort_r(
+        //     instanceTable,
+        //     numInstances,
+        //     sizeof( double* ),
+        //     Compare,
+        //     &randFeaIndex );
+
+        // if (height == 0)
+        // {
+        //     for (int i = 0; i < 50; i++)
+        //         printf( "%f ", instanceTable[i][randFeaIndex] );
+        //     printf( "\n" );
+        // }
 
         // Reset child class distribution
         unsigned int splitIndex = 0;
@@ -155,35 +183,41 @@ TreeNode* TreeBuilder::Split(
             parentClassDist,
             numClasses * sizeof( unsigned int ) );
 
-        bool featureIndexStored = false;
-        double priorCandidate = valueIndexPairArr[0].featureValue;
+        bool sortedInstTableStored = false;
+        double priorCandidate = 
+            instanceTable[0][randFeaIndex];
+        // double priorCandidate = valueIndexPairArr[0].featureValue;
 
         // Find the best split threshold
         for (unsigned int candidateId = 1;
             candidateId < numInstances; candidateId++)
         {
-            if (priorCandidate == valueIndexPairArr[candidateId].featureValue)
+            // if (priorCandidate == valueIndexPairArr[candidateId].featureValue)
+            if (priorCandidate == 
+                instanceTable[candidateId][randFeaIndex])
                 continue;
             
             double splitThreshold = (priorCandidate + 
-                valueIndexPairArr[candidateId].featureValue) / 2.0;
-            priorCandidate = valueIndexPairArr[candidateId].featureValue;
+                instanceTable[candidateId][randFeaIndex]) / 2.0;
+            priorCandidate =
+                instanceTable[candidateId][randFeaIndex];
 
             while (splitIndex < numInstances)
             {
-                const Instance& instance =
-                    instanceTable[valueIndexPairArr[splitIndex].featureIndex];
-                if (instance.featureAttrArray[randFeaIndex] >= splitThreshold)
+                const double* instance = instanceTable[splitIndex];
+                if (instance[randFeaIndex] >= splitThreshold)
                     break;
 
-                classDistArr[0][instance.classIndex]++;
-                classDistArr[1][instance.classIndex]--;
+                classDistArr[0][(unsigned int) instance[numFeaturesTotal]]++;
+                classDistArr[1][(unsigned int) instance[numFeaturesTotal]]--;
 
                 splitIndex++;
             }
 
             childSizeArr[0] = splitIndex;
             childSizeArr[1] = numInstances - splitIndex;
+
+            // if (height == 0) printf( "c1: %u, c2: %u\n", childSizeArr[0], childSizeArr[1] );
 
             // double giniImpurity = giniParent;
             double infoGain = entropyParent;
@@ -206,15 +240,15 @@ TreeNode* TreeBuilder::Split(
             // if (giniImpurityMax < giniImpurity)
             if (infoGainMax < infoGain)
             {
-                if (!featureIndexStored)
+                if (!sortedInstTableStored)
                 {
                     memcpy(
-                        selectedValueIndexPairArr,
-                        valueIndexPairArr,
-                        numInstances * sizeof( ValueIndexPair ) );
+                        selectedInstanceTable,
+                        instanceTable,
+                        numInstances * sizeof( double* ) );
 
                     selectedFeaIndex = randFeaIndex;
-                    featureIndexStored = true;
+                    sortedInstTableStored = true;
                 }
 
                 // Faster than memcpy for short arrays
@@ -265,18 +299,20 @@ TreeNode* TreeBuilder::Split(
         // Split children
         for (unsigned int childId = 0; childId < NUM_CHILDREN; childId++)
         {
-            ValueIndexPair* childValueIndexPairArr = (ValueIndexPair*)
-                malloc( selectedChildSizeArr[childId] * sizeof( ValueIndexPair ) );
+            double** childInstanceTable = (double**)
+                malloc( selectedChildSizeArr[childId] * sizeof( double* ) );
+            // ValueIndexPair* childValueIndexPairArr = (ValueIndexPair*)
+            //     malloc( selectedChildSizeArr[childId] * sizeof( ValueIndexPair ) );
             // Consider NUM_CHILDREN is 2, childId is either 0 or 1.
-            ValueIndexPair* offset = selectedValueIndexPairArr + ((childId) ?
+            double** offset = selectedInstanceTable + ((childId) ?
                 selectedChildSizeArr[0] : 0);
             memcpy(
-                childValueIndexPairArr,
+                childInstanceTable,
                 offset,
-                selectedChildSizeArr[childId] * sizeof( ValueIndexPair ) );
+                selectedChildSizeArr[childId] * sizeof( double* ) );
             
             TreeNode* childNode = Split(
-                childValueIndexPairArr,
+                childInstanceTable,
                 featureIndexArray,
                 selectedClassDistArr[childId],
                 selectedChildSizeArr[childId],
@@ -284,8 +320,8 @@ TreeNode* TreeBuilder::Split(
 
             free( selectedClassDistArr[childId] );
             selectedClassDistArr[childId] = nullptr;
-            free( childValueIndexPairArr );
-            childValueIndexPairArr = nullptr;
+            free( childInstanceTable );
+            childInstanceTable = nullptr;
 
             if (childNode == nullptr) emptyChildFound = true;
             node->childrenVec.push_back( childNode );
@@ -294,8 +330,8 @@ TreeNode* TreeBuilder::Split(
         if (emptyChildFound) LabelNode( node, parentClassDist );
     }
 
-    free( selectedValueIndexPairArr );
-    selectedValueIndexPairArr = nullptr;
+    free( selectedInstanceTable );
+    selectedInstanceTable = nullptr;
 
     return node;
 }

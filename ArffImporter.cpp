@@ -12,7 +12,7 @@ ArffImporter::ArffImporter()
 ArffImporter::~ArffImporter()
 {
     for (unsigned int i = 0; i < numInstances; i++)
-        free( instanceTable[i].featureAttrArray );
+        free( instanceTable[i] );
     free( instanceTable );
 
     for (char* classAttr : classVec) free( classAttr );
@@ -25,12 +25,9 @@ ArffImporter::~ArffImporter()
 void ArffImporter::BuildInstanceTable()
 {
     numInstances = instanceVec.size();
-    instanceTable = (Instance*) malloc( numInstances * sizeof( Instance ) );
+    instanceTable = (double**) malloc( numInstances * sizeof( double* ) );
     for (unsigned int i = 0; i < numInstances; i++)
-    {
-        instanceTable[i].featureAttrArray = instanceVec[i].featureAttrArray;
-        instanceTable[i].classIndex = instanceVec[i].classIndex;
-    }
+        instanceTable[i] = instanceVec[i];
 
     instanceVec.clear();
 }
@@ -109,7 +106,7 @@ void ArffImporter::Read( const char* fileName )
             numClasses = classVec.size();
             
             unsigned int featureAttrArraySize = 
-                numFeatures * sizeof( double );
+                (numFeatures + 1) * sizeof( double );
 
             double* featureValueSumArr = (double*) calloc( numFeatures, 
                 sizeof( double ) );
@@ -120,8 +117,7 @@ void ArffImporter::Read( const char* fileName )
                 unsigned int featureIndex = 0;
                 double value;
                 
-                Instance instance;
-                instance.featureAttrArray = (double*) malloc( featureAttrArraySize );
+                double* instance = (double*) malloc( featureAttrArraySize );
 
                 // Get feature attribute value
                 while (sscanf( buffer + index, "%lf%n", &value, &readSize ) > 0)
@@ -133,7 +129,7 @@ void ArffImporter::Read( const char* fileName )
                         featureVec[featureIndex].max = value;
 
                     featureValueSumArr[featureIndex] += value;
-                    instance.featureAttrArray[featureIndex++] = value;
+                    instance[featureIndex++] = value;
                     index += readSize + 1;
                 }
 
@@ -145,7 +141,7 @@ void ArffImporter::Read( const char* fileName )
                 {
                     if (StrEqualCaseSen( classVec[i], classValue ))
                     {
-                        instance.classIndex = i;
+                        instance[numFeatures] = i;
                         break;
                     }
                 }
@@ -189,7 +185,7 @@ vector<NumericAttr> ArffImporter::GetFeatures()
     return featureVec;
 }
 
-Instance* ArffImporter::GetInstances()
+double** ArffImporter::GetInstances()
 {
     return instanceTable;
 }

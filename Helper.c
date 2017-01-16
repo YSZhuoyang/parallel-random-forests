@@ -2,23 +2,43 @@
 #include "Helper.h"
 
 
-int MyHelper::Compare( const void* ele1, const void* ele2 )
+int MyHelper::Compare(
+    const void* eleX,
+    const void* eleY,
+    void* featureId )
 {
-    double x = ((ValueIndexPair*) ele1)->featureValue;
-    double y = ((ValueIndexPair*) ele2)->featureValue;
+    const double* arrX = *(const double **) eleX;
+    const double* arrY = *(const double **) eleY;
+    unsigned int index = *((unsigned int*) featureId);
+
+    double x = arrX[index];
+    double y = arrY[index];
     
     if (x > y) return 1;
     else if (x < y) return -1;
     else return 0;
 }
 
-Instance MyHelper::Tokenize(
+// int MyHelper::Compare(
+//     const void* eleX,
+//     const void* eleY )
+// {
+//     const Instance* instX = (Instance*) eleX;
+//     const Instance* instY = (Instance*) eleY;
+//     double x = instX->featureAttrArray[instX->splitCanFeaId];
+//     double y = instY->featureAttrArray[instY->splitCanFeaId];
+    
+//     if (x > y) return 1;
+//     else if (x < y) return -1;
+//     else return 0;
+// }
+
+double* MyHelper::Tokenize(
     const char* str, 
     const vector<NumericAttr>& featureVec )
 {
     unsigned int numFeatures = featureVec.size();
-    Instance instance;
-    instance.featureAttrArray = 
+    double* instance = 
         (double*) calloc( numFeatures, sizeof( double ) );
 
     unsigned int iter = 0;
@@ -51,7 +71,7 @@ Instance MyHelper::Tokenize(
                     index++;
                 
                 if (index == tokenLen && feaName[index] == '\0')
-                    instance.featureAttrArray[feaIndex]++;
+                    instance[feaIndex]++;
             }
         }
 

@@ -12,13 +12,19 @@ using namespace BasicDataStructures;
 
 namespace MyHelper
 {
-    int Compare( const void* ele1, const void* ele2 );
+    int Compare(
+        const void* eleX,
+        const void* eleY,
+        void* featureId );
+    // int Compare(
+    //     const void* eleX,
+    //     const void* eleY );
     bool StrEqualCaseSen( const char* str1, const char* str2 );
     bool StrEqualCaseInsen( const char* str1, const char* str2 );
     // Include string terminator
     unsigned int GetStrLength( const char* str );
     bool IsLetter( const char c );
-    Instance Tokenize(
+    double* Tokenize(
         const char* str, 
         const vector<NumericAttr>& featureVec );
 
