@@ -12,7 +12,6 @@ using namespace BasicDataStructures;
 
 namespace MyHelper
 {
-    // int Compare( const void* ele1, const void* ele2 );
     bool Compare(
         const ValueIndexPair& eleX,
         const ValueIndexPair& eleY );

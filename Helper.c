@@ -2,16 +2,6 @@
 #include "Helper.h"
 
 
-// int MyHelper::Compare( const void* ele1, const void* ele2 )
-// {
-//     double x = ((ValueIndexPair*) ele1)->featureValue;
-//     double y = ((ValueIndexPair*) ele2)->featureValue;
-    
-//     if (x > y) return 1;
-//     else if (x < y) return -1;
-//     else return 0;
-// }
-
 bool MyHelper::Compare(
     const ValueIndexPair& eleX, 
     const ValueIndexPair& eleY )

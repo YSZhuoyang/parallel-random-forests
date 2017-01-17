@@ -140,21 +140,14 @@ TreeNode* TreeBuilder::Split(
             valueIndexPairArr[i].featureValue =
                 instanceTable[valueIndexPairArr[i].featureIndex].
                     featureAttrArray[randFeaIndex];
-        // qsort(
-        //     valueIndexPairArr,
-        //     numInstances,
-        //     sizeof( ValueIndexPair ),
-        //     Compare );
         sort(
             valueIndexPairArr,
             valueIndexPairArr + numInstances,
             Compare );
 
-        // Reset child class distribution
+        // Reset split index and child class distribution
         unsigned int splitIndex = 0;
-        // for (unsigned int classId = 0; classId < numClasses; classId++)
-            // classDistArr[0][classId] = 0;
-        memset(classDistArr[0], 0, numClasses * sizeof( unsigned int ) );
+        memset( classDistArr[0], 0, numClasses * sizeof( unsigned int ) );
         memmove(
             classDistArr[1],
             parentClassDist,
@@ -230,9 +223,6 @@ TreeNode* TreeBuilder::Split(
                         selectedClassDistArr[childId],
                         classDistArr[childId],
                         numClasses * sizeof( unsigned int ) );
-                    // for (unsigned int classId = 0; classId < numClasses; classId++)
-                    //     selectedClassDistArr[childId][classId] =
-                    //         classDistArr[childId][classId];
                 }
 
                 // giniImpurityMax = giniImpurity;
