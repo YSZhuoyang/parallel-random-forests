@@ -5,6 +5,7 @@
 #include "BasicDataStructures.h"
 #include "Helper.h"
 
+#include <stdio.h>
 #include <string.h>
 #include <algorithm>
 
@@ -34,7 +35,7 @@ public:
 
 private:
     TreeNode* Split(
-        ValueIndexPair* valueIndexPairArr,
+        ValueIndexTuple* valueIndexTupleArr,
         unsigned int* featureIndexArray,
         const unsigned int* parentClassDist,
         const unsigned int numInstances,
