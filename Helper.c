@@ -2,14 +2,11 @@
 #include "Helper.h"
 
 
-int MyHelper::Compare( const void* ele1, const void* ele2 )
+bool MyHelper::Compare(
+    const ValueIndexPair& eleX, 
+    const ValueIndexPair& eleY )
 {
-    double x = ((ValueIndexPair*) ele1)->featureValue;
-    double y = ((ValueIndexPair*) ele2)->featureValue;
-    
-    if (x > y) return 1;
-    else if (x < y) return -1;
-    else return 0;
+    return eleX.featureValue < eleY.featureValue;
 }
 
 Instance MyHelper::Tokenize(
