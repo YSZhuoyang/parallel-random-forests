@@ -5,6 +5,10 @@ A parallelized version of random forests learning algorithm.
 * Support both Infogain and Gini impurity as split criteria.
 * No need of pruning.
 
+### Training speed
+* 20% - 25% faster than Weka Random Forests.
+* Linear scalable speedup by OpenMP and Open mpi parallelization.
+
 ### Configuration
 * In 'Classifier.h', change following variables:
 
@@ -16,15 +20,10 @@ A parallelized version of random forests learning algorithm.
         MIN_NODE_SIZE          // Minimum size of a node that can be considered as a leaf
         MIN_NODE_SIZE_TO_SPLIT // Minimum size of a node that can be further split
 
-### Parallelization
-* Multiple openmpi processes collaboration.
-* Multi-threading within single mpi process with openmp.
-
 ### Dataset and testing
 * Sentiment analysis of 50000 movie reviews from IMDb (25000 for training, 25000 for testing).
 * Used top 1000 words with highest frequencies of occurrences, achieved 83% accuracy without attributes selection.
 * Testing environment: vlsci clusters
-* Linear scalable speedup.
 
 ## Terms of use for the dataset
 
