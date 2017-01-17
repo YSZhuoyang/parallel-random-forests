@@ -9,19 +9,13 @@ using namespace std;
 
 namespace BasicDataStructures
 {
-    // struct ValueIndexPair
-    // {
-    //     double featureValue;
-    //     unsigned int featureIndex;
-    // };
-
     struct Comp {
         Comp( unsigned int featureId )
         {
             this->featureId = featureId;
         }
 
-        bool operator() ( double* i, double* j )
+        bool operator() ( const double* i, const double* j )
         {
             return i[featureId] < j[featureId];
         }

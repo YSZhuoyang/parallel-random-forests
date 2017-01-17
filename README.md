@@ -1,6 +1,8 @@
 # Parallelized Random Forests
 A random forest learning algorithm (without bagging).
 * Support both Gini impurity and info gain as split criteria.
+* Instead of sorting feature value - index pairs, instance data are sorted.
+* Testing result showed that sorting instance data is slower than sorting feature value - index pairs.
 
 ### Configuration
 * In 'Classifier.h', change following variables:

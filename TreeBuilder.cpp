@@ -139,26 +139,12 @@ TreeNode* TreeBuilder::Split(
 
         if (numRestFeaToSelect > 0) numRestFeaToSelect--;
 
-        // Get all values of that feature with indices and sort them.
-        // for (unsigned int i = 0; i < numInstances; i++)
-        //     instanceTable[i].splitCanFeaId = randFeaIndex;
-            // valueIndexPairArr[i].featureValue =
-            //     instanceTable[valueIndexPairArr[i].featureIndex].
-            //         featureAttrArray[randFeaIndex];
-        // for (unsigned int i = 0; i < numInstances; i++)
-        //     instanceTable[i].splitCanFeaId = randFeaIndex;
+        // Sort instance data based on randomly selected feature.
         Comp comp( randFeaIndex );
         sort(
-            instanceTable,//valueIndexPairArr,
+            instanceTable,
             instanceTable + numInstances,
             comp );
-
-        // if (height == 0)
-        // {
-        //     for (int i = 0; i < 50; i++)
-        //         printf( "%f ", instanceTable[i][randFeaIndex] );
-        //     printf( "\n after:\n" );
-        // }
 
         // qsort_r(
         //     instanceTable,
@@ -167,18 +153,11 @@ TreeNode* TreeBuilder::Split(
         //     Compare,
         //     &randFeaIndex );
 
-        // if (height == 0)
-        // {
-        //     for (int i = 0; i < 50; i++)
-        //         printf( "%f ", instanceTable[i][randFeaIndex] );
-        //     printf( "\n" );
-        // }
-
         // Reset child class distribution
         unsigned int splitIndex = 0;
         for (unsigned int classId = 0; classId < numClasses; classId++)
             classDistArr[0][classId] = 0;
-        memcpy(
+        memmove(
             classDistArr[1],
             parentClassDist,
             numClasses * sizeof( unsigned int ) );
@@ -242,7 +221,7 @@ TreeNode* TreeBuilder::Split(
             {
                 if (!sortedInstTableStored)
                 {
-                    memcpy(
+                    memmove(
                         selectedInstanceTable,
                         instanceTable,
                         numInstances * sizeof( double* ) );
@@ -251,7 +230,7 @@ TreeNode* TreeBuilder::Split(
                     sortedInstTableStored = true;
                 }
 
-                // Faster than memcpy for short arrays
+                // Faster than memmove for short arrays
                 for (unsigned int childId = 0; childId < NUM_CHILDREN; childId++)
                 {
                     selectedChildSizeArr[childId] = childSizeArr[childId];
@@ -306,7 +285,7 @@ TreeNode* TreeBuilder::Split(
             // Consider NUM_CHILDREN is 2, childId is either 0 or 1.
             double** offset = selectedInstanceTable + ((childId) ?
                 selectedChildSizeArr[0] : 0);
-            memcpy(
+            memmove(
                 childInstanceTable,
                 offset,
                 selectedChildSizeArr[childId] * sizeof( double* ) );
