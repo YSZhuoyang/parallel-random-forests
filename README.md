@@ -9,7 +9,7 @@ A parallelized version of random forests learning algorithm.
         sudo pip3 install virtualenv
         virtualenv -p python3 venv
         source venv/bin/activate
-        pip3 install flask
+        (sudo) pip3 install flask
 
 ## Build and deploy locally
 * Install boost on Ubuntu: run 'sudo apt install libboost-serialization-dev'

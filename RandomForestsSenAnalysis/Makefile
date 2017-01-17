@@ -3,7 +3,10 @@
 ################################ Macros #################################
 
 SHELL = /bin/sh
-CFLAGS = -g -fopenmp -std=c++11 -Wall -fPIC
+# Enable debug options
+# CFLAGS = -g -Wall -fopenmp -std=c++11 -fPIC
+# Enable best optimization options
+CFLAGS = -Ofast -march=native -fopenmp -std=c++11 -fPIC
 CC = g++
 OBJECTS = Helper.o ArffImporter.o TreeBuilder.o Classifier.o
 
