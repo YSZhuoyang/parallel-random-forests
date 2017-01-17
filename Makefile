@@ -4,7 +4,7 @@
 
 SHELL = /bin/sh
 # Enable debug options
-# CFLAGS = -g -std=c++11 -Wall
+# CFLAGS = -g -Wall
 # Enable best optimization options
 CFLAGS = -Ofast -march=native
 CC = g++
