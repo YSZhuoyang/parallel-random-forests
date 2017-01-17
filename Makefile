@@ -3,7 +3,8 @@
 ################################ Macros #################################
 
 SHELL = /bin/sh
-CFLAGS = -g -std=c++11 -Wall
+# CFLAGS = -g -std=c++11 -Wall
+CFLAGS = -Ofast -march=native
 CC = g++
 OBJECTS = Helper.o ArffImporter.o TreeBuilder.o Classifier.o
 

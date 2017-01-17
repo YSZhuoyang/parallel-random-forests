@@ -140,10 +140,14 @@ TreeNode* TreeBuilder::Split(
             valueIndexPairArr[i].featureValue =
                 instanceTable[valueIndexPairArr[i].featureIndex].
                     featureAttrArray[randFeaIndex];
-        qsort(
+        // qsort(
+        //     valueIndexPairArr,
+        //     numInstances,
+        //     sizeof( ValueIndexPair ),
+        //     Compare );
+        sort(
             valueIndexPairArr,
-            numInstances,
-            sizeof( ValueIndexPair ),
+            valueIndexPairArr + numInstances,
             Compare );
 
         // Reset child class distribution
