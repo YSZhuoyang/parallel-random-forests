@@ -3,8 +3,8 @@
 
 
 bool MyHelper::Compare(
-    const ValueIndexPair& eleX, 
-    const ValueIndexPair& eleY )
+    const ValueIndexTuple& eleX, 
+    const ValueIndexTuple& eleY )
 {
     return eleX.featureValue < eleY.featureValue;
 }
