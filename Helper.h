@@ -3,7 +3,6 @@
 #define _HELPER_H_
 
 #include "BasicDataStructures.h"
-#include <stdlib.h>
 #include <math.h>
 #include <mpi.h>
 
