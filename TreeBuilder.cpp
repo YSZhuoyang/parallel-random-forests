@@ -69,8 +69,8 @@ TreeNode* TreeBuilder::Split(
     const unsigned int numInstances,
     unsigned int height )
 {
-    // double giniImpurityMax = 0;
-    double infoGainMax = 0;
+    double giniImpurityMax = 0;
+    // double infoGainMax = 0;
 
     // The node is too small thus it is ignored.
     if (numInstances < MIN_NODE_SIZE) return nullptr;
@@ -85,12 +85,12 @@ TreeNode* TreeBuilder::Split(
     }
 
     // Compute entropy of parent node.
-    double entropyParent = ComputeEntropy( parentClassDist, numInstances );
-    // double giniParent = ComputeGini( parentClassDist, numInstances );
+    // double entropyParent = ComputeEntropy( parentClassDist, numInstances );
+    double giniParent = ComputeGini( parentClassDist, numInstances );
 
     // Parent node is pure.
-    // if (giniParent <= 0.0)
-    if (entropyParent <= 0.0)
+    if (giniParent <= 0.0)
+    // if (entropyParent <= 0.0)
     {
         TreeNode* leaf = new TreeNode;
         LabelNode( leaf, parentClassDist );
@@ -183,26 +183,24 @@ TreeNode* TreeBuilder::Split(
             childSizeArr[0] = splitIndex;
             childSizeArr[1] = numInstances - splitIndex;
 
-            // double giniImpurity = giniParent;
-            double infoGain = entropyParent;
+            double giniImpurity = giniParent;
+            // double infoGain = entropyParent;
             
             // Compute entropy of children
             for (unsigned int childId = 0; childId < NUM_CHILDREN; childId++)
             {
                 double numChildren = childSizeArr[childId];
-                double entropyChild = ComputeEntropy(
-                    classDistArr[childId],
-                    numChildren );
-                infoGain -= numChildren / (double) numInstances * entropyChild;
-                // double giniChild = ComputeGini(
-                //     classDistArr[childId],
-                //     numChildren );
-                // giniImpurity -= numChildren / (double) numInstances * giniChild;
+                // double entropyChild =
+                //     ComputeEntropy( classDistArr[childId], numChildren );
+                // infoGain -= numChildren / (double) numInstances * entropyChild;
+                double giniChild =
+                    ComputeGini( classDistArr[childId], numChildren );
+                giniImpurity -= numChildren / (double) numInstances * giniChild;
             }
 
             // Get max split outcome and related feature
-            // if (giniImpurityMax < giniImpurity)
-            if (infoGainMax < infoGain)
+            if (giniImpurityMax < giniImpurity)
+            // if (infoGainMax < infoGain)
             {
                 if (!featureIndexStored)
                 {
@@ -215,7 +213,6 @@ TreeNode* TreeBuilder::Split(
                     featureIndexStored = true;
                 }
 
-                // Faster than memmove for short arrays
                 for (unsigned int childId = 0; childId < NUM_CHILDREN; childId++)
                 {
                     selectedChildSizeArr[childId] = childSizeArr[childId];
@@ -225,8 +222,8 @@ TreeNode* TreeBuilder::Split(
                         numClasses * sizeof( unsigned int ) );
                 }
 
-                // giniImpurityMax = giniImpurity;
-                infoGainMax = infoGain;
+                giniImpurityMax = giniImpurity;
+                // infoGainMax = infoGain;
                 selectedThreshold = splitThreshold;
 
                 if (!gainFound) gainFound = true;
@@ -267,8 +264,8 @@ TreeNode* TreeBuilder::Split(
             ValueIndexPair* childValueIndexPairArr = (ValueIndexPair*)
                 malloc( selectedChildSizeArr[childId] * sizeof( ValueIndexPair ) );
             // Consider NUM_CHILDREN is 2, childId is either 0 or 1.
-            ValueIndexPair* offset = selectedValueIndexPairArr + ((childId) ?
-                selectedChildSizeArr[0] : 0);
+            ValueIndexPair* offset = selectedValueIndexPairArr +
+                ((childId) ? selectedChildSizeArr[0] : 0);
             memmove(
                 childValueIndexPairArr,
                 offset,
