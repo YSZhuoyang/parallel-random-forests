@@ -6,7 +6,7 @@ A parallelized version of random forests learning algorithm.
 * No need of pruning.
 
 ### Training speed
-* 20% - 25% faster than Weka Random Forests.
+* 30% - 35% faster than Weka Random Forests.
 * Linear scalable speedup by OpenMP and Open mpi parallelization.
 
 ### Configuration
