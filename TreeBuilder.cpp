@@ -140,17 +140,15 @@ TreeNode* TreeBuilder::Split(
             valueIndexPairArr[i].featureValue =
                 instanceTable[valueIndexPairArr[i].featureIndex].
                     featureAttrArray[randFeaIndex];
-        qsort(
+        sort(
             valueIndexPairArr,
-            numInstances,
-            sizeof( ValueIndexPair ),
+            valueIndexPairArr + numInstances,
             Compare );
 
-        // Reset child class distribution
+        // Reset split index and child class distribution
         unsigned int splitIndex = 0;
-        for (unsigned int classId = 0; classId < numClasses; classId++)
-            classDistArr[0][classId] = 0;
-        memcpy(
+        memset( classDistArr[0], 0, numClasses * sizeof( unsigned int ) );
+        memmove(
             classDistArr[1],
             parentClassDist,
             numClasses * sizeof( unsigned int ) );
@@ -208,7 +206,7 @@ TreeNode* TreeBuilder::Split(
             {
                 if (!featureIndexStored)
                 {
-                    memcpy(
+                    memmove(
                         selectedValueIndexPairArr,
                         valueIndexPairArr,
                         numInstances * sizeof( ValueIndexPair ) );
@@ -217,13 +215,14 @@ TreeNode* TreeBuilder::Split(
                     featureIndexStored = true;
                 }
 
-                // Faster than memcpy for short arrays
+                // Faster than memmove for short arrays
                 for (unsigned int childId = 0; childId < NUM_CHILDREN; childId++)
                 {
                     selectedChildSizeArr[childId] = childSizeArr[childId];
-                    for (unsigned int classId = 0; classId < numClasses; classId++)
-                        selectedClassDistArr[childId][classId] =
-                            classDistArr[childId][classId];
+                    memmove(
+                        selectedClassDistArr[childId],
+                        classDistArr[childId],
+                        numClasses * sizeof( unsigned int ) );
                 }
 
                 // giniImpurityMax = giniImpurity;
@@ -270,7 +269,7 @@ TreeNode* TreeBuilder::Split(
             // Consider NUM_CHILDREN is 2, childId is either 0 or 1.
             ValueIndexPair* offset = selectedValueIndexPairArr + ((childId) ?
                 selectedChildSizeArr[0] : 0);
-            memcpy(
+            memmove(
                 childValueIndexPairArr,
                 offset,
                 selectedChildSizeArr[childId] * sizeof( ValueIndexPair ) );

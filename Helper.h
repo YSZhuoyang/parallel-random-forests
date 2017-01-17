@@ -15,7 +15,9 @@ namespace MyHelper
 {
 #define MPI_ERROR_MESSAGE_BUFF_SIZE 50
 
-    int Compare( const void* ele1, const void* ele2 );
+    bool Compare(
+        const ValueIndexPair& eleX,
+        const ValueIndexPair& eleY );
     bool StrEqualCaseSen( const char* str1, const char* str2 );
     bool StrEqualCaseInsen( const char* str1, const char* str2 );
     // Include string terminator
