@@ -69,8 +69,8 @@ TreeNode* TreeBuilder::Split(
     const unsigned int numInstances,
     unsigned int height )
 {
-    double giniImpurityMax = 0;
-    // double infoGainMax = 0;
+    // double giniImpurityMax = 0;
+    double infoGainMax = 0;
 
     // The node is too small thus it is ignored.
     if (numInstances < MIN_NODE_SIZE) return nullptr;
@@ -85,12 +85,12 @@ TreeNode* TreeBuilder::Split(
     }
 
     // Compute entropy of parent node.
-    // double entropyParent = ComputeEntropy( parentClassDist, numInstances );
-    double giniParent = ComputeGini( parentClassDist, numInstances );
+    double entropyParent = ComputeEntropy( parentClassDist, numInstances );
+    // double giniParent = ComputeGini( parentClassDist, numInstances );
 
     // Parent node is pure.
-    if (giniParent <= 0.0)
-    // if (entropyParent <= 0.0)
+    // if (giniParent <= 0.0)
+    if (entropyParent <= 0.0)
     {
         TreeNode* leaf = new TreeNode;
         LabelNode( leaf, parentClassDist );
@@ -154,79 +154,76 @@ TreeNode* TreeBuilder::Split(
             numClasses * sizeof( unsigned int ) );
 
         bool featureIndexStored = false;
-        double priorCandidate = valueIndexPairArr[0].featureValue;
+        // double priorCandidate = valueIndexPairArr[0].featureValue;
+        unsigned int numCandidates = numInstances - 1;
 
         // Find the best split threshold
-        for (unsigned int candidateId = 1;
-            candidateId < numInstances; candidateId++)
+        for (unsigned int candidateId = 0;
+            candidateId < numCandidates; candidateId++)
         {
-            if (priorCandidate == valueIndexPairArr[candidateId].featureValue)
-                continue;
-            
-            double splitThreshold = (priorCandidate + 
-                valueIndexPairArr[candidateId].featureValue) / 2.0;
-            priorCandidate = valueIndexPairArr[candidateId].featureValue;
+            unsigned int nextCandidateId = candidateId + 1;
+            const Instance& currInstance =
+                instanceTable[valueIndexPairArr[candidateId].featureIndex];
+            const Instance& nextInstance =
+                instanceTable[valueIndexPairArr[nextCandidateId].featureIndex];
 
-            while (splitIndex < numInstances)
+            classDistArr[0][currInstance.classIndex]++;
+            classDistArr[1][currInstance.classIndex]--;
+
+            if (valueIndexPairArr[candidateId].featureValue <
+                valueIndexPairArr[nextCandidateId].featureValue)
             {
-                const Instance& instance =
-                    instanceTable[valueIndexPairArr[splitIndex].featureIndex];
-                if (instance.featureAttrArray[randFeaIndex] >= splitThreshold)
-                    break;
+                double splitThreshold =
+                    (valueIndexPairArr[candidateId].featureValue + 
+                    valueIndexPairArr[nextCandidateId].featureValue) / 2.0;
+                childSizeArr[0] = nextCandidateId;
+                childSizeArr[1] = numInstances - nextCandidateId;
 
-                classDistArr[0][instance.classIndex]++;
-                classDistArr[1][instance.classIndex]--;
-
-                splitIndex++;
-            }
-
-            childSizeArr[0] = splitIndex;
-            childSizeArr[1] = numInstances - splitIndex;
-
-            double giniImpurity = giniParent;
-            // double infoGain = entropyParent;
-            
-            // Compute entropy of children
-            for (unsigned int childId = 0; childId < NUM_CHILDREN; childId++)
-            {
-                double numChildren = childSizeArr[childId];
-                // double entropyChild =
-                //     ComputeEntropy( classDistArr[childId], numChildren );
-                // infoGain -= numChildren / (double) numInstances * entropyChild;
-                double giniChild =
-                    ComputeGini( classDistArr[childId], numChildren );
-                giniImpurity -= numChildren / (double) numInstances * giniChild;
-            }
-
-            // Get max split outcome and related feature
-            if (giniImpurityMax < giniImpurity)
-            // if (infoGainMax < infoGain)
-            {
-                if (!featureIndexStored)
-                {
-                    memmove(
-                        selectedValueIndexPairArr,
-                        valueIndexPairArr,
-                        numInstances * sizeof( ValueIndexPair ) );
-
-                    selectedFeaIndex = randFeaIndex;
-                    featureIndexStored = true;
-                }
-
+                // double giniImpurity = giniParent;
+                double infoGain = entropyParent;
+                
+                // Compute entropy of children
                 for (unsigned int childId = 0; childId < NUM_CHILDREN; childId++)
                 {
-                    selectedChildSizeArr[childId] = childSizeArr[childId];
-                    memmove(
-                        selectedClassDistArr[childId],
-                        classDistArr[childId],
-                        numClasses * sizeof( unsigned int ) );
+                    double numChildren = childSizeArr[childId];
+                    double entropyChild =
+                        ComputeEntropy( classDistArr[childId], numChildren );
+                    infoGain -= numChildren / (double) numInstances * entropyChild;
+                    // double giniChild =
+                    //     ComputeGini( classDistArr[childId], numChildren );
+                    // giniImpurity -= numChildren / (double) numInstances * giniChild;
                 }
 
-                giniImpurityMax = giniImpurity;
-                // infoGainMax = infoGain;
-                selectedThreshold = splitThreshold;
+                // Get max split outcome and related feature
+                // if (giniImpurityMax < giniImpurity)
+                if (infoGainMax < infoGain)
+                {
+                    if (!featureIndexStored)
+                    {
+                        memmove(
+                            selectedValueIndexPairArr,
+                            valueIndexPairArr,
+                            numInstances * sizeof( ValueIndexPair ) );
 
-                if (!gainFound) gainFound = true;
+                        selectedFeaIndex = randFeaIndex;
+                        featureIndexStored = true;
+                    }
+
+                    for (unsigned int childId = 0; childId < NUM_CHILDREN; childId++)
+                    {
+                        selectedChildSizeArr[childId] = childSizeArr[childId];
+                        memmove(
+                            selectedClassDistArr[childId],
+                            classDistArr[childId],
+                            numClasses * sizeof( unsigned int ) );
+                    }
+
+                    // giniImpurityMax = giniImpurity;
+                    infoGainMax = infoGain;
+                    selectedThreshold = splitThreshold;
+
+                    if (!gainFound) gainFound = true;
+                }
             }
         }
     }
