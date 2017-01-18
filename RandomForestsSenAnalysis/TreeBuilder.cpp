@@ -234,7 +234,16 @@ TreeNode* TreeBuilder::Split(
     // Split threshold not found, 
     // or gini impurity / info gain exceeds threshold,
     // thus have reached leaf node.
-    if (!gainFound) node = nullptr;
+    if (!gainFound)
+    {
+        for (unsigned int childId = 0; childId < NUM_CHILDREN; childId++)
+        {
+            free( selectedClassDistArr[childId] );
+            selectedClassDistArr[childId] = nullptr;
+        }
+        
+        node = nullptr;
+    }
     // Split node
     else
     {
@@ -291,7 +300,7 @@ TreeNode* TreeBuilder::Split(
 
 void TreeBuilder::PrintTree( const TreeNode* iter, unsigned int h )
 {
-    if (iter == nullptr || iter->labeled || h > 3) return;
+    if (iter == nullptr || iter->labeled) return;
 
     for (unsigned int i = 0; i <= h; i++) printf( "-" );
     printf( "%s, ", featureVec[iter->featureIndex].name );
