@@ -77,9 +77,6 @@ void ArffImporter::Read( const char* fileName )
                 feature.min        = 0.0;
                 feature.max        = 0.0;
                 feature.mean       = 0.0;
-                // Two buckets by default: <= threshold, and > threshold
-                feature.numBuckets = 2;
-
                 featureVec.push_back( feature );
             }
             // Read class names

@@ -36,7 +36,7 @@ private:
     vector<NumericAttr> featureVec;
     
     TreeBuilder treeBuilder;
-    vector<TreeNode*> rootVec;
+    TreeNode* rootArr = nullptr;
 };
 
 #endif
