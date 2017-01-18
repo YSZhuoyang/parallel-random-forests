@@ -233,7 +233,16 @@ TreeNode* TreeBuilder::Split(
     // Split threshold not found, 
     // or gini impurity / info gain exceeds threshold,
     // thus have reached leaf node.
-    if (!gainFound) node = nullptr;
+    if (!gainFound)
+    {
+        for (unsigned int childId = 0; childId < NUM_CHILDREN; childId++)
+        {
+            free( selectedClassDistArr[childId] );
+            selectedClassDistArr[childId] = nullptr;
+        }
+        
+        node = nullptr;
+    }
     // Split node
     else
     {
