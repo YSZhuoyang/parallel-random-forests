@@ -147,7 +147,6 @@ TreeNode* TreeBuilder::Split(
             Compare );
 
         // Reset split index and child class distribution
-        unsigned int splitIndex = 0;
         memset( classDistArr[0], 0, numClasses * sizeof( unsigned int ) );
         memmove(
             classDistArr[1],
