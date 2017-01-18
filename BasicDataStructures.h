@@ -30,19 +30,16 @@ namespace BasicDataStructures
         char* name;
         double min;
         double max;
-        double mean;             // Not used.
-        unsigned int numBuckets; // Not used.
+        double mean; // Not used.
     };
 
     struct TreeNode
     {
-        //double gini;
-        //double giniSplit;
+        bool empty;
         double threshold;
-        bool labeled;
         unsigned int featureIndex;
         unsigned short classIndex;
-        vector<TreeNode*> childrenVec;
+        TreeNode* childrenArr;
     };
 }
 

@@ -10,8 +10,13 @@ Classifier::Classifier()
 Classifier::~Classifier()
 {
     // Destory trees
-    for (TreeNode* root : rootVec) treeBuilder.DestroyNode( root );
-    rootVec.clear();
+    if (rootArr != nullptr)
+    {
+        for (unsigned int i = 0; i < NUM_TREES; i++)
+            treeBuilder.DestroyNode( rootArr[i] );
+        free( rootArr );
+        rootArr = nullptr;
+    }
 }
 
 
@@ -28,7 +33,7 @@ void Classifier::Train(
     printf( "Num features: %d\n", numFeatures );
     
     /******************** Init tree constructer ********************/
-    rootVec.reserve( NUM_TREES );
+    rootArr = (TreeNode*) malloc( NUM_TREES * sizeof( TreeNode ) );
     treeBuilder.Init( fv, cv, instanceTable, numInstances );
 
     time_t start,end;
@@ -41,12 +46,10 @@ void Classifier::Train(
             printf( "There're %d threads running.\n", omp_get_num_threads() );
 
         #pragma omp for schedule(dynamic)
-        for (unsigned int treeIndex = 0; treeIndex < NUM_TREES; treeIndex++)
+        for (unsigned int treeId = 0; treeId < NUM_TREES; treeId++)
         {
-            treeBuilder.BuildTree( NUM_FEATURES_PER_TREE );
-            #pragma omp critical
-            rootVec.push_back( treeBuilder.GetRoot() );
-            //treeBuilder.PrintTree( treeBuilder.GetRoot(), 0 );
+            rootArr[treeId] = treeBuilder.BuildTree( NUM_FEATURES_PER_TREE );
+            // treeBuilder.PrintTree( rootArr[treeId], 0 );
         }
     }
 
@@ -103,24 +106,23 @@ unsigned short Classifier::Classify( const Instance& instance )
     unsigned int* votes = (unsigned int*) 
         calloc( numClasses, sizeof( unsigned int ) );
 
-    for (const TreeNode* node : rootVec)
+    for (unsigned int treeId = 0; treeId < NUM_TREES; treeId++)
     {
-        if (node == nullptr) continue;
+        TreeNode node = rootArr[treeId];
+        if (node.empty) continue;
 
-        while (!node->childrenVec.empty())
+        while (node.childrenArr != nullptr)
         {
-            unsigned int i = node->featureIndex;
-
             // 2 buckets by default:
             // one group having feature value smaller than threshold, 
             // another group having feature value greater than threshold.
-            unsigned int childId =
-                (unsigned int) (instance.featureAttrArray[i] >= node->threshold);
-            if (node->childrenVec[childId] == nullptr) break;
-            else node = node->childrenVec[childId];
+            unsigned int childId = (unsigned int)
+                (instance.featureAttrArray[node.featureIndex] >= node.threshold);
+            if (node.childrenArr[childId].empty) break;
+            else node = node.childrenArr[childId];
         }
 
-        votes[node->classIndex]++;
+        votes[node.classIndex]++;
     }
 
     unsigned short classIndex = getIndexOfMax( votes, numClasses );
