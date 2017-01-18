@@ -249,7 +249,7 @@ TreeNode TreeBuilder::Split(
         {
             free( selectedClassDistArr[childId] );
             selectedClassDistArr[childId] = nullptr;
-        }   
+        }
 
         node.empty = true;
     }
