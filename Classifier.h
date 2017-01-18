@@ -42,7 +42,8 @@ private:
     vector<NumericAttr> featureVec;
     
     TreeBuilder treeBuilder;
-    vector<TreeNode*> rootVec;
+    TreeNode* rootArr = nullptr;
+    unsigned int numTrees;
 
     // MPI status
     int mpiNodeId;

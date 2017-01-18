@@ -26,7 +26,7 @@ void TreeBuilder::Init(
     numClasses = classVec.size();
 }
 
-void TreeBuilder::BuildTree( const unsigned int numFeaToSelect )
+TreeNode TreeBuilder::BuildTree( const unsigned int numFeaToSelect )
 {
     numFeaturesToSelect = numFeaToSelect;
     
@@ -48,7 +48,7 @@ void TreeBuilder::BuildTree( const unsigned int numFeaToSelect )
         valueIndexTupleArr[i].classIndex = instanceTable[i].classIndex;
     }
     
-    root = Split(
+    const TreeNode& root = Split(
         valueIndexTupleArr,
         featureIndexArray,
         initialClassDist,
@@ -61,9 +61,11 @@ void TreeBuilder::BuildTree( const unsigned int numFeaToSelect )
     valueIndexTupleArr = nullptr;
     free( featureIndexArray );
     featureIndexArray = nullptr;
+
+    return root;
 }
 
-TreeNode* TreeBuilder::Split(
+TreeNode TreeBuilder::Split(
     ValueIndexTuple* valueIndexTupleArr,
     unsigned int* featureIndexArray,
     const unsigned int* parentClassDist,
@@ -74,12 +76,19 @@ TreeNode* TreeBuilder::Split(
     double infoGainMax = 0;
 
     // The node is too small thus it is ignored.
-    if (numInstances < MIN_NODE_SIZE) return nullptr;
+    if (numInstances < MIN_NODE_SIZE)
+    {
+        TreeNode node;
+        node.empty = true;
+
+        return node;
+    }
 
     // The node is small, make it a leaf node.
     if (numInstances < MIN_NODE_SIZE_TO_SPLIT)
     {
-        TreeNode* leaf = new TreeNode;
+        TreeNode leaf;
+        leaf.empty = false;
         LabelNode( leaf, parentClassDist );
         
         return leaf;
@@ -93,7 +102,8 @@ TreeNode* TreeBuilder::Split(
     // if (giniParent <= 0.0)
     if (entropyParent <= 0.0)
     {
-        TreeNode* leaf = new TreeNode;
+        TreeNode leaf;
+        leaf.empty = false;
         LabelNode( leaf, parentClassDist );
 
         return leaf;
@@ -102,13 +112,13 @@ TreeNode* TreeBuilder::Split(
     unsigned int selectedFeaIndex;
     double selectedThreshold;
 
-    unsigned int childSizeArr[NUM_CHILDREN];
-    unsigned int selectedChildSizeArr[NUM_CHILDREN];
+    unsigned int childSizeArr[NUM_CHILD_NUMERICAL];
+    unsigned int selectedChildSizeArr[NUM_CHILD_NUMERICAL];
 
     // Init child class distribution vector
-    unsigned int* classDistArr[NUM_CHILDREN];
-    unsigned int* selectedClassDistArr[NUM_CHILDREN];
-    for (unsigned int childId = 0; childId < NUM_CHILDREN; childId++)
+    unsigned int* classDistArr[NUM_CHILD_NUMERICAL];
+    unsigned int* selectedClassDistArr[NUM_CHILD_NUMERICAL];
+    for (unsigned int childId = 0; childId < NUM_CHILD_NUMERICAL; childId++)
     {
         classDistArr[childId] = ( unsigned int* )
             malloc( numClasses * sizeof( unsigned int ) );
@@ -178,7 +188,7 @@ TreeNode* TreeBuilder::Split(
                 double infoGain = entropyParent;
                 
                 // Compute entropy of children
-                for (unsigned int childId = 0; childId < NUM_CHILDREN; childId++)
+                for (unsigned int childId = 0; childId < NUM_CHILD_NUMERICAL; childId++)
                 {
                     double numChildren = childSizeArr[childId];
                     double entropyChild =
@@ -204,7 +214,7 @@ TreeNode* TreeBuilder::Split(
                         featureIndexStored = true;
                     }
 
-                    for (unsigned int childId = 0; childId < NUM_CHILDREN; childId++)
+                    for (unsigned int childId = 0; childId < NUM_CHILD_NUMERICAL; childId++)
                     {
                         selectedChildSizeArr[childId] = childSizeArr[childId];
                         memmove(
@@ -223,17 +233,26 @@ TreeNode* TreeBuilder::Split(
         }
     }
 
-    for (unsigned int childId = 0; childId < NUM_CHILDREN; childId++)
+    for (unsigned int childId = 0; childId < NUM_CHILD_NUMERICAL; childId++)
         free( classDistArr[childId] );
     //printf( "\n----------------------------------------\n");
     //printf( "Height: %d\n", height );
 
-    TreeNode* node;
+    TreeNode node;
 
     // Split threshold not found, 
     // or gini impurity / info gain exceeds threshold,
     // thus have reached leaf node.
-    if (!gainFound) node = nullptr;
+    if (!gainFound)
+    {
+        for (unsigned int childId = 0; childId < NUM_CHILD_NUMERICAL; childId++)
+        {
+            free( selectedClassDistArr[childId] );
+            selectedClassDistArr[childId] = nullptr;
+        }   
+
+        node.empty = true;
+    }
     // Split node
     else
     {
@@ -241,21 +260,22 @@ TreeNode* TreeBuilder::Split(
         //printf( "Gini of parent: %f\n", giniParent );
         //printf( "Max Gini split get: %f\n", giniImpurityMax );
         
-        node = new TreeNode;
-        node->featureIndex = selectedFeaIndex;
-        node->threshold    = selectedThreshold;
-        node->labeled      = false;
+        node.empty        = false;
+        node.featureIndex = selectedFeaIndex;
+        node.threshold    = selectedThreshold;
+        node.childrenArr  =
+            (TreeNode*) malloc( NUM_CHILD_NUMERICAL * sizeof( TreeNode ) );
 
         height++;
 
         bool emptyChildFound = false;
 
         // Split children
-        for (unsigned int childId = 0; childId < NUM_CHILDREN; childId++)
+        for (unsigned int childId = 0; childId < NUM_CHILD_NUMERICAL; childId++)
         {
             ValueIndexTuple* childValueIndexTupleArr = (ValueIndexTuple*)
                 malloc( selectedChildSizeArr[childId] * sizeof( ValueIndexTuple ) );
-            // Consider NUM_CHILDREN is 2, childId is either 0 or 1.
+            // Consider NUM_CHILD_NUMERICAL is 2, childId is either 0 or 1.
             ValueIndexTuple* offset = selectedValueIndexTupleArr +
                 ((childId) ? selectedChildSizeArr[0] : 0);
             memmove(
@@ -263,20 +283,20 @@ TreeNode* TreeBuilder::Split(
                 offset,
                 selectedChildSizeArr[childId] * sizeof( ValueIndexTuple ) );
             
-            TreeNode* childNode = Split(
+            node.childrenArr[childId] = Split(
                 childValueIndexTupleArr,
                 featureIndexArray,
                 selectedClassDistArr[childId],
                 selectedChildSizeArr[childId],
                 height );
 
-            free( selectedClassDistArr[childId] );
-            selectedClassDistArr[childId] = nullptr;
+            if (node.childrenArr[childId].empty)
+                emptyChildFound = true;
+
             free( childValueIndexTupleArr );
             childValueIndexTupleArr = nullptr;
-
-            if (childNode == nullptr) emptyChildFound = true;
-            node->childrenVec.push_back( childNode );
+            free( selectedClassDistArr[childId] );
+            selectedClassDistArr[childId] = nullptr;
         }
 
         if (emptyChildFound) LabelNode( node, parentClassDist );
@@ -288,21 +308,16 @@ TreeNode* TreeBuilder::Split(
     return node;
 }
 
-void TreeBuilder::PrintTree( const TreeNode* iter, unsigned int h )
+void TreeBuilder::PrintTree( const TreeNode& iter, unsigned int h )
 {
-    if (iter == nullptr || iter->labeled || h > 3) return;
+    if (iter.empty) return;
 
     for (unsigned int i = 0; i <= h; i++) printf( "-" );
-    printf( "%s, ", featureVec[iter->featureIndex].name );
-    printf( "%f\n", iter->threshold );
+    printf( "feature: %s, ", featureVec[iter.featureIndex].name );
+    printf( "threshold: %f\n", iter.threshold );
 
-    for (const TreeNode* child : iter->childrenVec)
-        PrintTree( child, h + 1 );
-}
-
-TreeNode* TreeBuilder::GetRoot()
-{
-    return root;
+    for (unsigned int childId = 0; childId < NUM_CHILD_NUMERICAL; childId++)
+        PrintTree( iter.childrenArr[childId], h + 1 );
 }
 
 inline double TreeBuilder::ComputeEntropy(
@@ -341,27 +356,24 @@ inline double TreeBuilder::ComputeGini(
 }
 
 inline void TreeBuilder::LabelNode(
-    TreeNode* node,
+    TreeNode& node,
     const unsigned int* classDistribution )
 {
-    if (node == nullptr || classDistribution == nullptr)
+    if (node.empty || classDistribution == nullptr)
         return;
 
     // Select the class of the largest class group.
-    node->classIndex = getIndexOfMax( classDistribution, numClasses );
-    node->labeled = true;
+    node.classIndex = getIndexOfMax( classDistribution, numClasses );
 }
 
-void TreeBuilder::DestroyNode( TreeNode* node )
+void TreeBuilder::DestroyNode( TreeNode& node )
 {
-    if (node == nullptr) return;
+    if (node.empty || node.childrenArr == nullptr) return;
 
-    if (!node->childrenVec.empty())
-    {
-        for (TreeNode* child : node->childrenVec) DestroyNode( child );
-        node->childrenVec.clear();
-    }
+    for (unsigned int childId = 0;
+        childId < NUM_CHILD_NUMERICAL; childId++)
+        DestroyNode( node.childrenArr[childId] );
 
-    delete node;
-    node = nullptr;
+    free( node.childrenArr );
+    node.childrenArr = nullptr;
 }

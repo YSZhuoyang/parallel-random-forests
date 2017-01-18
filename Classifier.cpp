@@ -20,8 +20,13 @@ Classifier::Classifier()
 Classifier::~Classifier()
 {
     // Destory trees
-    for (TreeNode* root : rootVec) treeBuilder.DestroyNode( root );
-    rootVec.clear();
+    if (rootArr != nullptr)
+    {
+        for (unsigned int i = 0; i < numTrees; i++)
+            treeBuilder.DestroyNode( rootArr[i] );
+        free( rootArr );
+        rootArr = nullptr;
+    }
 
     MPI_Initialized( &mpiInitialized );
     if (mpiInitialized) MPI_Finalize();
@@ -39,11 +44,11 @@ void Classifier::Train(
     
     /******************** Init tree constructer ********************/
     // Chunk size need to be able to be divided by number of mpi processes.
-    unsigned int chunkSize = NUM_TREES / numMpiNodes;
-    rootVec.reserve( chunkSize );
+    numTrees = NUM_TREES / numMpiNodes;
+    rootArr = (TreeNode*) malloc( numTrees * sizeof( TreeNode ) );
     treeBuilder.Init( fv, cv, instanceTable, numInstances );
 
-    printf( "Node %d constructed %u trees.\n", mpiNodeId, chunkSize );
+    printf( "Node %d constructed %u trees.\n", mpiNodeId, numTrees );
 
     time_t start,end;
     double dif;
@@ -58,11 +63,9 @@ void Classifier::Train(
                 mpiNodeId );
 
         #pragma omp for schedule(dynamic)
-        for (unsigned int treeIndex = 0; treeIndex < chunkSize; treeIndex++)
+        for (unsigned int treeId = 0; treeId < numTrees; treeId++)
         {
-            treeBuilder.BuildTree( NUM_FEATURES_PER_TREE );
-            #pragma omp critical
-            rootVec.push_back( treeBuilder.GetRoot() );
+            rootArr[treeId] = treeBuilder.BuildTree( NUM_FEATURES_PER_TREE );
             //treeBuilder.PrintTree( treeBuilder.GetRoot(), 0 );
         }
     }
@@ -132,30 +135,29 @@ void Classifier::Classify(
     votes = nullptr;
 }
 
-void Classifier::Classify(
+inline void Classifier::Classify(
     const Instance& instance, 
     unsigned int* votes, 
-    const unsigned int index )
+    const unsigned int instId )
 {
     unsigned short numClasses = classVec.size();
 
-    for (const TreeNode* node : rootVec)
+    for (unsigned int treeId = 0; treeId < numTrees; treeId++)
     {
-        if (node == nullptr) continue;
+        TreeNode node = rootArr[treeId];
+        if (node.empty) continue;
 
-        while (!node->childrenVec.empty())
+        while (node.childrenArr != nullptr)
         {
-            unsigned int i = node->featureIndex;
-
-            // 2 buckets by default:
+            // 2 children by default:
             // one group having feature value smaller than threshold, 
             // another group having feature value greater than threshold.
-            unsigned int childId =
-                (unsigned int) (instance.featureAttrArray[i] >= node->threshold);
-            if (node->childrenVec[childId] == nullptr) break;
-            else node = node->childrenVec[childId];
+            unsigned int childId = (unsigned int)
+                (instance.featureAttrArray[node.featureIndex] >= node.threshold);
+            if (node.childrenArr[childId].empty) break;
+            else node = node.childrenArr[childId];
         }
 
-        votes[index * numClasses + node->classIndex]++;
+        votes[instId * numClasses + node.classIndex]++;
     }
 }
