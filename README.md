@@ -8,7 +8,7 @@ A parallelized version of random forests learning algorithm.
 * Linear scalable speedup by OpenMP and Open mpi parallelization.
 
 <p align="center">
-<img src="https://github.com/YSZhuoyang/Parallelized-Random-Forests/blob/randomforests/Comp/MyRFVSWekaRF.PNG" alt="Comparison" width= "500px" height="330px" />
+<img src="https://github.com/YSZhuoyang/Parallelized-Random-Forests/blob/randomforests/Comp/MyRFVSWekaRF.PNG" alt="Comparison" width= "500px" height="320px" />
 </p>
 
 ### Configuration
