@@ -43,8 +43,16 @@ void Classifier::Train(
     featureVec = fv;
     
     /******************** Init tree constructer ********************/
-    // Chunk size need to be able to be divided by number of mpi processes.
-    numTrees = NUM_TREES / numMpiNodes;
+	if (NUM_TREES % numMpiNodes > 0)
+    {
+        if (mpiNodeId == numMpiNodes - 1)
+            numTrees = NUM_TREES - numTrees * (numMpiNodes - 1);
+        else
+		    numTrees = NUM_TREES / numMpiNodes + 1;
+    }
+	else
+		numTrees = NUM_TREES / numMpiNodes;
+
     rootArr = (TreeNode*) malloc( numTrees * sizeof( TreeNode ) );
     treeBuilder.Init( fv, cv, instanceTable, numInstances );
 
