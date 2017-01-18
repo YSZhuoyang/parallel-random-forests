@@ -58,6 +58,9 @@ void Classifier::Train(
 
     printf( "Node %d constructed %u trees.\n", mpiNodeId, numTrees );
 
+    // Seed randomizer based on mpi node id
+    srand( mpiNodeId + 1 );
+
     time_t start,end;
     double dif;
     time( &start );
