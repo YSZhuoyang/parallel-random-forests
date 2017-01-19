@@ -48,7 +48,7 @@ void Classifier::Train(
         if (mpiNodeId == numMpiNodes - 1)
             numTrees = NUM_TREES - numTrees * (numMpiNodes - 1);
         else
-	    numTrees = NUM_TREES / numMpiNodes + 1;
+            numTrees = NUM_TREES / numMpiNodes + 1;
     }
     else
         numTrees = NUM_TREES / numMpiNodes;
