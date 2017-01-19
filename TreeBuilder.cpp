@@ -325,14 +325,6 @@ void TreeBuilder::PrintTree( const TreeNode& iter, unsigned int h )
         PrintTree( iter.childrenArr[childId], h + 1 );
 }
 
-inline bool TreeBuilder::IsPure(
-    const unsigned int* classDistribution,
-    const unsigned int numInstances )
-{
-    return classDistribution[getIndexOfMax(
-        classDistribution, numClasses )] == numInstances;
-}
-
 inline double TreeBuilder::ComputeEntropy(
     const unsigned int* classDistribution,
     const unsigned int numInstances )
