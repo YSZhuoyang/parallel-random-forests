@@ -78,17 +78,20 @@ TreeNode TreeBuilder::Split(
     // The node is too small thus it is ignored.
     if (numInstances < MIN_NODE_SIZE)
     {
-        TreeNode node;
-        node.empty = true;
+        TreeNode leaf;
+        leaf.childrenArr = nullptr;
+        leaf.empty       = true;
 
-        return node;
+        return leaf;
     }
 
-    // The node is small, make it a leaf node.
+    // The node is small, make it a leaf node
+    // or node is pure.
     if (numInstances < MIN_NODE_SIZE_TO_SPLIT)
     {
         TreeNode leaf;
-        leaf.empty = false;
+        leaf.childrenArr = nullptr;
+        leaf.empty       = false;
         LabelNode( leaf, parentClassDist );
         
         return leaf;
@@ -103,7 +106,8 @@ TreeNode TreeBuilder::Split(
     if (entropyParent <= 0.0)
     {
         TreeNode leaf;
-        leaf.empty = false;
+        leaf.childrenArr = nullptr;
+        leaf.empty       = false;
         LabelNode( leaf, parentClassDist );
 
         return leaf;
@@ -251,7 +255,8 @@ TreeNode TreeBuilder::Split(
             selectedClassDistArr[childId] = nullptr;
         }
 
-        node.empty = true;
+        node.childrenArr = nullptr;
+        node.empty       = true;
     }
     // Split node
     else
