@@ -40,6 +40,9 @@ private:
         const unsigned int* parentClassDist,
         const unsigned int numInstances,
         unsigned int height );
+    inline bool IsPure(
+        const unsigned int* classDistribution,
+        const unsigned int numInstances );
     inline double ComputeGini(
         const unsigned int* classDistribution,
         const unsigned int numInstances );

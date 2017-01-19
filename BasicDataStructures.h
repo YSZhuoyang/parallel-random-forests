@@ -2,8 +2,6 @@
 #ifndef _BASIC_DATA_STRUCTURES_H_
 #define _BASIC_DATA_STRUCTURES_H_
 
-#include <vector>
-
 
 using namespace std;
 

@@ -5,6 +5,7 @@
 #include "BasicDataStructures.h"
 #include <stdlib.h>
 #include <math.h>
+#include <vector>
 
 
 using namespace std;
