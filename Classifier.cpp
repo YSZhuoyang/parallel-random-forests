@@ -33,7 +33,7 @@ void Classifier::Train(
     printf( "Num features: %d\n", numFeatures );
     
     /******************** Init tree constructer ********************/
-    rootArr = (TreeNode*) malloc( NUM_TREES * sizeof( TreeNode ) );
+    rootArr = (TreeNode**) malloc( NUM_TREES * sizeof( TreeNode* ) );
     treeBuilder.Init( fv, cv, instanceTable, numInstances );
 
     time_t start,end;
@@ -108,21 +108,21 @@ unsigned short Classifier::Classify( const Instance& instance )
 
     for (unsigned int treeId = 0; treeId < NUM_TREES; treeId++)
     {
-        TreeNode node = rootArr[treeId];
-        if (node.empty) continue;
+        TreeNode* node = rootArr[treeId];
+        if (node == nullptr) continue;
 
-        while (node.childrenArr != nullptr)
+        while (node->childrenArr != nullptr)
         {
             // 2 buckets by default:
             // one group having feature value smaller than threshold, 
             // another group having feature value greater than threshold.
             unsigned int childId = (unsigned int)
-                (instance.featureAttrArray[node.featureIndex] >= node.threshold);
-            if (node.childrenArr[childId].empty) break;
-            else node = node.childrenArr[childId];
+                (instance.featureAttrArray[node->featureIndex] >= node->threshold);
+            if (node->childrenArr[childId] == nullptr) break;
+            else node = node->childrenArr[childId];
         }
 
-        votes[node.classIndex]++;
+        votes[node->classIndex]++;
     }
 
     unsigned short classIndex = getIndexOfMax( votes, numClasses );

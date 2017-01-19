@@ -28,13 +28,13 @@ public:
         const vector<char*>& cv,
         const Instance* it,
         const unsigned int numInstances );
-    TreeNode BuildTree( const unsigned int numFeaToSelect );
-    void PrintTree( const TreeNode& iter, unsigned int h );
-    void DestroyNode( TreeNode& node );
+    TreeNode* BuildTree( const unsigned int numFeaToSelect );
+    void PrintTree( const TreeNode* node, unsigned int h );
+    void DestroyNode( TreeNode* node );
 
 
 private:
-    TreeNode Split(
+    TreeNode* Split(
         ValueIndexTuple* valueIndexTupleArr,
         unsigned int* featureIndexArray,
         const unsigned int* parentClassDist,
@@ -47,7 +47,7 @@ private:
         const unsigned int* classDistribution,
         const unsigned int numInstances );
     inline void LabelNode(
-        TreeNode& node,
+        TreeNode* node,
         const unsigned int* classDistribution );
 
     vector<char*> classVec;
