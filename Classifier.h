@@ -33,7 +33,7 @@ public:
 
 private:
     // Return the index of the predicted class
-    void Classify(
+    inline void Classify(
         const Instance& instance,
         unsigned int* votes,
         const unsigned int index );
