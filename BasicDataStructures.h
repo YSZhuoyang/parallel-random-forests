@@ -33,11 +33,10 @@ namespace BasicDataStructures
 
     struct TreeNode
     {
-        bool empty;
         double threshold;
         unsigned int featureIndex;
         unsigned short classIndex;
-        TreeNode* childrenArr;
+        TreeNode** childrenArr;
     };
 }
 
