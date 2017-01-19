@@ -53,7 +53,7 @@ void Classifier::Train(
     else
         numTrees = NUM_TREES / numMpiNodes;
 
-    rootArr = (TreeNode*) malloc( numTrees * sizeof( TreeNode ) );
+    rootArr = (TreeNode**) malloc( numTrees * sizeof( TreeNode* ) );
     treeBuilder.Init( fv, cv, instanceTable, numInstances );
 
     printf( "Node %d constructed %u trees.\n", mpiNodeId, numTrees );
@@ -155,20 +155,20 @@ inline void Classifier::Classify(
 
     for (unsigned int treeId = 0; treeId < numTrees; treeId++)
     {
-        TreeNode node = rootArr[treeId];
-        if (node.empty) continue;
+        TreeNode* node = rootArr[treeId];
+        if (node == nullptr) continue;
 
-        while (node.childrenArr != nullptr)
+        while (node->childrenArr != nullptr)
         {
             // 2 children by default:
             // one group having feature value smaller than threshold, 
             // another group having feature value greater than threshold.
             unsigned int childId = (unsigned int)
-                (instance.featureAttrArray[node.featureIndex] >= node.threshold);
-            if (node.childrenArr[childId].empty) break;
-            else node = node.childrenArr[childId];
+                (instance.featureAttrArray[node->featureIndex] >= node->threshold);
+            if (node->childrenArr[childId] == nullptr) break;
+            else node = node->childrenArr[childId];
         }
 
-        votes[instId * numClasses + node.classIndex]++;
+        votes[instId * numClasses + node->classIndex]++;
     }
 }
