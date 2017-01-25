@@ -11,8 +11,7 @@ ArffImporter::ArffImporter()
 
 ArffImporter::~ArffImporter()
 {
-    for (unsigned int i = 0; i < numInstances; i++)
-        free( instanceTable[i].featureAttrArray );
+    free( instanceBuff );
     free( instanceTable );
 
     for (char* classAttr : classVec) free( classAttr );
@@ -24,12 +23,24 @@ ArffImporter::~ArffImporter()
 
 void ArffImporter::BuildInstanceTable()
 {
+    if (instanceBuff != nullptr || instanceTable != nullptr)
+        return;
+    
     numInstances = instanceVec.size();
+    numFeatures = featureVec.size();
+    instanceBuff =
+        (double*) malloc( numInstances * numFeatures * sizeof( double ) );
     instanceTable = (Instance*) malloc( numInstances * sizeof( Instance ) );
     for (unsigned int i = 0; i < numInstances; i++)
     {
-        instanceTable[i].featureAttrArray = instanceVec[i].featureAttrArray;
+        double* offset = instanceBuff + i * numFeatures;
+        memmove(
+            offset,
+            instanceVec[i].featureAttrArray,
+            numFeatures * sizeof( double ) );
+        instanceTable[i].featureAttrArray = offset;
         instanceTable[i].classIndex = instanceVec[i].classIndex;
+        free( instanceVec[i].featureAttrArray );
     }
 
     instanceVec.clear();
