@@ -6,7 +6,8 @@
 #include "BasicDataStructures.h"
 #include "Helper.h"
 
-#include <cstdio>
+#include <stdio.h>
+#include <string.h>
 
 
 using namespace BasicDataStructures;
@@ -39,11 +40,12 @@ private:
     vector<NumericAttr> featureVec;
     vector<Instance> instanceVec;
 
-    Instance* instanceTable;
+    Instance* instanceTable   = nullptr;
+    double* instanceBuff      = nullptr;
 
-    unsigned int numFeatures       = 0;
-    unsigned int numInstances      = 0;
-    unsigned short numClasses      = 0;
+    unsigned int numFeatures  = 0;
+    unsigned int numInstances = 0;
+    unsigned short numClasses = 0;
 };
 
 #endif
