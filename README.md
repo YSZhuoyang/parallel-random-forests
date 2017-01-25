@@ -4,7 +4,7 @@ A parallelized version of random forests learning algorithm.
 * Support continus features, which are repeatedly used during split.
 * Support both Infogain and Gini impurity as split criteria.
 * No need of pruning.
-* 30% - 45% faster than Weka Random Forests.
+* 40% - 50% faster than Weka Random Forests (for large scale dataset).
 * Linear scalable speedup by OpenMP and Open mpi parallelization.
 
 <p align="center">
