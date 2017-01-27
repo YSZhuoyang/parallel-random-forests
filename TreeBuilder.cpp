@@ -159,25 +159,24 @@ TreeNode* TreeBuilder::Split(
             numClasses * sizeof( unsigned int ) );
 
         bool featureIndexStored = false;
-        unsigned int numCandidates = numInstances - 1;
 
         // Find the best split threshold
-        for (unsigned int candidateId = 0;
-            candidateId < numCandidates; candidateId++)
+        for (unsigned int candidateId = 1;
+            candidateId < numInstances; candidateId++)
         {
-            unsigned int nextCandidateId = candidateId + 1;
+            unsigned int preCandidateId = candidateId - 1;
             
-            classDistArr[0][valueIndexTupleArr[candidateId].classIndex]++;
-            classDistArr[1][valueIndexTupleArr[candidateId].classIndex]--;
+            classDistArr[0][valueIndexTupleArr[preCandidateId].classIndex]++;
+            classDistArr[1][valueIndexTupleArr[preCandidateId].classIndex]--;
 
-            if (valueIndexTupleArr[candidateId].featureValue <
-                valueIndexTupleArr[nextCandidateId].featureValue)
+            if (valueIndexTupleArr[preCandidateId].featureValue <
+                valueIndexTupleArr[candidateId].featureValue)
             {
                 double splitThreshold =
-                    (valueIndexTupleArr[candidateId].featureValue + 
-                    valueIndexTupleArr[nextCandidateId].featureValue) / 2.0;
-                childSizeArr[0] = nextCandidateId;
-                childSizeArr[1] = numInstances - nextCandidateId;
+                    (valueIndexTupleArr[preCandidateId].featureValue + 
+                    valueIndexTupleArr[candidateId].featureValue) / 2.0;
+                childSizeArr[0] = candidateId;
+                childSizeArr[1] = numInstances - candidateId;
 
                 // double giniImpurity = giniParent;
                 double infoGain = entropyParent;

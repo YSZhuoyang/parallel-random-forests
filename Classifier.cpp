@@ -42,8 +42,8 @@ void Classifier::Train(
 
     #pragma omp parallel
     {
-        if (omp_get_thread_num() == 0)
-            printf( "There're %d threads running.\n", omp_get_num_threads() );
+        #pragma omp single
+        printf( "There're %d threads running.\n", omp_get_num_threads() );
 
         #pragma omp for schedule(dynamic)
         for (unsigned int treeId = 0; treeId < NUM_TREES; treeId++)
