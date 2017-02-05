@@ -5,6 +5,7 @@
 #include "BasicDataStructures.h"
 #include <stdlib.h>
 #include <math.h>
+#include <vector>
 
 
 using namespace std;
@@ -13,8 +14,8 @@ using namespace BasicDataStructures;
 namespace MyHelper
 {
     bool Compare(
-        const ValueIndexTuple& eleX,
-        const ValueIndexTuple& eleY );
+        const MiniInstance& eleX,
+        const MiniInstance& eleY );
     bool StrEqualCaseSen( const char* str1, const char* str2 );
     bool StrEqualCaseInsen( const char* str1, const char* str2 );
     // Include string terminator
