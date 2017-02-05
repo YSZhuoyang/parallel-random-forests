@@ -5,6 +5,7 @@
 #include "BasicDataStructures.h"
 #include <math.h>
 #include <mpi.h>
+#include <vector>
 
 
 using namespace std;
@@ -15,8 +16,8 @@ namespace MyHelper
 #define MPI_ERROR_MESSAGE_BUFF_SIZE 50
 
     bool Compare(
-        const ValueIndexTuple& eleX,
-        const ValueIndexTuple& eleY );
+        const MiniInstance& eleX,
+        const MiniInstance& eleY );
     bool StrEqualCaseSen( const char* str1, const char* str2 );
     bool StrEqualCaseInsen( const char* str1, const char* str2 );
     // Include string terminator

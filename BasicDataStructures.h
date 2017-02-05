@@ -2,8 +2,6 @@
 #ifndef _BASIC_DATA_STRUCTURES_H_
 #define _BASIC_DATA_STRUCTURES_H_
 
-#include <vector>
-
 
 using namespace std;
 
@@ -18,7 +16,7 @@ namespace BasicDataStructures
     // Bound index of each instance with one of its feature value
     // and its class index, to minimize memory access time during
     // tree construction
-    struct ValueIndexTuple
+    struct MiniInstance
     {
         double featureValue;
         unsigned int featureIndex;
