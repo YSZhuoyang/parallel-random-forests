@@ -11,8 +11,7 @@ ArffImporter::ArffImporter()
 
 ArffImporter::~ArffImporter()
 {
-    for (unsigned int i = 0; i < numInstances; i++)
-        free( instanceTable[i] );
+    free( instanceBuff );
     free( instanceTable );
 
     for (char* classAttr : classVec) free( classAttr );
@@ -24,13 +23,50 @@ ArffImporter::~ArffImporter()
 
 void ArffImporter::BuildInstanceTable()
 {
+    if (instanceBuff != nullptr || instanceTable != nullptr)
+        return;
+    
+    unsigned int instVecSize = featureVec.size() + 1;
     numInstances = instanceVec.size();
+    instanceBuff =
+        (double*) malloc( numInstances * instVecSize * sizeof( double ) );
     instanceTable = (double**) malloc( numInstances * sizeof( double* ) );
     for (unsigned int i = 0; i < numInstances; i++)
-        instanceTable[i] = instanceVec[i];
+    {
+        double* offset = instanceBuff + i * instVecSize;
+        memmove(
+            offset,
+            instanceVec[i],
+            instVecSize * sizeof( double ) );
+        instanceTable[i] = offset;
+        free( instanceVec[i] );
+    }
 
     instanceVec.clear();
 }
+
+// ArffImporter::~ArffImporter()
+// {
+//     for (unsigned int i = 0; i < numInstances; i++)
+//         free( instanceTable[i] );
+//     free( instanceTable );
+
+//     for (char* classAttr : classVec) free( classAttr );
+//     classVec.clear();
+
+//     for (NumericAttr& feature : featureVec) free( feature.name );
+//     featureVec.clear();
+// }
+
+// void ArffImporter::BuildInstanceTable()
+// {
+//     numInstances = instanceVec.size();
+//     instanceTable = (double**) malloc( numInstances * sizeof( double* ) );
+//     for (unsigned int i = 0; i < numInstances; i++)
+//         instanceTable[i] = instanceVec[i];
+
+//     instanceVec.clear();
+// }
 
 // Need to check string length boundary
 void ArffImporter::Read( const char* fileName )

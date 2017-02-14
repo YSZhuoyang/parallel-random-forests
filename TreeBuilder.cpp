@@ -35,16 +35,12 @@ void TreeBuilder::BuildTree(
     for (unsigned int i = 0; i < numFeaturesTotal; i++)
         featureIndexArray[i] = i;
 
-    // ValueIndexPair* valueIndexPairArr =
-    //     (ValueIndexPair*) malloc( numInstancesTotal * sizeof( ValueIndexPair ) );
     unsigned int* initialClassDist = 
         (unsigned int*) calloc( numClasses, sizeof( unsigned int ) );
     for (unsigned int i = 0; i < numInstances; i++)
     {
         // Get overall distribution
         initialClassDist[(unsigned int) instanceTable[i][numFeaturesTotal]]++;
-        // Init data indices
-        // valueIndexPairArr[i].featureIndex = i;
     }
 
     // printf( "c1: %u, c2: %u\n", initialClassDist[0], initialClassDist[1] );
@@ -58,8 +54,6 @@ void TreeBuilder::BuildTree(
 
     free( initialClassDist );
     initialClassDist = nullptr;
-    // free( valueIndexPairArr );
-    // valueIndexPairArr = nullptr;
     free( featureIndexArray );
     featureIndexArray = nullptr;
 }
@@ -120,12 +114,11 @@ TreeNode* TreeBuilder::Split(
     // Store sorted values of that feature with indices
     double** selectedInstanceTable =
         (double**) malloc( numInstances * sizeof( double* ) );
-    // ValueIndexPair* selectedValueIndexPairArr =
-    //     (ValueIndexPair*) malloc( numInstances * sizeof( ValueIndexPair ) );
 
     unsigned int numRestFeaToSelect = numFeaturesToSelect;
     unsigned int numRestFea = numFeaturesTotal;
     bool gainFound = false;
+    Comp comp;
 
     // Find the best split feature and threshold
     while ((numRestFeaToSelect > 0 || !gainFound) && numRestFea > 0)
@@ -140,7 +133,8 @@ TreeNode* TreeBuilder::Split(
         if (numRestFeaToSelect > 0) numRestFeaToSelect--;
 
         // Sort instance data based on randomly selected feature.
-        Comp comp( randFeaIndex );
+        comp.setFeatureId( randFeaIndex );
+        // Comp comp( randFeaIndex );
         sort(
             instanceTable,
             instanceTable + numInstances,
@@ -165,13 +159,11 @@ TreeNode* TreeBuilder::Split(
         bool sortedInstTableStored = false;
         double priorCandidate = 
             instanceTable[0][randFeaIndex];
-        // double priorCandidate = valueIndexPairArr[0].featureValue;
 
         // Find the best split threshold
         for (unsigned int candidateId = 1;
             candidateId < numInstances; candidateId++)
         {
-            // if (priorCandidate == valueIndexPairArr[candidateId].featureValue)
             if (priorCandidate == 
                 instanceTable[candidateId][randFeaIndex])
                 continue;
@@ -280,8 +272,6 @@ TreeNode* TreeBuilder::Split(
         {
             double** childInstanceTable = (double**)
                 malloc( selectedChildSizeArr[childId] * sizeof( double* ) );
-            // ValueIndexPair* childValueIndexPairArr = (ValueIndexPair*)
-            //     malloc( selectedChildSizeArr[childId] * sizeof( ValueIndexPair ) );
             // Consider NUM_CHILDREN is 2, childId is either 0 or 1.
             double** offset = selectedInstanceTable + ((childId) ?
                 selectedChildSizeArr[0] : 0);

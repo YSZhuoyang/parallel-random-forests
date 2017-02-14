@@ -10,17 +10,17 @@ using namespace std;
 namespace BasicDataStructures
 {
     struct Comp {
-        Comp( unsigned int featureId )
-        {
-            this->featureId = featureId;
-        }
-
         bool operator() ( const double* i, const double* j )
         {
             return i[featureId] < j[featureId];
         }
 
-        unsigned int featureId;
+        void setFeatureId( unsigned int id )
+        {
+            this->featureId = id;
+        }
+
+        unsigned int featureId = 0;
     };
 
     struct NumericAttr
