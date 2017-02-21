@@ -112,14 +112,14 @@ TreeNode* TreeBuilder::Split(
 
     // Init child class distribution vector
     unsigned int* classDistArr[NUM_CHILD_NUMERICAL];
+    classDistArr[0] = ( unsigned int* )
+        malloc( NUM_CHILD_NUMERICAL * numClasses * sizeof( unsigned int ) );
+    classDistArr[1] = classDistArr[0] + numClasses;
+
     unsigned int* selectedClassDistArr[NUM_CHILD_NUMERICAL];
-    for (unsigned int childId = 0; childId < NUM_CHILD_NUMERICAL; childId++)
-    {
-        classDistArr[childId] = ( unsigned int* )
-            malloc( numClasses * sizeof( unsigned int ) );
-        selectedClassDistArr[childId] = ( unsigned int* )
-            malloc( numClasses * sizeof( unsigned int ) );
-    }
+    selectedClassDistArr[0] = ( unsigned int* )
+        malloc( NUM_CHILD_NUMERICAL * numClasses * sizeof( unsigned int ) );
+    selectedClassDistArr[1] = selectedClassDistArr[0] + numClasses;
 
     // Store sorted values of that feature with indices
     MiniInstance* selectedMiniInstanceArr =
@@ -208,15 +208,13 @@ TreeNode* TreeBuilder::Split(
                         featureIndexStored = true;
                     }
 
-                    for (unsigned int childId = 0; childId < NUM_CHILD_NUMERICAL; childId++)
-                    {
-                        selectedChildSizeArr[childId] = childSizeArr[childId];
-                        memmove(
-                            selectedClassDistArr[childId],
-                            classDistArr[childId],
-                            numClasses * sizeof( unsigned int ) );
-                    }
+                    memmove(
+                        selectedClassDistArr[0],
+                        classDistArr[0],
+                        NUM_CHILD_NUMERICAL * numClasses * sizeof( unsigned int ) );
 
+                    selectedChildSizeArr[0] = childSizeArr[0];
+                    selectedChildSizeArr[1] = childSizeArr[1];
                     // giniImpurityMax = giniImpurity;
                     infoGainMax = infoGain;
                     selectedThreshold = splitThreshold;
@@ -227,8 +225,8 @@ TreeNode* TreeBuilder::Split(
         }
     }
 
-    for (unsigned int childId = 0; childId < NUM_CHILD_NUMERICAL; childId++)
-        free( classDistArr[childId] );
+    free( classDistArr[0] );
+    
     //printf( "\n----------------------------------------\n");
     //printf( "Height: %d\n", height );
 
@@ -239,12 +237,8 @@ TreeNode* TreeBuilder::Split(
     // thus have reached leaf node.
     if (!gainFound)
     {
-        for (unsigned int childId = 0; childId < NUM_CHILD_NUMERICAL; childId++)
-        {
-            free( selectedClassDistArr[childId] );
-            selectedClassDistArr[childId] = nullptr;
-        }
-
+        free( selectedClassDistArr[0] );
+        selectedClassDistArr[0] = nullptr;
         node = nullptr;
     }
     // Split node
@@ -267,15 +261,9 @@ TreeNode* TreeBuilder::Split(
         // Split children
         for (unsigned int childId = 0; childId < NUM_CHILD_NUMERICAL; childId++)
         {
-            MiniInstance* childMiniInstanceArr = (MiniInstance*)
-                malloc( selectedChildSizeArr[childId] * sizeof( MiniInstance ) );
             // Consider NUM_CHILD_NUMERICAL is 2, childId is either 0 or 1.
-            MiniInstance* offset = selectedMiniInstanceArr +
+            MiniInstance* childMiniInstanceArr = selectedMiniInstanceArr +
                 ((childId) ? selectedChildSizeArr[0] : 0);
-            memmove(
-                childMiniInstanceArr,
-                offset,
-                selectedChildSizeArr[childId] * sizeof( MiniInstance ) );
             
             node->childrenArr[childId] = Split(
                 childMiniInstanceArr,
@@ -286,12 +274,10 @@ TreeNode* TreeBuilder::Split(
 
             if (node->childrenArr[childId] == nullptr)
                 emptyChildFound = true;
-
-            free( childMiniInstanceArr );
-            childMiniInstanceArr = nullptr;
-            free( selectedClassDistArr[childId] );
-            selectedClassDistArr[childId] = nullptr;
         }
+
+        free( selectedClassDistArr[0] );
+        selectedClassDistArr[0] = nullptr;
 
         if (emptyChildFound) LabelNode( node, parentClassDist );
     }
