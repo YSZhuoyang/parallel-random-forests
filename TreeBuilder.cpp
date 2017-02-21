@@ -262,8 +262,8 @@ TreeNode* TreeBuilder::Split(
         for (unsigned int childId = 0; childId < NUM_CHILD_NUMERICAL; childId++)
         {
             // Consider NUM_CHILD_NUMERICAL is 2, childId is either 0 or 1.
-            MiniInstance* childMiniInstanceArr = selectedMiniInstanceArr +
-                ((childId) ? selectedChildSizeArr[0] : 0);
+            MiniInstance* childMiniInstanceArr =
+                selectedMiniInstanceArr + childId * selectedChildSizeArr[0];
             
             node->childrenArr[childId] = Split(
                 childMiniInstanceArr,
