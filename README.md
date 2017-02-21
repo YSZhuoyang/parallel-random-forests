@@ -1,14 +1,5 @@
 # Parallelized Random Forests
-A parallelized version of random forests learning algorithm.
-* Based on Weka's implementation of Breiman random forest construction.
-* Support continus features, which are repeatedly used during split.
-* Support both Infogain and Gini impurity as split criteria.
-* 40% - 50% faster than Weka Random Forests (for high dimensional dataset).
-* Scalable speedup by OpenMP and Open mpi parallelization.
-
-<p align="center">
-<img src="https://github.com/YSZhuoyang/Parallelized-Random-Forests/blob/rf/serial/Comp/MyRFVSWekaRF.PNG" alt="Comparison" width= "500px" height="320px" />
-</p>
+A hybird Open MPI and OpenMP parallelized version of random forests learning algorithm.
 
 ### Configuration
 * In 'Classifier.h', change following variables:
