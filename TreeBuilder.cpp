@@ -84,7 +84,7 @@ TreeNode* TreeBuilder::Split(
     {
         TreeNode* leaf = new TreeNode;
         leaf->childrenArr = nullptr;
-        LabelNode( leaf, parentClassDist );
+        leaf->classIndex = getIndexOfMax( parentClassDist, numClasses );
         
         return leaf;
     }
@@ -99,7 +99,7 @@ TreeNode* TreeBuilder::Split(
     {
         TreeNode* leaf = new TreeNode;
         leaf->childrenArr = nullptr;
-        LabelNode( leaf, parentClassDist );
+        leaf->classIndex = getIndexOfMax( parentClassDist, numClasses );
 
         return leaf;
     }
@@ -279,7 +279,8 @@ TreeNode* TreeBuilder::Split(
         free( selectedClassDistArr[0] );
         selectedClassDistArr[0] = nullptr;
 
-        if (emptyChildFound) LabelNode( node, parentClassDist );
+        if (emptyChildFound)
+            node->classIndex = getIndexOfMax( parentClassDist, numClasses );
     }
 
     free( selectedMiniInstanceArr );
@@ -335,16 +336,13 @@ inline double TreeBuilder::ComputeGini(
     return gini;
 }
 
-inline void TreeBuilder::LabelNode(
-    TreeNode* node,
-    const unsigned int* classDistribution )
-{
-    if (node == nullptr || classDistribution == nullptr)
-        return;
-
-    // Select the class of the largest class group.
-    node->classIndex = getIndexOfMax( classDistribution, numClasses );
-}
+// inline unsigned short TreeBuilder::FindClassIndex(
+//     const unsigned int* classDistribution )
+// {
+//     return max_element(
+//         classDistribution,
+//         classDistribution + numClasses ) - classDistribution;
+// }
 
 void TreeBuilder::DestroyNode( TreeNode* node )
 {
