@@ -16,7 +16,7 @@ class TreeBuilder
 {
 #define MIN_NODE_SIZE          1
 #define MIN_NODE_SIZE_TO_SPLIT 2
-#define NUM_CHILD_NUMERICAL    2
+#define NUM_CHILDREN           2
 
 public:
     TreeBuilder();
@@ -50,9 +50,9 @@ private:
     vector<NumericAttr> featureVec;
     const Instance* instanceTable;
 
-    unsigned int numFeaturesToSelect;
-    unsigned int numFeaturesTotal;
-    unsigned int numInstancesTotal;
+    unsigned int numFeaToTry;
+    unsigned int numFeaTotal;
+    unsigned int numInstTotal;
     unsigned short numClasses;
 };
 
