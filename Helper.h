@@ -5,6 +5,7 @@
 #include "BasicDataStructures.h"
 #include <math.h>
 #include <mpi.h>
+#include <algorithm>
 #include <vector>
 
 

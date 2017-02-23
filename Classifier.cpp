@@ -61,7 +61,7 @@ void Classifier::Train(
     // Seed randomizer based on mpi node id
     srand( mpiNodeId + 1 );
 
-    time_t start,end;
+    time_t start, end;
     double dif;
     time( &start );
 
