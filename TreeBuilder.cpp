@@ -334,14 +334,6 @@ inline double TreeBuilder::ComputeGini(
     return gini;
 }
 
-// inline unsigned short TreeBuilder::FindClassIndex(
-//     const unsigned int* classDistribution )
-// {
-//     return max_element(
-//         classDistribution,
-//         classDistribution + numClasses ) - classDistribution;
-// }
-
 void TreeBuilder::DestroyNode( TreeNode* node )
 {
     if (node == nullptr) return;
