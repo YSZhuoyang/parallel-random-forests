@@ -21,25 +21,25 @@ void TreeBuilder::Init(
     featureVec = fv;
     classVec = cv;
     instanceTable = it;
-    numInstancesTotal = numInstances;
-    numFeaturesTotal = featureVec.size();
+    numInstTotal = numInstances;
+    numFeaTotal = featureVec.size();
     numClasses = classVec.size();
 }
 
 TreeNode* TreeBuilder::BuildTree( const unsigned int numFeaToSelect )
 {
-    numFeaturesToSelect = numFeaToSelect;
+    numFeaToTry = numFeaToSelect;
     
     unsigned int* featureIndexArray = 
-        (unsigned int*) malloc( numFeaturesTotal * sizeof( unsigned int ) );
-    for (unsigned int i = 0; i < numFeaturesTotal; i++)
+        (unsigned int*) malloc( numFeaTotal * sizeof( unsigned int ) );
+    for (unsigned int i = 0; i < numFeaTotal; i++)
         featureIndexArray[i] = i;
 
     MiniInstance* miniInstanceArr =
-        (MiniInstance*) malloc( numInstancesTotal * sizeof( MiniInstance ) );
+        (MiniInstance*) malloc( numInstTotal * sizeof( MiniInstance ) );
     unsigned int* initialClassDist = 
         (unsigned int*) calloc( numClasses, sizeof( unsigned int ) );
-    for (unsigned int i = 0; i < numInstancesTotal; i++)
+    for (unsigned int i = 0; i < numInstTotal; i++)
     {
         // Get overall distribution
         initialClassDist[instanceTable[i].classIndex]++;
@@ -52,7 +52,7 @@ TreeNode* TreeBuilder::BuildTree( const unsigned int numFeaToSelect )
         miniInstanceArr,
         featureIndexArray,
         initialClassDist,
-        numInstancesTotal,
+        numInstTotal,
         0 );
 
     free( initialClassDist );
@@ -107,30 +107,30 @@ TreeNode* TreeBuilder::Split(
     unsigned int selectedFeaIndex;
     double selectedThreshold;
 
-    unsigned int childSizeArr[NUM_CHILD_NUMERICAL];
-    unsigned int selectedChildSizeArr[NUM_CHILD_NUMERICAL];
+    unsigned int childSizeArr[NUM_CHILDREN];
+    unsigned int selectedChildSizeArr[NUM_CHILDREN];
 
     // Init child class distribution vector
-    unsigned int* classDistArr[NUM_CHILD_NUMERICAL];
+    unsigned int* classDistArr[NUM_CHILDREN];
     classDistArr[0] = ( unsigned int* )
-        malloc( NUM_CHILD_NUMERICAL * numClasses * sizeof( unsigned int ) );
+        malloc( NUM_CHILDREN * numClasses * sizeof( unsigned int ) );
     classDistArr[1] = classDistArr[0] + numClasses;
 
-    unsigned int* selectedClassDistArr[NUM_CHILD_NUMERICAL];
+    unsigned int* selectedClassDistArr[NUM_CHILDREN];
     selectedClassDistArr[0] = ( unsigned int* )
-        malloc( NUM_CHILD_NUMERICAL * numClasses * sizeof( unsigned int ) );
+        malloc( NUM_CHILDREN * numClasses * sizeof( unsigned int ) );
     selectedClassDistArr[1] = selectedClassDistArr[0] + numClasses;
 
     // Store sorted values of that feature with indices
     MiniInstance* selectedMiniInstanceArr =
         (MiniInstance*) malloc( numInstances * sizeof( MiniInstance ) );
 
-    unsigned int numRestFeaToSelect = numFeaturesToSelect;
-    unsigned int numRestFea = numFeaturesTotal;
+    unsigned int numFeaTried = 0;
+    unsigned int numRestFea = numFeaTotal;
     bool gainFound = false;
 
     // Find the best split feature and threshold
-    while ((numRestFeaToSelect > 0 || !gainFound) && numRestFea > 0)
+    while ((numFeaTried++ < numFeaToTry || !gainFound) && numRestFea > 0)
     {
         // Sample (note max of rand() is around 32000)
         unsigned int randPos = rand() % numRestFea;
@@ -138,8 +138,6 @@ TreeNode* TreeBuilder::Split(
         // Swap
         featureIndexArray[randPos] = featureIndexArray[--numRestFea];
         featureIndexArray[numRestFea] = randFeaIndex;
-
-        if (numRestFeaToSelect > 0) numRestFeaToSelect--;
 
         // Get all values of that feature with indices and sort them.
         for (unsigned int i = 0; i < numInstances; i++)
@@ -182,7 +180,7 @@ TreeNode* TreeBuilder::Split(
                 double infoGain = entropyParent;
                 
                 // Compute entropy of children
-                for (unsigned int childId = 0; childId < NUM_CHILD_NUMERICAL; childId++)
+                for (unsigned int childId = 0; childId < NUM_CHILDREN; childId++)
                 {
                     double numChildren = childSizeArr[childId];
                     double entropyChild =
@@ -211,7 +209,7 @@ TreeNode* TreeBuilder::Split(
                     memmove(
                         selectedClassDistArr[0],
                         classDistArr[0],
-                        NUM_CHILD_NUMERICAL * numClasses * sizeof( unsigned int ) );
+                        NUM_CHILDREN * numClasses * sizeof( unsigned int ) );
 
                     selectedChildSizeArr[0] = childSizeArr[0];
                     selectedChildSizeArr[1] = childSizeArr[1];
@@ -252,16 +250,16 @@ TreeNode* TreeBuilder::Split(
         node->featureIndex = selectedFeaIndex;
         node->threshold    = selectedThreshold;
         node->childrenArr  =
-            (TreeNode**) malloc( NUM_CHILD_NUMERICAL * sizeof( TreeNode* ) );
+            (TreeNode**) malloc( NUM_CHILDREN * sizeof( TreeNode* ) );
 
         height++;
 
         bool emptyChildFound = false;
 
         // Split children
-        for (unsigned int childId = 0; childId < NUM_CHILD_NUMERICAL; childId++)
+        for (unsigned int childId = 0; childId < NUM_CHILDREN; childId++)
         {
-            // Consider NUM_CHILD_NUMERICAL is 2, childId is either 0 or 1.
+            // Consider NUM_CHILDREN is 2, childId is either 0 or 1.
             MiniInstance* childMiniInstanceArr =
                 selectedMiniInstanceArr + childId * selectedChildSizeArr[0];
             
@@ -297,7 +295,7 @@ void TreeBuilder::PrintTree( const TreeNode* node, unsigned int h )
     printf( "feature: %s, ", featureVec[node->featureIndex].name );
     printf( "threshold: %f\n", node->threshold );
 
-    for (unsigned int childId = 0; childId < NUM_CHILD_NUMERICAL; childId++)
+    for (unsigned int childId = 0; childId < NUM_CHILDREN; childId++)
         PrintTree( node->childrenArr[childId], h + 1 );
 }
 
@@ -350,7 +348,7 @@ void TreeBuilder::DestroyNode( TreeNode* node )
 
     if (node->childrenArr != nullptr)
         for (unsigned int childId = 0;
-            childId < NUM_CHILD_NUMERICAL; childId++)
+            childId < NUM_CHILDREN; childId++)
             DestroyNode( node->childrenArr[childId] );
 
     free( node->childrenArr );
