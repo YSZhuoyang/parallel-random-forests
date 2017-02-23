@@ -45,8 +45,6 @@ private:
     inline double ComputeEntropy(
         const unsigned int* classDistribution,
         const unsigned int numInstances );
-    // inline unsigned short FindClassIndex(
-    //     const unsigned int* classDistribution );
 
     vector<char*> classVec;
     vector<NumericAttr> featureVec;
