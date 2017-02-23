@@ -3,8 +3,9 @@
 #define _HELPER_H_
 
 #include "BasicDataStructures.h"
-#include <stdlib.h>
 #include <math.h>
+#include <stdlib.h>
+#include <algorithm>
 #include <vector>
 
 
@@ -26,7 +27,7 @@ namespace MyHelper
         const vector<NumericAttr>& featureVec );
 
     unsigned int getIndexOfMax(
-        const unsigned int* uintArray, 
+        const unsigned int* uintArray,
         const unsigned int length );
     // Consume a sorted array, remove duplicates in place, 
     // and return the number of unique elements.

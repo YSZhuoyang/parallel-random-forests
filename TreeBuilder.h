@@ -7,7 +7,6 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <algorithm>
 
 
 using namespace BasicDataStructures;
@@ -46,9 +45,8 @@ private:
     inline double ComputeEntropy(
         const unsigned int* classDistribution,
         const unsigned int numInstances );
-    inline void LabelNode(
-        TreeNode* node,
-        const unsigned int* classDistribution );
+    // inline unsigned short FindClassIndex(
+    //     const unsigned int* classDistribution );
 
     vector<char*> classVec;
     vector<NumericAttr> featureVec;
