@@ -80,7 +80,7 @@ TreeNode* TreeBuilder::Split(
     if (numInstances < MIN_NODE_SIZE_TO_SPLIT)
     {
         TreeNode* leaf = new TreeNode;
-        LabelNode( leaf, parentClassDist );
+        leaf->classIndex = getIndexOfMax( parentClassDist, numClasses );
         
         return leaf;
     }
@@ -94,7 +94,7 @@ TreeNode* TreeBuilder::Split(
     if (entropyParent <= 0.0)
     {
         TreeNode* leaf = new TreeNode;
-        LabelNode( leaf, parentClassDist );
+        leaf->classIndex = getIndexOfMax( parentClassDist, numClasses );
 
         return leaf;
     }
@@ -253,7 +253,6 @@ TreeNode* TreeBuilder::Split(
         node = new TreeNode;
         node->featureIndex = selectedFeaIndex;
         node->threshold    = selectedThreshold;
-        node->labeled      = false;
 
         height++;
 
@@ -262,15 +261,9 @@ TreeNode* TreeBuilder::Split(
         // Split children
         for (unsigned int childId = 0; childId < NUM_CHILDREN; childId++)
         {
-            ValueIndexTuple* childValueIndexTupleArr = (ValueIndexTuple*)
-                malloc( selectedChildSizeArr[childId] * sizeof( ValueIndexTuple ) );
             // Consider NUM_CHILDREN is 2, childId is either 0 or 1.
-            ValueIndexTuple* offset = selectedValueIndexTupleArr +
-                ((childId) ? selectedChildSizeArr[0] : 0);
-            memmove(
-                childValueIndexTupleArr,
-                offset,
-                selectedChildSizeArr[childId] * sizeof( ValueIndexTuple ) );
+            ValueIndexTuple* childValueIndexTupleArr =
+                selectedValueIndexTupleArr + childId * selectedChildSizeArr[0];
             
             TreeNode* childNode = Split(
                 childValueIndexTupleArr,
@@ -281,14 +274,13 @@ TreeNode* TreeBuilder::Split(
 
             free( selectedClassDistArr[childId] );
             selectedClassDistArr[childId] = nullptr;
-            free( childValueIndexTupleArr );
-            childValueIndexTupleArr = nullptr;
 
             if (childNode == nullptr) emptyChildFound = true;
             node->childrenVec.push_back( childNode );
         }
 
-        if (emptyChildFound) LabelNode( node, parentClassDist );
+        if (emptyChildFound)
+            node->classIndex = getIndexOfMax( parentClassDist, numClasses );
     }
 
     free( selectedValueIndexTupleArr );
@@ -299,7 +291,7 @@ TreeNode* TreeBuilder::Split(
 
 void TreeBuilder::PrintTree( const TreeNode* iter, unsigned int h )
 {
-    if (iter == nullptr || iter->labeled) return;
+    if (iter == nullptr || iter->childrenVec.empty()) return;
 
     for (unsigned int i = 0; i <= h; i++) printf( "-" );
     printf( "%s, ", featureVec[iter->featureIndex].name );
@@ -347,18 +339,6 @@ inline double TreeBuilder::ComputeGini(
     }
 
     return gini;
-}
-
-inline void TreeBuilder::LabelNode(
-    TreeNode* node,
-    const unsigned int* classDistribution )
-{
-    if (node == nullptr || classDistribution == nullptr)
-        return;
-
-    // Select the class of the largest class group.
-    node->classIndex = getIndexOfMax( classDistribution, numClasses );
-    node->labeled = true;
 }
 
 void TreeBuilder::DestroyNode( TreeNode* node )

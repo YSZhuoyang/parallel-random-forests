@@ -1,4 +1,5 @@
 .vscode/
+env/
 *.h.gch
 *.o
 *.pyc

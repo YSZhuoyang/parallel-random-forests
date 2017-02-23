@@ -38,12 +38,9 @@ namespace BasicDataStructures
 
     struct TreeNode
     {
-        // double gini;
-        // double giniSplit;
         double threshold;
         unsigned int featureIndex;
         unsigned short classIndex;
-        bool labeled;
         vector<TreeNode*> childrenVec;
         
         // Serialization
@@ -53,12 +50,9 @@ namespace BasicDataStructures
             Archive &ar,
             const unsigned int version )
         {
-            // ar & gini;
-            // ar & giniSplit;
             ar & threshold;
             ar & featureIndex;
             ar & classIndex;
-            ar & labeled;
             ar & childrenVec;
         }
     };
