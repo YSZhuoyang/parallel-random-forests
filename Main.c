@@ -13,13 +13,13 @@ int main()
 
     Classifier classifier;
     classifier.Train(
-        trainSetImporter.GetInstances(), 
+        trainSetImporter.BuildTransposedInstTable(), 
         trainSetImporter.GetFeatures(), 
         trainSetImporter.GetClassAttr(),
         trainSetImporter.GetNumInstances() );
     classifier.Classify(
-        testSetImporter.GetInstances(),
-        trainSetImporter.GetNumInstances() );
+        testSetImporter.BuildInstTable(),
+        testSetImporter.GetNumInstances() );
     classifier.Analyze(
         "This is bad",
         trainSetImporter.GetFeatures(),

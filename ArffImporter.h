@@ -29,17 +29,17 @@ public:
     void Read( const char* fileName );
     vector<char*> GetClassAttr();
     vector<NumericAttr> GetFeatures();
-    Instance* GetInstances();
+    Instance* BuildInstTable();
+    TransInstTable BuildTransposedInstTable();
     unsigned int GetNumInstances();
 
 
 private:
-    void BuildInstanceTable();
-
     vector<char*> classVec;
     vector<NumericAttr> featureVec;
     vector<Instance> instanceVec;
 
+    TransInstTable transInstTable;
     Instance* instanceTable   = nullptr;
     double* instanceBuff      = nullptr;
 

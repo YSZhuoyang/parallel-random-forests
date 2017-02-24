@@ -6,13 +6,24 @@ using namespace std;
 
 ArffImporter::ArffImporter()
 {
-    
+    transInstTable.featureDataBuff = nullptr;
+    transInstTable.classIndexDataBuff = nullptr;
 }
 
 ArffImporter::~ArffImporter()
 {
+    free( transInstTable.featureDataBuff );
+    free( transInstTable.classIndexDataBuff );
+
     free( instanceBuff );
     free( instanceTable );
+
+    if (!instanceVec.empty())
+    {
+        for (unsigned int i = 0; i < numInstances; i++)
+            free( instanceVec[i].featureAttrArray );
+        instanceVec.clear();
+    }
 
     for (char* classAttr : classVec) free( classAttr );
     classVec.clear();
@@ -21,13 +32,42 @@ ArffImporter::~ArffImporter()
     featureVec.clear();
 }
 
-void ArffImporter::BuildInstanceTable()
+/*
+ * Build a transposed instance data table, where each row
+ * prepresents all feature values of one feature, and each
+ * column represents all feature values of one instance.
+ */
+TransInstTable ArffImporter::BuildTransposedInstTable()
+{
+    if (transInstTable.featureDataBuff != nullptr || 
+        transInstTable.classIndexDataBuff != nullptr)
+        return transInstTable;
+
+    transInstTable.featureDataBuff =
+        (double*) malloc( numInstances * numFeatures * sizeof( double ) );
+    transInstTable.classIndexDataBuff =
+        (unsigned short*) malloc( numInstances * sizeof( unsigned short ) );
+
+    for (unsigned int i = 0; i < numInstances; i++)
+    {
+        for (unsigned int j = 0; j < numFeatures; j++)
+            transInstTable.featureDataBuff[j * numInstances + i] =
+                instanceVec[i].featureAttrArray[j];
+
+        transInstTable.classIndexDataBuff[i] = instanceVec[i].classIndex;
+        free( instanceVec[i].featureAttrArray );
+    }
+
+    instanceVec.clear();
+
+    return transInstTable;
+}
+
+Instance* ArffImporter::BuildInstTable()
 {
     if (instanceBuff != nullptr || instanceTable != nullptr)
-        return;
-    
-    numInstances = instanceVec.size();
-    numFeatures = featureVec.size();
+        return instanceTable;
+
     instanceBuff =
         (double*) malloc( numInstances * numFeatures * sizeof( double ) );
     instanceTable = (Instance*) malloc( numInstances * sizeof( Instance ) );
@@ -44,6 +84,8 @@ void ArffImporter::BuildInstanceTable()
     }
 
     instanceVec.clear();
+
+    return instanceTable;
 }
 
 // Need to check string length boundary
@@ -183,8 +225,9 @@ void ArffImporter::Read( const char* fileName )
         }
     }
 
+    numInstances = instanceVec.size();
+
     fclose( fp );
-    BuildInstanceTable();
 }
 
 vector<char*> ArffImporter::GetClassAttr()
@@ -195,11 +238,6 @@ vector<char*> ArffImporter::GetClassAttr()
 vector<NumericAttr> ArffImporter::GetFeatures()
 {
     return featureVec;
-}
-
-Instance* ArffImporter::GetInstances()
-{
-    return instanceTable;
 }
 
 unsigned int ArffImporter::GetNumInstances()

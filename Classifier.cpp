@@ -21,7 +21,7 @@ Classifier::~Classifier()
 
 
 void Classifier::Train(
-    const Instance* instanceTable,
+    const TransInstTable transInstTable,
     const vector<NumericAttr>& fv,
     const vector<char*>& cv,
     const unsigned int numInstances )
@@ -36,7 +36,7 @@ void Classifier::Train(
 
     // Build a number of trees each having the same number of features.
     rootArr = (TreeNode**) malloc( NUM_TREES * sizeof( TreeNode* ) );
-    treeBuilder.Init( fv, cv, instanceTable, numInstances );
+    treeBuilder.Init( fv, cv, transInstTable, numInstances );
 
     time_t start,end;
     double dif;

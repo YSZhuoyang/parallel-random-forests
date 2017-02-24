@@ -25,7 +25,7 @@ public:
     void Init(
         const vector<NumericAttr>& fv,
         const vector<char*>& cv,
-        const Instance* it,
+        const TransInstTable tit,
         const unsigned int numInstances );
     TreeNode* BuildTree( const unsigned int numFeaToSelect );
     void PrintTree( const TreeNode* node, unsigned int h );
@@ -48,7 +48,7 @@ private:
 
     vector<char*> classVec;
     vector<NumericAttr> featureVec;
-    const Instance* instanceTable;
+    TransInstTable transInstTable;
 
     unsigned int numFeaToTry;
     unsigned int numFeaTotal;

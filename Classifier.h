@@ -15,7 +15,7 @@ public:
     ~Classifier();
 
     void Train(
-        const Instance* instanceTable,
+        const TransInstTable transInstTable,
         const vector<NumericAttr>& fv,
         const vector<char*>& cv,
         const unsigned int numInstances );

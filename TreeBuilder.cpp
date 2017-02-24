@@ -15,12 +15,12 @@ TreeBuilder::~TreeBuilder()
 void TreeBuilder::Init(
     const vector<NumericAttr>& fv,
     const vector<char*>& cv,
-    const Instance* it,
+    const TransInstTable tit,
     const unsigned int numInstances )
 {
     featureVec = fv;
     classVec = cv;
-    instanceTable = it;
+    transInstTable = tit;
     numInstTotal = numInstances;
     numFeaTotal = featureVec.size();
     numClasses = classVec.size();
@@ -42,12 +42,12 @@ TreeNode* TreeBuilder::BuildTree( const unsigned int numFeaToSelect )
     for (unsigned int i = 0; i < numInstTotal; i++)
     {
         // Get overall distribution
-        initialClassDist[instanceTable[i].classIndex]++;
+        initialClassDist[transInstTable.classIndexDataBuff[i]]++;
         // Init data indices and copy class indices
-        miniInstanceArr[i].featureIndex = i;
-        miniInstanceArr[i].classIndex = instanceTable[i].classIndex;
+        miniInstanceArr[i].instanceIndex = i;
+        miniInstanceArr[i].classIndex = transInstTable.classIndexDataBuff[i];
     }
-    
+
     TreeNode* root = Split(
         miniInstanceArr,
         featureIndexArray,
@@ -140,10 +140,11 @@ TreeNode* TreeBuilder::Split(
         featureIndexArray[numRestFea] = randFeaIndex;
 
         // Get all values of that feature with indices and sort them.
+        double* offset =
+            transInstTable.featureDataBuff + numInstTotal * randFeaIndex;
         for (unsigned int i = 0; i < numInstances; i++)
             miniInstanceArr[i].featureValue =
-                instanceTable[miniInstanceArr[i].featureIndex].
-                    featureAttrArray[randFeaIndex];
+                offset[miniInstanceArr[i].instanceIndex];
         sort(
             miniInstanceArr,
             miniInstanceArr + numInstances,
