@@ -19,7 +19,7 @@ int main()
         trainSetImporter.GetNumInstances() );
     classifier.Classify(
         testSetImporter.GetInstances(),
-        trainSetImporter.GetNumInstances() );
+        testSetImporter.GetNumInstances() );
     classifier.Analyze(
         "This is bad",
         trainSetImporter.GetFeatures(),
