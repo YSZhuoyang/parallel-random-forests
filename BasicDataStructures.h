@@ -19,7 +19,7 @@ namespace BasicDataStructures
     struct MiniInstance
     {
         double featureValue;
-        unsigned int featureIndex;
+        unsigned int instanceIndex;
         unsigned short classIndex;
     };
 

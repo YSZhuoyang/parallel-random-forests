@@ -44,7 +44,7 @@ TreeNode* TreeBuilder::BuildTree( const unsigned int numFeaToSelect )
         // Get overall distribution
         initialClassDist[instanceTable[i].classIndex]++;
         // Init data indices and copy class indices
-        miniInstanceArr[i].featureIndex = i;
+        miniInstanceArr[i].instanceIndex = i;
         miniInstanceArr[i].classIndex = instanceTable[i].classIndex;
     }
     
@@ -142,7 +142,7 @@ TreeNode* TreeBuilder::Split(
         // Get all values of that feature with indices and sort them.
         for (unsigned int i = 0; i < numInstances; i++)
             miniInstanceArr[i].featureValue =
-                instanceTable[miniInstanceArr[i].featureIndex].
+                instanceTable[miniInstanceArr[i].instanceIndex].
                     featureAttrArray[randFeaIndex];
         sort(
             miniInstanceArr,

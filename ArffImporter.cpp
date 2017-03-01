@@ -26,8 +26,6 @@ void ArffImporter::BuildInstanceTable()
     if (instanceBuff != nullptr || instanceTable != nullptr)
         return;
     
-    numInstances = instanceVec.size();
-    numFeatures = featureVec.size();
     instanceBuff =
         (double*) malloc( numInstances * numFeatures * sizeof( double ) );
     instanceTable = (Instance*) malloc( numInstances * sizeof( Instance ) );
@@ -116,7 +114,7 @@ void ArffImporter::Read( const char* fileName )
             numFeatures = featureVec.size();
             numClasses = classVec.size();
             
-            unsigned int featureAttrArraySize = 
+            unsigned int featureAttrArraySize =
                 numFeatures * sizeof( double );
 
             double* featureValueSumArr = (double*) calloc( numFeatures, 
@@ -182,6 +180,8 @@ void ArffImporter::Read( const char* fileName )
             break;
         }
     }
+
+    numInstances = instanceVec.size();
 
     fclose( fp );
     BuildInstanceTable();
