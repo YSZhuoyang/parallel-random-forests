@@ -1,20 +1,21 @@
 # Parallelized Random Forests
 A parallelized version of random forests learning algorithm.
 * Based on Weka's implementation of Breiman random forest construction.
-* Support continus features, which are repeatedly used during split.
-* Support both Infogain and Gini impurity as split criteria.
+* Support continuous features, which are repeatedly used during split.
+* Support using Infogain / Gini impurity as split criteria.
 * 40% - 50% faster than Weka Random Forests (for high dimensional dataset).
 * Scalable speedup by OpenMP and Open mpi parallelization.
 
 <p align="center">
-<img src="https://github.com/YSZhuoyang/Parallelized-Random-Forests/blob/rf/serial/Comp/MyRFVSWekaRF.PNG" alt="Comparison" width= "500px" height="320px" />
+<img src="https://github.com/YSZhuoyang/Parallelized-Random-Forests/blob/rf/serial/Comp/speed.PNG" alt="Comparison" width= "430px" height="300px" />
+<img src="https://github.com/YSZhuoyang/Parallelized-Random-Forests/blob/rf/serial/Comp/acc.PNG" alt="Comparison" width= "430px" height="300px" />
 </p>
 
 ### Configuration
 * In 'Classifier.h', change following variables:
 
         NUM_TREES             // Number of trees to construct
-        NUM_FEATURES_PER_TREE // Number of features to be considered for finding the best split candidates
+        NUM_FEATURES_PER_TREE // Number of random features to be considered for finding the best split candidates
 
 * In 'TreeBuilder.h', change following variables:
 
@@ -23,7 +24,7 @@ A parallelized version of random forests learning algorithm.
 
 ### Dataset and testing
 * Sentiment analysis of 50000 movie reviews from IMDb (25000 for training, 25000 for testing).
-* Used top 1000 words with highest frequencies of occurrences, achieved 83% accuracy without attributes selection.
+* Used top 10/50/200/1000 words with highest frequencies of occurrences, achieved the same accuracies.
 * Testing environment (for parallel execution): vlsci clusters
 
 ## Terms of use for the dataset
