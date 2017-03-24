@@ -15,7 +15,7 @@ A random forest learning algorithm (without bagging).
 
 ### Dataset and testing
 * Sentiment analysis of 50000 movie reviews from IMDb (25000 for training, 25000 for testing).
-* Used top 1000 words with highest frequencies of occurrences, 83% accuracy obtained without attributes selection.
+* Used top 1000 words with highest frequencies of occurrences, 40%-50% faster than Weka RF while achieving the same accuracies.
 
 ### Author
 * Oscar Yu
