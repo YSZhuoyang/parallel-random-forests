@@ -45,10 +45,9 @@ void Classifier::Train(
     /******************** Init tree constructer ********************/
     if (NUM_TREES % numMpiNodes > 0)
     {
+        numTrees = NUM_TREES / numMpiNodes + 1;
         if (mpiNodeId == numMpiNodes - 1)
             numTrees = NUM_TREES - numTrees * (numMpiNodes - 1);
-        else
-            numTrees = NUM_TREES / numMpiNodes + 1;
     }
     else
         numTrees = NUM_TREES / numMpiNodes;
