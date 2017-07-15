@@ -14,13 +14,13 @@ A parallelized version of random forests learning algorithm.
 ### Configuration
 * In 'Classifier.h', change following variables:
 
-        NUM_TREES             // Number of trees to construct
-        NUM_FEATURES_PER_TREE // Number of random features to be considered for finding the best split candidates
+        NUM_TREES               // Number of trees to construct
+        RANDOM_FEATURE_SET_SIZE // Number of random features to be considered for finding the best split candidates
 
 * In 'TreeBuilder.h', change following variables:
 
-        MIN_NODE_SIZE          // Minimum size of a node that can be considered as a leaf
-        MIN_NODE_SIZE_TO_SPLIT // Minimum size of a node that can be further split
+        MIN_NODE_SIZE           // Minimum size of a node that can be considered as a leaf
+        MIN_NODE_SIZE_TO_SPLIT  // Minimum size of a node that can be further split
 
 ### Dataset and testing
 * Sentiment analysis of 50000 movie reviews from IMDb (25000 for training, 25000 for testing).

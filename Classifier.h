@@ -9,9 +9,9 @@
 
 class Classifier
 {
-#define MPI_ROOT_ID           0
-#define NUM_FEATURES_PER_TREE 10
-#define NUM_TREES             100
+#define MPI_ROOT_ID             0
+#define RANDOM_FEATURE_SET_SIZE 10
+#define NUM_TREES               100
 
 public:
     Classifier();

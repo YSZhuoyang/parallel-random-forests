@@ -75,7 +75,7 @@ void Classifier::Train(
         #pragma omp for schedule(dynamic)
         for (unsigned int treeId = 0; treeId < numTrees; treeId++)
         {
-            rootArr[treeId] = treeBuilder.BuildTree( NUM_FEATURES_PER_TREE );
+            rootArr[treeId] = treeBuilder.BuildTree( RANDOM_FEATURE_SET_SIZE );
             //treeBuilder.PrintTree( rootArr[treeId], 0 );
         }
     }

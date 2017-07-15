@@ -6,7 +6,7 @@ SHELL = /bin/sh
 # Enable debug options
 # CFLAGS = -g -Wall -fopenmp
 # Enable best optimization options
-CFLAGS = -Ofast -march=native -mtune=native -fopenmp
+CFLAGS = -Ofast -march=native -mtune=native -fopenmp -std=c++11
 CC = mpic++
 OBJECTS = Helper.o ArffImporter.o TreeBuilder.o Classifier.o
 
