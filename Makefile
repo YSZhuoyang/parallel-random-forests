@@ -6,7 +6,7 @@ SHELL = /bin/sh
 # Enable debug options
 # CFLAGS = -g -Wall
 # Enable best optimization options
-CFLAGS = -Ofast -march=native -mtune=native
+CFLAGS = -Ofast -march=native -mtune=native -std=c++11
 CC = g++
 OBJECTS = Helper.o ArffImporter.o TreeBuilder.o Classifier.o
 
