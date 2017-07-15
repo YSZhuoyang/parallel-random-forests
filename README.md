@@ -3,7 +3,7 @@ A parallelized version of random forests learning algorithm.
 * Based on Weka's implementation of Breiman random forest construction.
 * Support continuous features, which are repeatedly used during split.
 * Support using Infogain / Gini impurity as split criteria.
-* 1x speedup over Weka Random Forests (for high dimensional dataset).
+* 2x speedup over Weka Random Forests (for high dimensional dataset).
 * Scalable speedup by OpenMP and Open mpi parallelization.
 
 <p align="center">
