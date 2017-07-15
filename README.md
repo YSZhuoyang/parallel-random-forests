@@ -1,4 +1,4 @@
-# Parallelized Random Forests
+# Parallel Random Forests
 A parallelized version of random forests learning algorithm.
 * Based on Weka's implementation of Breiman random forest construction.
 * Support continuous features, which are repeatedly used during split.
