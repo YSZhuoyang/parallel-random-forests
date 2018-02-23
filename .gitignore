@@ -5,6 +5,7 @@ env/
 *.pyc
 *.so
 model.serial
+exec
 
 # Elastic Beanstalk Files
 .elasticbeanstalk/*
