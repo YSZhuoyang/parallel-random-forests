@@ -147,7 +147,11 @@ TreeNode* TreeBuilder::Split(
         sort(
             miniInstanceArr,
             miniInstanceArr + numInstances,
-            Compare );
+            []( const MiniInstance& eleX, 
+                const MiniInstance& eleY )
+            {
+                return eleX.featureValue < eleY.featureValue;
+            } );
 
         // Reset split index and child class distribution
         memset( classDistArr[0], 0, numClasses * sizeof( unsigned int ) );
