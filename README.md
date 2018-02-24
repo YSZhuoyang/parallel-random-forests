@@ -8,7 +8,7 @@ A parallelized version of random forests learning algorithm.
 
 <p align="center">
 <img src="https://github.com/YSZhuoyang/Parallelized-Random-Forests/blob/rf/serial/Comp/speed.PNG" alt="Comparison" width= "430px" height="320px" />
-<img src="https://github.com/YSZhuoyang/Parallelized-Random-Forests/blob/rf/serial/Comp/acc.PNG" alt="Comparison" width= "430px" height="310px" />
+<img src="https://github.com/YSZhuoyang/Parallelized-Random-Forests/blob/rf/serial/Comp/acc.PNG" alt="Comparison" width= "430px" height="330px" />
 </p>
 
 ### Configuration
