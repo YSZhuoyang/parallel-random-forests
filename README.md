@@ -7,7 +7,7 @@ A parallelized version of random forests learning algorithm.
 * Scalable speedup by OpenMP and Open mpi parallelization.
 
 <p align="center">
-<img src="https://github.com/YSZhuoyang/Parallelized-Random-Forests/blob/rf/serial/Comp/speed.PNG" alt="Comparison" width= "430px" height="310px" />
+<img src="https://github.com/YSZhuoyang/Parallelized-Random-Forests/blob/rf/serial/Comp/speed.PNG" alt="Comparison" width= "430px" height="320px" />
 <img src="https://github.com/YSZhuoyang/Parallelized-Random-Forests/blob/rf/serial/Comp/acc.PNG" alt="Comparison" width= "430px" height="310px" />
 </p>
 
@@ -25,7 +25,7 @@ A parallelized version of random forests learning algorithm.
 ### Dataset and testing
 * Sentiment analysis of 50000 movie reviews from IMDb (25000 for training, 25000 for testing).
 * Used top 10/50/200/1000 words with highest frequencies of occurrences, achieved the same accuracies.
-* Testing environment (for parallel execution): vlsci clusters
+* Test environment: Ubuntu Gnome 16.04, vlsci clusters (for distributed execution on clusters)
 
 ## Terms of use for the dataset
 
